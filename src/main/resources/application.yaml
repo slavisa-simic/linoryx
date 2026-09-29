@@ -1,0 +1,19 @@
+spring:
+  config:
+    import: "optional:file:.env[.properties]"
+
+  application:
+    name: vigil-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/vigil_db
+    username: vigil_api_user
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+server:
+  port: 8080
