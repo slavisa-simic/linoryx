@@ -51,11 +51,13 @@ public class IncidentController {
     @PreAuthorize("hasRole('ADMIN')")
     public IncidentResponse assignIncident(
             @PathVariable Long id,
-            @Valid @RequestBody AssignIncidentRequest request
+            @Valid @RequestBody AssignIncidentRequest request,
+            @AuthenticationPrincipal Jwt jwt
     ) {
         return incidentService.assignIncident(
                 id,
-                request.technicianId()
+                request.technicianId(),
+                jwt.getSubject()
         );
     }
 

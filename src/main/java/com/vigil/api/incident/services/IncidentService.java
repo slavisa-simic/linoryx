@@ -1,6 +1,8 @@
 package com.vigil.api.incident.services;
 
 
+import com.vigil.api.audit.domain.AuditAction;
+import com.vigil.api.audit.service.AuditService;
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.dto.CreateIncidentRequest;
 import com.vigil.api.incident.dto.IncidentResponse;
@@ -18,13 +20,16 @@ import java.util.*;
 public class IncidentService {
     private final IncidentRepository incidentRepository;
     private final UserRepository userRepository;
+    private final AuditService auditService;
 
     public IncidentService(
             IncidentRepository incidentRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            AuditService auditService
     ){
         this.incidentRepository = incidentRepository;
         this.userRepository = userRepository;
+        this.auditService = auditService;
     }
 
     @Transactional
@@ -49,6 +54,12 @@ public class IncidentService {
         );
 
         Incident savedIncident = incidentRepository.save(incident);
+
+        auditService.log(
+                savedIncident,
+                creator,
+                AuditAction.CREATED
+        );
 
         return toResponse(savedIncident);
     }
@@ -80,8 +91,15 @@ public class IncidentService {
     @Transactional
     public IncidentResponse assignIncident(
             Long incidentId,
-            Long technicianId
+            Long technicianId,
+            String currentUserEmail
     ){
+        User currentUser = userRepository
+                .findByEmail(currentUserEmail)
+                .orElseThrow(
+                        () -> new IllegalArgumentException("User not found!")
+                );
+
         User technician = userRepository
                 .findById(technicianId)
                 .orElseThrow(
@@ -107,6 +125,12 @@ public class IncidentService {
         incident.assignTo(technician);
 
         Incident savedIncident = incidentRepository.save(incident);
+
+        auditService.log(
+                savedIncident,
+                currentUser,
+                AuditAction.ASSIGNED
+        );
 
         return toResponse(savedIncident);
     }
@@ -141,9 +165,16 @@ public class IncidentService {
 
         Incident savedIncident = incidentRepository.save(incident);
 
+        auditService.log(
+                savedIncident,
+                currentUser,
+                AuditAction.STARTED
+        );
+
         return toResponse(savedIncident);
     }
 
+    @Transactional
     public IncidentResponse resolveIncident(
             Long incidentId,
             String currentUserEmail
@@ -170,6 +201,12 @@ public class IncidentService {
         incident.resolve();
 
         Incident savedIncident = incidentRepository.save(incident);
+
+        auditService.log(
+                savedIncident,
+                currentUser,
+                AuditAction.RESOLVED
+        );
 
         return toResponse(savedIncident);
     }

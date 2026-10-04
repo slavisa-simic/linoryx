@@ -1,0 +1,25 @@
+### Register ADMIN
+
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "admin@test.com",
+  "password": "Password123!",
+  "firstName": "Admin",
+  "lastName": "User"
+}
+
+###
+
+### Register TECHNICIAN
+
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "tech@test.com",
+  "password": "Password123!",
+  "firstName": "Tech",
+  "lastName": "User"
+}
