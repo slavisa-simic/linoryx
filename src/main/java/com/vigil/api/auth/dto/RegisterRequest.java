@@ -11,10 +11,6 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank
-    @Email
-    private String Email;
-
-    @NotBlank
     @Size(min = 8, max = 20)
     private String password;
 
