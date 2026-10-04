@@ -114,19 +114,48 @@ public class Incident {
         return resolvedAt;
     }
 
-    public void assignTo(User tehnician){
-        this.assignedTo = tehnician;
+    public void assignTo(User technician) {
+
+        if (status == IncidentStatus.RESOLVED ||
+                status == IncidentStatus.CLOSED) {
+            throw new IllegalStateException(
+                    "Resolved or closed incident cannot be assigned"
+            );
+        }
+
+        this.assignedTo = technician;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void startProgress(){
+    public void startProgress() {
+
+        if (assignedTo == null) {
+            throw new IllegalStateException(
+                    "Incident must be assigned before work can start"
+            );
+        }
+
+        if (status != IncidentStatus.OPEN) {
+            throw new IllegalStateException(
+                    "Only open incidents can be started"
+            );
+        }
+
         this.status = IncidentStatus.IN_PROGRESS;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void resolve(){
+    public void resolve() {
+
+        if (status != IncidentStatus.IN_PROGRESS) {
+            throw new IllegalStateException(
+                    "Only incidents in progress can be resolved"
+            );
+        }
+
         this.status = IncidentStatus.RESOLVED;
-        this.updatedAt = LocalDateTime.now();
+        this.resolvedAt = LocalDateTime.now();
+        this.updatedAt = this.resolvedAt;
     }
 
     public void close(){
