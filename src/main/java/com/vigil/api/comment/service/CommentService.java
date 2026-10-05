@@ -12,6 +12,8 @@ import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,10 +82,11 @@ public class CommentService {
     }
 
     @Transactional(readOnly = true)
-    public List<CommentResponse> getIncidentComments(
+    public Page<CommentResponse> getIncidentComments(
             Long incidentId,
-            String currentUserEmail
-    ){
+            String currentUserEmail,
+            Pageable pageable
+    ) {
 
         Incident incident = incidentRepository
                 .findById(incidentId)
@@ -96,7 +99,9 @@ public class CommentService {
         User currentUser = userRepository
                 .findByEmail(currentUserEmail)
                 .orElseThrow(
-                        () -> new IllegalArgumentException("User not found!")
+                        () -> new IllegalArgumentException(
+                                "User not found!"
+                        )
                 );
 
         ensureCanAccessComments(
@@ -105,10 +110,11 @@ public class CommentService {
         );
 
         return commentRepository
-                .findByIncidentIdOrderByCreatedAtAsc(incidentId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+                .findByIncidentIdOrderByCreatedAtAsc(
+                        incidentId,
+                        pageable
+                )
+                .map(this::toResponse);
     }
 
     private void ensureCanAccessComments(

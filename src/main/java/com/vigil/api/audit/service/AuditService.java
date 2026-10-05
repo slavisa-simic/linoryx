@@ -10,6 +10,8 @@ import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,9 +52,10 @@ public class AuditService {
     }
 
     @Transactional(readOnly = true)
-    public List<AuditResponse> getIncidentAudit(
+    public Page<AuditResponse> getIncidentAudit(
             Long incidentId,
-            String currentUserEmail
+            String currentUserEmail,
+            Pageable pageable
     ) {
 
         Incident incident = incidentRepository
@@ -77,20 +80,21 @@ public class AuditService {
         );
 
         return auditLogRepository
-                .findByIncidentIdOrderByCreatedAtAsc(incidentId)
-                .stream()
-                .map(this::toResponse)
-                .toList();
+                .findByIncidentIdOrderByCreatedAtAsc(
+                        incidentId,
+                        pageable
+                )
+                .map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<AuditResponse> getAllAuditLogs() {
+    public Page<AuditResponse> getAllAuditLogs(
+            Pageable pageable
+    ) {
 
         return auditLogRepository
-                .findAllByOrderByCreatedAtDesc()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+                .findAllByOrderByCreatedAtDesc(pageable)
+                .map(this::toResponse);
     }
 
     private void ensureCanViewAudit(

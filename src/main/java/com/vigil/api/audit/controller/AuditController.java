@@ -3,6 +3,10 @@ package com.vigil.api.audit.controller;
 import com.vigil.api.audit.dto.AuditResponse;
 import com.vigil.api.audit.service.AuditService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -26,21 +30,39 @@ public class AuditController {
     @PreAuthorize(
             "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')"
     )
-    public List<AuditResponse> getIncidentAudit(
+    public Page<AuditResponse> getIncidentAudit(
             @PathVariable Long incidentId,
-            @AuthenticationPrincipal Jwt jwt
+            @AuthenticationPrincipal Jwt jwt,
+
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.ASC
+            )
+            Pageable pageable
     ) {
 
         return auditService.getIncidentAudit(
                 incidentId,
-                jwt.getSubject()
+                jwt.getSubject(),
+                pageable
         );
     }
 
     @GetMapping("/audit")
     @PreAuthorize("hasRole('ADMIN')")
-    public List<AuditResponse> getAllAuditLogs() {
+    public Page<AuditResponse> getAllAuditLogs(
 
-        return auditService.getAllAuditLogs();
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.DESC
+            )
+            Pageable pageable
+    ) {
+
+        return auditService.getAllAuditLogs(
+                pageable
+        );
     }
 }

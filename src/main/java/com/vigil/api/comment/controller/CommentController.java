@@ -4,6 +4,10 @@ import com.vigil.api.comment.dto.CommentResponse;
 import com.vigil.api.comment.dto.CreateCommentRequest;
 import com.vigil.api.comment.service.CommentService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -36,14 +40,25 @@ public class CommentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')")
-    public List<CommentResponse> getIncidentComments(
+    @PreAuthorize(
+            "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')"
+    )
+    public Page<CommentResponse> getIncidentComments(
             @PathVariable Long incidentId,
-            @AuthenticationPrincipal Jwt jwt
+            @AuthenticationPrincipal Jwt jwt,
+
+            @PageableDefault(
+                    size = 20,
+                    sort = "createdAt",
+                    direction = Sort.Direction.ASC
+            )
+            Pageable pageable
     ) {
+
         return commentService.getIncidentComments(
                 incidentId,
-                jwt.getSubject()
+                jwt.getSubject(),
+                pageable
         );
     }
 }

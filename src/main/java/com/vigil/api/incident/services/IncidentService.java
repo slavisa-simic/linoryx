@@ -4,17 +4,19 @@ package com.vigil.api.incident.services;
 import com.vigil.api.audit.domain.AuditAction;
 import com.vigil.api.audit.service.AuditService;
 import com.vigil.api.incident.domain.Incident;
+import com.vigil.api.incident.domain.IncidentCategory;
+import com.vigil.api.incident.domain.IncidentStatus;
+import com.vigil.api.incident.domain.Severity;
 import com.vigil.api.incident.dto.CreateIncidentRequest;
 import com.vigil.api.incident.dto.IncidentResponse;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.repository.UserRepository;
-import jakarta.validation.Valid;
-import org.jspecify.annotations.Nullable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import com.vigil.api.user.domain.UserRole;
-import java.util.*;
 
 @Service
 public class IncidentService {
@@ -65,12 +67,45 @@ public class IncidentService {
     }
 
     @Transactional(readOnly = true)
-    public List<IncidentResponse> getAllIncidents(){
-        return incidentRepository
-                .findAll()
-                .stream()
-                .map(this::toResponse)
-                .toList();
+    public Page<IncidentResponse> getAllIncidents(
+            IncidentStatus status,
+            Severity severity,
+            IncidentCategory category,
+            String search,
+            Pageable pageable
+    ){
+        Page<Incident> incidents;
+
+        if (status != null) {
+            incidents = incidentRepository.findByStatus(
+                    status,
+                    pageable
+            );
+        }
+        else if (severity != null) {
+            incidents = incidentRepository.findBySeverity(
+                    severity,
+                    pageable
+            );
+        }
+        else if (category != null) {
+            incidents = incidentRepository.findByCategory(
+                    category,
+                    pageable
+            );
+        }
+        else if (search != null && !search.isBlank()) {
+            incidents =
+                    incidentRepository.findByTitleContainingIgnoreCase(
+                            search,
+                            pageable
+                    );
+        }
+        else {
+            incidents = incidentRepository.findAll(pageable);
+        }
+
+        return incidents.map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
