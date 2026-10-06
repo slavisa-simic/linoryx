@@ -12,8 +12,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api")
 public class AuditController {
@@ -52,6 +50,7 @@ public class AuditController {
     @GetMapping("/audit")
     @PreAuthorize("hasRole('ADMIN')")
     public Page<AuditResponse> getAllAuditLogs(
+            @AuthenticationPrincipal Jwt jwt,
 
             @PageableDefault(
                     size = 20,
@@ -62,6 +61,7 @@ public class AuditController {
     ) {
 
         return auditService.getAllAuditLogs(
+                jwt.getSubject(),
                 pageable
         );
     }

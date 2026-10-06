@@ -6,6 +6,8 @@ import com.vigil.api.auth.dto.RegisterRequest;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.exception.UnauthorizedException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +31,7 @@ public class AuthService {
 
     public void register(RegisterRequest request){
         if(userRepository.existsByEmail(request.getEmail())){
-            throw new IllegalArgumentException("Email is already registered!");
+            throw new IllegalStateException("Email is already registered!");
         }
 
         String passwordHash = passwordEncoder.encode(request.getPassword());
@@ -42,7 +44,15 @@ public class AuthService {
                 UserRole.USER
         );
 
-        userRepository.save(user);
+        try {
+            userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException exception) {
+            // The repository transaction has rolled back before this check.
+            if (userRepository.existsByEmail(request.getEmail())) {
+                throw new IllegalStateException("Email is already registered!", exception);
+            }
+            throw exception;
+        }
     }
 
     public AuthResponse login(LoginRequest request){
@@ -50,14 +60,14 @@ public class AuthService {
         User user = userRepository.
                 findByEmail(request.getEmail())
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new UnauthorizedException(
                                 "Invalid email or password!"
                         )
                 );
 
         if(!user.isEnabled()){
-            throw new IllegalArgumentException(
-                    "User account is disabled!"
+            throw new UnauthorizedException(
+                    "Invalid email or password!"
             );
         }
 
@@ -65,7 +75,7 @@ public class AuthService {
                 request.getPassword(),
                 user.getPasswordHash()
         )) {
-            throw new IllegalArgumentException(
+            throw new UnauthorizedException(
                     "Invalid email or password!"
             );
         }

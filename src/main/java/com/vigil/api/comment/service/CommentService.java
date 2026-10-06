@@ -1,37 +1,35 @@
 package com.vigil.api.comment.service;
 
 import com.vigil.api.audit.domain.AuditAction;
-import com.vigil.api.audit.repository.AuditLogRepository;
 import com.vigil.api.audit.service.AuditService;
 import com.vigil.api.comment.domain.Comment;
 import com.vigil.api.comment.dto.CommentResponse;
 import com.vigil.api.comment.dto.CreateCommentRequest;
 import com.vigil.api.comment.repository.CommentRepository;
+import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
-import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 public class CommentService {
 
     private final CommentRepository commentRepository;
     private final IncidentRepository incidentRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final AuditService auditService;
 
-    public CommentService(CommentRepository commentRepository, IncidentRepository incidentRepository, UserRepository userRepository, AuditService auditService) {
+    public CommentService(CommentRepository commentRepository, IncidentRepository incidentRepository, UserService userService, AuditService auditService) {
         this.commentRepository = commentRepository;
         this.incidentRepository = incidentRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.auditService = auditService;
     }
 
@@ -41,20 +39,12 @@ public class CommentService {
         CreateCommentRequest request,
         String currentUserEmail
     ) {
-
+        User author = userService.getActiveUser(currentUserEmail);
         Incident incident = incidentRepository
                 .findById(incidentId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new ResourceNotFoundException(
                                 "Incident not found!"
-                        )
-                );
-
-        User author = userRepository
-                .findByEmail(currentUserEmail)
-                .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "User not found!"
                         )
                 );
 
@@ -87,20 +77,12 @@ public class CommentService {
             String currentUserEmail,
             Pageable pageable
     ) {
-
+        User currentUser = userService.getActiveUser(currentUserEmail);
         Incident incident = incidentRepository
                 .findById(incidentId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new ResourceNotFoundException(
                                 "Incident not found!"
-                        )
-                );
-
-        User currentUser = userRepository
-                .findByEmail(currentUserEmail)
-                .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "User not found!"
                         )
                 );
 

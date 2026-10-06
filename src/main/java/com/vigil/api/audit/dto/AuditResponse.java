@@ -12,6 +12,10 @@ public record AuditResponse(
         String actorFirstName,
         String actorLastName,
 
+        Long targetUserId,
+        String targetUserFirstName,
+        String targetUserLastName,
+
         AuditAction action,
         LocalDateTime createdAt
 ) {

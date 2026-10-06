@@ -9,6 +9,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,6 +28,7 @@ public class UserController {
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponse> getAllUsers(
+            @AuthenticationPrincipal Jwt jwt,
 
             @PageableDefault(
                     size = 20,
@@ -35,6 +38,6 @@ public class UserController {
             Pageable pageable
     ) {
 
-        return userService.getAllUsers(pageable);
+        return userService.getAllUsers(jwt.getSubject(), pageable);
     }
 }

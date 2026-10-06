@@ -26,6 +26,10 @@ public class AuditLog {
     @Column(nullable = false)
     private AuditAction action;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "target_user_id")
+    private User targetUser;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -37,9 +41,19 @@ public class AuditLog {
             User actor,
             AuditAction action
     ) {
+        this(incident, actor, action, null);
+    }
+
+    public AuditLog(
+            Incident incident,
+            User actor,
+            AuditAction action,
+            User targetUser
+    ) {
         this.incident = incident;
         this.actor = actor;
         this.action = action;
+        this.targetUser = targetUser;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -59,8 +73,8 @@ public class AuditLog {
         return action;
     }
 
-    public String getDetails() {
-        return details;
+    public User getTargetUser() {
+        return targetUser;
     }
 
     public LocalDateTime getCreatedAt() {

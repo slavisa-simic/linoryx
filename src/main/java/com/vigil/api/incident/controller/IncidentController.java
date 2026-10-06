@@ -29,6 +29,7 @@ public class IncidentController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public IncidentResponse createIncident(
             @Valid @RequestBody CreateIncidentRequest request,
@@ -56,6 +57,8 @@ public class IncidentController {
             @RequestParam(required = false)
             String search,
 
+            @AuthenticationPrincipal Jwt jwt,
+
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",
@@ -69,13 +72,17 @@ public class IncidentController {
                 severity,
                 category,
                 search,
+                jwt.getSubject(),
                 pageable
         );
     }
 
     @GetMapping("/{id}")
-    public IncidentResponse getResponseById(@PathVariable Long id){
-        return incidentService.getIncident(id);
+    public IncidentResponse getResponseById(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return incidentService.getIncident(id, jwt.getSubject());
     }
 
     @PatchMapping("/{id}/assign")

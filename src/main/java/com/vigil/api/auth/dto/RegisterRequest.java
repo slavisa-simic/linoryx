@@ -8,6 +8,7 @@ public class RegisterRequest {
 
     @NotBlank
     @Email
+    @Size(max = 255)
     private String email;
 
     @NotBlank
@@ -15,9 +16,11 @@ public class RegisterRequest {
     private String password;
 
     @NotBlank
+    @Size(max = 255)
     private String firstName;
 
     @NotBlank
+    @Size(max = 255)
     private String lastName;
 
     public String getEmail(){

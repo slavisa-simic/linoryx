@@ -3,6 +3,7 @@ package com.vigil.api.incident.services;
 
 import com.vigil.api.audit.domain.AuditAction;
 import com.vigil.api.audit.service.AuditService;
+import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.domain.IncidentCategory;
 import com.vigil.api.incident.domain.IncidentStatus;
@@ -13,8 +14,10 @@ import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.notification.NotificationService;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.user.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
 import com.vigil.api.user.domain.UserRole;
@@ -23,17 +26,20 @@ import com.vigil.api.user.domain.UserRole;
 public class IncidentService {
     private final IncidentRepository incidentRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
     private final AuditService auditService;
     private final NotificationService notificationService;
 
     public IncidentService(
             IncidentRepository incidentRepository,
             UserRepository userRepository,
+            UserService userService,
             AuditService auditService,
             NotificationService notificationService
     ){
         this.incidentRepository = incidentRepository;
         this.userRepository = userRepository;
+        this.userService = userService;
         this.auditService = auditService;
         this.notificationService = notificationService;
     }
@@ -43,13 +49,10 @@ public class IncidentService {
             CreateIncidentRequest request,
             String creatorEmail
     ){
-        User creator = userRepository
-                .findByEmail(creatorEmail)
-                .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "User not found!"
-                        )
-                );
+        User creator = userService.getActiveUser(creatorEmail);
+        if (creator.getRole() != UserRole.USER && creator.getRole() != UserRole.ADMIN) {
+            throw new AccessDeniedException("Only users and administrators can create incidents");
+        }
 
         Incident incident = new Incident(
                 request.title(),
@@ -80,55 +83,47 @@ public class IncidentService {
             Severity severity,
             IncidentCategory category,
             String search,
+            String currentUserEmail,
             Pageable pageable
     ){
-        Page<Incident> incidents;
-
-        if (status != null) {
-            incidents = incidentRepository.findByStatus(
-                    status,
-                    pageable
-            );
-        }
-        else if (severity != null) {
-            incidents = incidentRepository.findBySeverity(
-                    severity,
-                    pageable
-            );
-        }
-        else if (category != null) {
-            incidents = incidentRepository.findByCategory(
-                    category,
-                    pageable
-            );
-        }
-        else if (search != null && !search.isBlank()) {
-            incidents =
-                    incidentRepository.findByTitleContainingIgnoreCase(
-                            search,
-                            pageable
-                    );
-        }
-        else {
-            incidents = incidentRepository.findAll(pageable);
+        User currentUser = userService.getActiveUser(currentUserEmail);
+        if (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.TECHNICIAN) {
+            throw new AccessDeniedException("Only technicians and administrators can list incidents");
         }
 
+        Long technicianId = null;
+        if (currentUser.getRole() == UserRole.TECHNICIAN) {
+            technicianId = currentUser.getId();
+        }
+
+        String searchText = null;
+        if (search != null) {
+            if (!search.isBlank()) {
+                searchText = search.trim();
+            }
+        }
+
+        Page<Incident> incidents = incidentRepository.findVisibleIncidents(
+                technicianId, status, severity, category, searchText, pageable
+        );
         return incidents.map(this::toResponse);
     }
 
     @Transactional(readOnly = true)
     public IncidentResponse getIncident(
-            Long id
-    ){
-        Incident response = incidentRepository
+            Long id,
+            String currentUserEmail
+    ) {
+        User currentUser = userService.getActiveUser(currentUserEmail);
+        Incident incident = incidentRepository
                 .findById(id)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "Incident not found!"
-                        )
+                        () -> new ResourceNotFoundException("Incident not found!")
                 );
 
-        return toResponse(response);
+        ensureCanReadIncident(incident, currentUser);
+
+        return toResponse(incident);
     }
 
     @Transactional
@@ -137,16 +132,15 @@ public class IncidentService {
             Long technicianId,
             String currentUserEmail
     ){
-        User currentUser = userRepository
-                .findByEmail(currentUserEmail)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("User not found!")
-                );
+        User currentUser = userService.getActiveUser(currentUserEmail);
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            throw new AccessDeniedException("Only administrators can assign incidents");
+        }
 
         User technician = userRepository
                 .findById(technicianId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new ResourceNotFoundException(
                                 "Technician not found!"
                         )
                 );
@@ -154,7 +148,7 @@ public class IncidentService {
         Incident incident = incidentRepository
                 .findById(incidentId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new ResourceNotFoundException(
                                 "Incident not found!"
                         )
                 );
@@ -165,6 +159,10 @@ public class IncidentService {
             );
         }
 
+        if (!technician.isEnabled()) {
+            throw new IllegalStateException("Incident cannot be assigned to a disabled technician");
+        }
+
         incident.assignTo(technician);
 
         Incident savedIncident = incidentRepository.save(incident);
@@ -172,7 +170,8 @@ public class IncidentService {
         auditService.log(
                 savedIncident,
                 currentUser,
-                AuditAction.ASSIGNED
+                AuditAction.ASSIGNED,
+                technician
         );
 
         return toResponse(savedIncident);
@@ -183,19 +182,12 @@ public class IncidentService {
             Long incidentId,
             String currentUserEmail
     ){
+        User currentUser = userService.getActiveUser(currentUserEmail);
         Incident incident = incidentRepository
                 .findById(incidentId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new ResourceNotFoundException(
                                 "Incident not found!"
-                        )
-                );
-
-        User currentUser = userRepository
-                .findByEmail(currentUserEmail)
-                .orElseThrow(
-                        () -> new IllegalArgumentException(
-                                "User not found!"
                         )
                 );
 
@@ -222,18 +214,13 @@ public class IncidentService {
             Long incidentId,
             String currentUserEmail
     ){
+        User currentUser = userService.getActiveUser(currentUserEmail);
         Incident incident = incidentRepository
                 .findById(incidentId)
                 .orElseThrow(
-                        () -> new IllegalArgumentException(
+                        () -> new ResourceNotFoundException(
                                 "Incident not found!"
                         )
-                );
-
-        User currentUser = userRepository
-                .findByEmail(currentUserEmail)
-                .orElseThrow(
-                        () -> new IllegalArgumentException("User not found!")
                 );
 
         ensureCanWorkOnIncident(
@@ -264,30 +251,49 @@ public class IncidentService {
         }
 
         if (currentUser.getRole() != UserRole.TECHNICIAN) {
-            throw new IllegalArgumentException(
+            throw new AccessDeniedException(
                     "Only technicians can work on incidents"
             );
         }
 
-        if (incident.getAssignedTo() == null) {
-            throw new IllegalStateException(
-                    "Incident is not assigned"
-            );
-        }
-
-        if (!incident.getAssignedTo()
+        if (incident.getAssignedTo() == null || !incident.getAssignedTo()
                 .getId()
                 .equals(currentUser.getId())) {
 
-            throw new IllegalArgumentException(
-                    "Incident is assigned to another technician"
+            throw new AccessDeniedException(
+                    "Incident is not assigned to you"
             );
         }
+    }
+
+    private void ensureCanReadIncident(Incident incident, User currentUser) {
+        if (currentUser.getRole() == UserRole.ADMIN) {
+            return;
+        }
+
+        if (currentUser.getRole() == UserRole.USER &&
+                incident.getCreatedBy().getId().equals(currentUser.getId())) {
+            return;
+        }
+
+        if (currentUser.getRole() == UserRole.TECHNICIAN &&
+                incident.getAssignedTo() != null &&
+                incident.getAssignedTo().getId().equals(currentUser.getId())) {
+            return;
+        }
+
+        throw new AccessDeniedException("You cannot access this incident");
     }
 
     private IncidentResponse toResponse(Incident incident) {
 
         User assignedTo = incident.getAssignedTo();
+        Long assignedToId = null;
+        String assignedToEmail = null;
+        if (assignedTo != null) {
+            assignedToId = assignedTo.getId();
+            assignedToEmail = assignedTo.getEmail();
+        }
 
         return new IncidentResponse(
                 incident.getId(),
@@ -300,13 +306,8 @@ public class IncidentService {
                 incident.getCreatedBy().getId(),
                 incident.getCreatedBy().getEmail(),
 
-                assignedTo != null
-                        ? assignedTo.getId()
-                        : null,
-
-                assignedTo != null
-                        ? assignedTo.getEmail()
-                        : null,
+                assignedToId,
+                assignedToEmail,
 
                 incident.getCreatedAt(),
                 incident.getUpdatedAt(),
