@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
+
 public interface IncidentRepository
         extends JpaRepository<Incident, Long> {
 
@@ -29,5 +31,10 @@ public interface IncidentRepository
     Page<Incident> findByTitleContainingIgnoreCase(
             String title,
             Pageable pageable
+    );
+
+    long countBySeverityAndStatusIn(
+            Severity severity,
+            Collection<IncidentStatus> statuses
     );
 }

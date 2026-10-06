@@ -10,6 +10,7 @@ import com.vigil.api.incident.domain.Severity;
 import com.vigil.api.incident.dto.CreateIncidentRequest;
 import com.vigil.api.incident.dto.IncidentResponse;
 import com.vigil.api.incident.repository.IncidentRepository;
+import com.vigil.api.notification.NotificationService;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
@@ -23,15 +24,18 @@ public class IncidentService {
     private final IncidentRepository incidentRepository;
     private final UserRepository userRepository;
     private final AuditService auditService;
+    private final NotificationService notificationService;
 
     public IncidentService(
             IncidentRepository incidentRepository,
             UserRepository userRepository,
-            AuditService auditService
+            AuditService auditService,
+            NotificationService notificationService
     ){
         this.incidentRepository = incidentRepository;
         this.userRepository = userRepository;
         this.auditService = auditService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -61,6 +65,10 @@ public class IncidentService {
                 savedIncident,
                 creator,
                 AuditAction.CREATED
+        );
+
+        notificationService.processIncidentAlerts(
+                savedIncident
         );
 
         return toResponse(savedIncident);
