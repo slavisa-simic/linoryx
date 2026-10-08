@@ -36,3 +36,20 @@ build/
 .env
 .env.*
 !.env.example
+
+### React / Vite ###
+node_modules/
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+### Logs and temporary files ###
+logs/
+*.log
+*.local
+*.tmp
+*.temp
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
