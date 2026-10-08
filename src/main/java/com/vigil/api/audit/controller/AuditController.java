@@ -3,6 +3,9 @@ package com.vigil.api.audit.controller;
 import com.vigil.api.audit.dto.AuditResponse;
 import com.vigil.api.audit.service.AuditService;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,6 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api")
+@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Audit",
+        description = "Incident history and audit logs"
+)
 public class AuditController {
 
     private final AuditService auditService;
@@ -32,6 +39,7 @@ public class AuditController {
             @PathVariable Long incidentId,
             @AuthenticationPrincipal Jwt jwt,
 
+            @ParameterObject
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",
@@ -52,6 +60,7 @@ public class AuditController {
     public Page<AuditResponse> getAllAuditLogs(
             @AuthenticationPrincipal Jwt jwt,
 
+            @ParameterObject
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",

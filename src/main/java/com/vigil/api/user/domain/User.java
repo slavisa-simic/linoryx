@@ -93,5 +93,9 @@ public class User {
     public void enable(){
         this.enabled = true;
     }
+
+    public void changeRole(UserRole role) {
+        this.role = role;
+    }
 }
 ;;

@@ -1,5 +1,7 @@
 package com.vigil.api.auth.controller;
 
+import com.vigil.api.auth.dto.AuthResponse;
+import com.vigil.api.auth.dto.LoginRequest;
 import com.vigil.api.auth.dto.RegisterRequest;
 import com.vigil.api.auth.service.AuthService;
 import com.vigil.api.config.JwtConfig;
@@ -21,6 +23,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 @WebMvcTest(controllers = AuthController.class, properties =
         "security.jwt.secret=test-secret-for-registration-at-least-32-bytes")
@@ -80,5 +84,67 @@ class AuthControllerTests {
         mvc.perform(get("/error")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/incidents")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/admin/users")).andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void loginWithValidRequestReturnsToken() throws Exception {
+
+        when(authService.login(any(LoginRequest.class)))
+                .thenReturn(
+                        new AuthResponse(
+                                "test-jwt-token",
+                                "Bearer"
+                        )
+                );
+
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "email": "user@test.com",
+                              "password": "Password123!"
+                            }
+                            """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.token")
+                        .value("test-jwt-token"))
+                .andExpect(jsonPath("$.tokenType")
+                        .value("Bearer"));
+    }
+
+    @Test
+    void rejectsInvalidLoginAsBadRequest() throws Exception {
+
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "email": "invalid",
+                              "password": ""
+                            }
+                            """))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void loginWithoutBearerTokenIsAllowed() throws Exception {
+
+        when(authService.login(any(LoginRequest.class)))
+                .thenReturn(
+                        new AuthResponse(
+                                "test-token",
+                                "Bearer"
+                        )
+                );
+
+        mvc.perform(post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                            {
+                              "email": "user@test.com",
+                              "password": "Password123!"
+                            }
+                            """))
+                .andExpect(status().isOk());
     }
 }

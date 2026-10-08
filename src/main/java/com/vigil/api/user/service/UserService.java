@@ -1,8 +1,10 @@
 package com.vigil.api.user.service;
 
+import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.exception.UnauthorizedException;
+import com.vigil.api.user.dto.ChangeUserRoleRequest;
 import com.vigil.api.user.dto.UserResponse;
 import com.vigil.api.user.repository.UserRepository;
 
@@ -48,6 +50,61 @@ public class UserService {
         return userRepository
                 .findAll(pageable)
                 .map(this::toResponse);
+    }
+
+    @Transactional
+    public UserResponse changeUserRole(
+            Long userId,
+            UserRole role
+    ) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found!"
+                        )
+                );
+
+        user.changeRole(role);
+
+        User savedUser = userRepository.save(user);
+
+        return toResponse(savedUser);
+    }
+
+    @Transactional
+    public UserResponse disableUser(Long userId){
+
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(
+                        () -> new ResourceNotFoundException(
+                                "User not found!"
+                        )
+                );
+
+        user.disable();
+
+        User savedUser = userRepository.save(user);
+
+        return toResponse(savedUser);
+    }
+
+    @Transactional
+    public UserResponse enableUser(Long userId) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException(
+                                "User not found!"
+                        )
+                );
+
+        user.enable();
+
+        User savedUser = userRepository.save(user);
+
+        return toResponse(savedUser);
     }
 
     private UserResponse toResponse(

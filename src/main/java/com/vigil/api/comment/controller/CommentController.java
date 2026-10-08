@@ -3,7 +3,10 @@ package com.vigil.api.comment.controller;
 import com.vigil.api.comment.dto.CommentResponse;
 import com.vigil.api.comment.dto.CreateCommentRequest;
 import com.vigil.api.comment.service.CommentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,6 +20,8 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/incidents/{incidentId}/comments")
+@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Comments", description = "Incident investigation comments")
 public class CommentController {
 
     private final CommentService commentService;
@@ -47,6 +52,7 @@ public class CommentController {
             @PathVariable Long incidentId,
             @AuthenticationPrincipal Jwt jwt,
 
+            @ParameterObject
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",

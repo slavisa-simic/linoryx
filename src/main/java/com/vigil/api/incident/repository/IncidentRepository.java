@@ -22,7 +22,7 @@ public interface IncidentRepository
               and (:status is null or incident.status = :status)
               and (:severity is null or incident.severity = :severity)
               and (:category is null or incident.category = :category)
-              and (:search is null or lower(incident.title) like lower(concat('%', :search, '%')) escape '\\')
+              and (:search is null or lower(incident.title) like lower(concat('%', cast(:search as String), '%')) escape '\\')
             """)
     Page<Incident> findVisibleIncidents(
             @Param("technicianId") Long technicianId,

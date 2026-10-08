@@ -7,7 +7,10 @@ import com.vigil.api.incident.dto.AssignIncidentRequest;
 import com.vigil.api.incident.dto.CreateIncidentRequest;
 import com.vigil.api.incident.dto.IncidentResponse;
 import com.vigil.api.incident.services.IncidentService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,6 +23,11 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("api/incidents")
+@SecurityRequirement(name = "bearerAuth")
+@Tag(
+        name = "Incidents",
+        description = "Incident management and workflow"
+)
 public class IncidentController {
 
     private final IncidentService incidentService;
@@ -59,6 +67,7 @@ public class IncidentController {
 
             @AuthenticationPrincipal Jwt jwt,
 
+            @ParameterObject
             @PageableDefault(
                     size = 20,
                     sort = "createdAt",
