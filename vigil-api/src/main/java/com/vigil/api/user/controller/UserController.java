@@ -35,6 +35,11 @@ public class UserController {
         this.userService = userService;
     }
 
+    @GetMapping("/me")
+    public UserResponse getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
+        return userService.getCurrentUser(jwt.getSubject());
+    }
+
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public Page<UserResponse> getAllUsers(

@@ -38,6 +38,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
+    public UserResponse getCurrentUser(String email) {
+        return toResponse(getActiveUser(email));
+    }
+
+    @Transactional(readOnly = true)
     public Page<UserResponse> getAllUsers(
             String currentUserEmail,
             Pageable pageable

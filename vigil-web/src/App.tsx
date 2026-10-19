@@ -1,122 +1,154 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import { UserProvider } from './context/UserProvider'
+import { useEffect, useState } from 'react'
+import { LoginPage } from './pages/LoginPage'
+import { RegisterPage } from './pages/RegisterPage'
+import DashboardPage from './pages/DashboardPage'
+import type { AuthResponse } from './models/auth'
+import type { AuthApi } from './api/authApi'
+import type { SessionService } from './services/SessionService'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+interface AppProps {
+  authApi: AuthApi
+  sessionService: SessionService
+}
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+type AuthPage = 'login' | 'register'
 
-      <div className="ticks"></div>
+function getCurrentPage(): AuthPage {
+  if (window.location.pathname === '/register') {
+    return 'register'
+  }
+  return 'login'
+}
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+function App({ authApi, sessionService }: AppProps) {
+  const [page, setPage] = useState<AuthPage>(getCurrentPage)
+  const [session, setSession] = useState(() => sessionService.getSession())
+  const [email, setEmail] = useState('')
+  const [notice, setNotice] = useState('')
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  useEffect(() => {
+    function handlePopState() {
+      setPage(getCurrentPage())
+      setNotice('')
+    }
+
+    window.addEventListener('popstate', handlePopState)
+    return function cleanup() {
+      window.removeEventListener('popstate', handlePopState)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (session) {
+      document.title = 'Dashboard · Vigil'
+    } else if (page === 'register') {
+      document.title = 'Create account · Vigil'
+    } else {
+      document.title = 'Sign in · Vigil'
+    }
+  }, [page, session])
+
+  useEffect(() => {
+    if (session) {
+      window.history.replaceState(null, '', '/dashboard')
+    } else if (window.location.pathname !== '/register' && window.location.pathname !== '/login') {
+      window.history.replaceState(null, '', '/login')
+    }
+  }, [session])
+
+  useEffect(() => {
+    if (!session) {
+      return
+    }
+
+    const timeout = window.setTimeout(() => {
+      sessionService.clearSession()
+      setSession(null)
+      setNotice('Your session has expired. Please sign in again.')
+    }, session.expiresAt - Date.now())
+
+    return function cleanup() {
+      window.clearTimeout(timeout)
+    }
+  }, [session, sessionService])
+
+  function navigate(nextPage: AuthPage) {
+    window.history.pushState(null, '', '/' + nextPage)
+    setPage(nextPage)
+    setNotice('')
+  }
+
+  function handleLogin(response: AuthResponse, loginEmail: string) {
+    const savedSession = sessionService.saveSession(response, loginEmail)
+    setSession(savedSession)
+    window.history.pushState(null, '', '/dashboard')
+    setNotice('')
+  }
+
+  function handleRegister(registeredEmail: string) {
+    setEmail(registeredEmail)
+    navigate('login')
+    setNotice('Account created. You can now sign in.')
+  }
+
+  function handleLogout() {
+    sessionService.clearSession()
+    setSession(null)
+    navigate('login')
+  }
+
+  function handleSessionExpired() {
+    sessionService.clearSession()
+    setSession(null)
+    navigate('login')
+    setNotice('Your session is no longer valid. Please sign in again.')
+  }
+
+  let content
+
+  if (session) {
+    content = (
+      <DashboardPage
+        key="dashboard"
+      />
+    )
+  } else if (page === 'register') {
+    content = (
+      <RegisterPage
+        key="register"
+        authApi={authApi}
+        onRegister={handleRegister}
+        onNavigate={navigate}
+      />
+    )
+  } else {
+    content = (
+      <LoginPage
+        key="login"
+        authApi={authApi}
+        initialEmail={email}
+        notice={notice}
+        onLogin={handleLogin}
+        onNavigate={navigate}
+      />
+    )
+  }
+
+  if (session) {
+    return (
+      <UserProvider
+        session={session}
+        onLogout={handleLogout}
+        onSessionExpired={handleSessionExpired}
+      >
+        {content}
+      </UserProvider>
+    )
+  }
+
+  return content
 }
 
 export default App

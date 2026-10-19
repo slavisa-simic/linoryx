@@ -1,11 +1,20 @@
-import react, { reactCompilerPreset } from '@vitejs/plugin-react'
-import babel from '@rolldown/plugin-babel'
-import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import { defineConfig, loadEnv } from 'vite'
 
-// https://vite.dev/config/
-export default defineConfig({
-  plugins: [
-    react(),
-    babel({ presets: [reactCompilerPreset()] })
-  ],
+export default defineConfig(function (config) {
+  const env = loadEnv(config.mode, process.cwd(), '')
+
+  return {
+    plugins: [react()],
+    server: {
+      proxy: {
+        '/api': env.API_PROXY_TARGET
+      }
+    },
+    preview: {
+      proxy: {
+        '/api': env.API_PROXY_TARGET
+      }
+    }
+  }
 })
