@@ -18,9 +18,16 @@ import { DashboardOperations } from '../components/dashboard/DashboardOperations
 import { DashboardFooter } from '../components/dashboard/DashboardFooter'
 import '../Dashboard.css'
 
+interface DashboardPageProps {
+  onNavigate(
+    page: 'dashboard' | 'incidents',
+    incidentId?: number
+  ): void
+}
 
-
-export default function DashboardPage() {
+export default function DashboardPage({
+  onNavigate
+}: DashboardPageProps) {
   const { session, user: profile, onSessionExpired } = useUser()
   const [snapshot, setSnapshot] = useState<DashboardSnapshot | null>(null)
   const [loading, setLoading] = useState(session.role !== 'USER')
@@ -28,7 +35,9 @@ export default function DashboardPage() {
   const [refresh, setRefresh] = useState(0)
   const [days, setDays] = useState(30)
   const [status, setStatus] = useState<IncidentStatus | 'ALL'>('ALL')
-  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null)
+  const [selectedIncident, setSelectedIncident] = useState<Incident | null>(
+    null
+  )
   const [openedAt] = useState(() => Date.now())
 
   // Ucitamo podatke pri otvaranju stranice i posle klika na Refresh.
@@ -78,7 +87,13 @@ export default function DashboardPage() {
   }
 
   let name = session.email
-  const currentUser = profile ?? users.find((user) => user.id === session.userId)
+  let currentUser = profile
+  if (!currentUser) {
+    const matchingUser = users.find((user) => user.id === session.userId)
+    if (matchingUser) {
+      currentUser = matchingUser
+    }
+  }
   if (currentUser) {
     name = userName(currentUser)
   }
@@ -111,7 +126,10 @@ export default function DashboardPage() {
       <a className="skip-link" href="#dashboard-main">
         Skip to dashboard
       </a>
-      <WorkspaceNavbar />
+      <WorkspaceNavbar
+        page="dashboard"
+        onNavigate={onNavigate}
+      />
 
       <main className="dashboard-main" id="dashboard-main">
         <DashboardHeader
@@ -175,7 +193,11 @@ export default function DashboardPage() {
       </main>
 
       {selectedIncident && (
-        <IncidentDialog incident={selectedIncident} onClose={() => setSelectedIncident(null)} />
+        <IncidentDialog
+          incident={selectedIncident}
+          onClose={() => setSelectedIncident(null)}
+          onManage={() => onNavigate('incidents', selectedIncident.id)}
+        />
       )}
     </div>
   )

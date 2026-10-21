@@ -31,7 +31,7 @@ public class CommentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
     public CommentResponse addComment(
             @PathVariable Long incidentId,
             @Valid @RequestBody CreateCommentRequest request,

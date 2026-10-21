@@ -43,6 +43,10 @@
   --color-success-light: #f0fdf4;
   --color-success-border: #bbf7d0;
   --font-sans: 'Outfit', sans-serif;
+  --control-height: 36px;
+  --control-small-height: 32px;
+  --control-icon-size: 32px;
+  --field-height: 42px;
 
   font-family: var(--font-sans);
   color: var(--color-text);
@@ -93,6 +97,15 @@ a {
 button:focus-visible, a:focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 4px;
+}
+
+@media (pointer: coarse) {
+  :root {
+    --control-height: 40px;
+    --control-small-height: 40px;
+    --control-icon-size: 40px;
+    --field-height: 44px;
+  }
 }
 
 ::selection {

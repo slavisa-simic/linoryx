@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
-import type { AuthResponse } from './models/auth'
+import { IncidentsPage } from './pages/IncidentsPage'
+import type { AuthResponse, AuthSession } from './models/auth'
 import type { AuthApi } from './api/authApi'
 import type { SessionService } from './services/SessionService'
 import './App.css'
@@ -13,24 +14,48 @@ interface AppProps {
   sessionService: SessionService
 }
 
-type AuthPage = 'login' | 'register'
+type Page = 'login' | 'register' | 'dashboard' | 'incidents'
 
-function getCurrentPage(): AuthPage {
+function getCurrentPage(): Page {
+  if (window.location.pathname === '/incidents') {
+    return 'incidents'
+  }
+  if (window.location.pathname === '/dashboard') {
+    return 'dashboard'
+  }
   if (window.location.pathname === '/register') {
     return 'register'
   }
   return 'login'
 }
 
+function getSessionPage(session: AuthSession | null): Page {
+  const page = getCurrentPage()
+  if (session && (page === 'login' || page === 'register')) {
+    if (session.role === 'USER') {
+      return 'incidents'
+    }
+    return 'dashboard'
+  }
+  if (
+    !session &&
+    (page === 'dashboard' ||
+      page === 'incidents')
+  ) {
+    return 'login'
+  }
+  return page
+}
+
 function App({ authApi, sessionService }: AppProps) {
-  const [page, setPage] = useState<AuthPage>(getCurrentPage)
   const [session, setSession] = useState(() => sessionService.getSession())
+  const [page, setPage] = useState<Page>(() => getSessionPage(session))
   const [email, setEmail] = useState('')
   const [notice, setNotice] = useState('')
 
   useEffect(() => {
     function handlePopState() {
-      setPage(getCurrentPage())
+      setPage(getSessionPage(sessionService.getSession()))
       setNotice('')
     }
 
@@ -38,11 +63,14 @@ function App({ authApi, sessionService }: AppProps) {
     return function cleanup() {
       window.removeEventListener('popstate', handlePopState)
     }
-  }, [])
+  }, [sessionService])
 
   useEffect(() => {
     if (session) {
       document.title = 'Dashboard · Vigil'
+      if (page === 'incidents') {
+        document.title = 'Incidents · Vigil'
+      }
     } else if (page === 'register') {
       document.title = 'Create account · Vigil'
     } else {
@@ -51,12 +79,10 @@ function App({ authApi, sessionService }: AppProps) {
   }, [page, session])
 
   useEffect(() => {
-    if (session) {
-      window.history.replaceState(null, '', '/dashboard')
-    } else if (window.location.pathname !== '/register' && window.location.pathname !== '/login') {
-      window.history.replaceState(null, '', '/login')
+    if (window.location.pathname !== '/' + page) {
+      window.history.replaceState(null, '', '/' + page)
     }
-  }, [session])
+  }, [page])
 
   useEffect(() => {
     if (!session) {
@@ -66,6 +92,7 @@ function App({ authApi, sessionService }: AppProps) {
     const timeout = window.setTimeout(() => {
       sessionService.clearSession()
       setSession(null)
+      setPage('login')
       setNotice('Your session has expired. Please sign in again.')
     }, session.expiresAt - Date.now())
 
@@ -74,8 +101,12 @@ function App({ authApi, sessionService }: AppProps) {
     }
   }, [session, sessionService])
 
-  function navigate(nextPage: AuthPage) {
-    window.history.pushState(null, '', '/' + nextPage)
+  function navigate(nextPage: Page, incidentId?: number) {
+    let url = '/' + nextPage
+    if (incidentId) {
+      url = url + '?incident=' + incidentId
+    }
+    window.history.pushState(null, '', url)
     setPage(nextPage)
     setNotice('')
   }
@@ -83,8 +114,11 @@ function App({ authApi, sessionService }: AppProps) {
   function handleLogin(response: AuthResponse, loginEmail: string) {
     const savedSession = sessionService.saveSession(response, loginEmail)
     setSession(savedSession)
-    window.history.pushState(null, '', '/dashboard')
-    setNotice('')
+    if (savedSession.role === 'USER') {
+      navigate('incidents')
+    } else {
+      navigate('dashboard')
+    }
   }
 
   function handleRegister(registeredEmail: string) {
@@ -108,10 +142,18 @@ function App({ authApi, sessionService }: AppProps) {
 
   let content
 
-  if (session) {
+  if (session && page === 'incidents') {
+    content = (
+      <IncidentsPage
+        key={session.userId}
+        onNavigate={navigate}
+      />
+    )
+  } else if (session) {
     content = (
       <DashboardPage
         key="dashboard"
+        onNavigate={navigate}
       />
     )
   } else if (page === 'register') {

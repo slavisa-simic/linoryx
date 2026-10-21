@@ -87,13 +87,13 @@ public class IncidentService {
             Pageable pageable
     ){
         User currentUser = userService.getActiveUser(currentUserEmail);
-        if (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.TECHNICIAN) {
-            throw new AccessDeniedException("Only technicians and administrators can list incidents");
-        }
-
         Long technicianId = null;
+        Long creatorId = null;
         if (currentUser.getRole() == UserRole.TECHNICIAN) {
             technicianId = currentUser.getId();
+        }
+        if (currentUser.getRole() == UserRole.USER) {
+            creatorId = currentUser.getId();
         }
 
         String searchText = null;
@@ -104,7 +104,7 @@ public class IncidentService {
         }
 
         Page<Incident> incidents = incidentRepository.findVisibleIncidents(
-                technicianId, status, severity, category, searchText, pageable
+                technicianId, creatorId, status, severity, category, searchText, pageable
         );
         return incidents.map(this::toResponse);
     }
@@ -238,6 +238,19 @@ public class IncidentService {
                 AuditAction.RESOLVED
         );
 
+        return toResponse(savedIncident);
+    }
+
+    @Transactional
+    public IncidentResponse closeIncident(Long incidentId, String currentUserEmail) {
+        User currentUser = userService.getActiveUser(currentUserEmail);
+        Incident incident = incidentRepository.findById(incidentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident not found!"));
+
+        ensureCanWorkOnIncident(incident, currentUser);
+        incident.close();
+        Incident savedIncident = incidentRepository.save(incident);
+        auditService.log(savedIncident, currentUser, AuditAction.CLOSED);
         return toResponse(savedIncident);
     }
 

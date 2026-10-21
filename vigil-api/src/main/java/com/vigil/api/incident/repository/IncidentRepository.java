@@ -19,6 +19,7 @@ public interface IncidentRepository
             select incident from Incident incident
             left join incident.assignedTo technician
             where (:technicianId is null or technician.id = :technicianId)
+              and (:creatorId is null or incident.createdBy.id = :creatorId)
               and (:status is null or incident.status = :status)
               and (:severity is null or incident.severity = :severity)
               and (:category is null or incident.category = :category)
@@ -26,6 +27,7 @@ public interface IncidentRepository
             """)
     Page<Incident> findVisibleIncidents(
             @Param("technicianId") Long technicianId,
+            @Param("creatorId") Long creatorId,
             @Param("status") IncidentStatus status,
             @Param("severity") Severity severity,
             @Param("category") IncidentCategory category,

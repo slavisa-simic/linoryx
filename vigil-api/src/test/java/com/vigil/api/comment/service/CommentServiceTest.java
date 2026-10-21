@@ -50,6 +50,7 @@ class CommentServiceTest {
         String email = "user@test.com";
 
         User user = mock(User.class);
+        when(user.getRole()).thenReturn(UserRole.ADMIN);
 
         CreateCommentRequest request =
                 new CreateCommentRequest("Checked logs");
@@ -72,14 +73,12 @@ class CommentServiceTest {
     }
 
     @Test
-    void addComment_whenUserDoesNotOwnIncident_throwsAccessDeniedException() {
+    void addComment_whenRegularUser_throwsAccessDeniedException() {
 
         Long incidentId = 1L;
         String email = "user@test.com";
 
         User currentUser = mock(User.class);
-        User creator = mock(User.class);
-        Incident incident = mock(Incident.class);
 
         CreateCommentRequest request =
                 new CreateCommentRequest("Checked logs");
@@ -87,20 +86,8 @@ class CommentServiceTest {
         when(userService.getActiveUser(email))
                 .thenReturn(currentUser);
 
-        when(incidentRepository.findById(incidentId))
-                .thenReturn(Optional.of(incident));
-
         when(currentUser.getRole())
                 .thenReturn(UserRole.USER);
-
-        when(currentUser.getId())
-                .thenReturn(10L);
-
-        when(incident.getCreatedBy())
-                .thenReturn(creator);
-
-        when(creator.getId())
-                .thenReturn(20L);
 
         assertThrows(
                 AccessDeniedException.class,

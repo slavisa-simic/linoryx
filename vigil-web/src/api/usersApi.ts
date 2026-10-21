@@ -12,11 +12,19 @@ export async function listUsers(session: AuthSession): Promise<User[]> {
   let totalPages = 1
 
   while (pageNumber < totalPages) {
-    const page: UserPage = await apiRequest('/users?size=200&sort=id,asc&page=' + pageNumber, session.token)
+    const page: UserPage = await apiRequest(
+      '/users?size=200&sort=id,asc&page=' + pageNumber,
+      session.token
+    )
     users = users.concat(page.content)
     totalPages = page.totalPages
     pageNumber = pageNumber + 1
   }
 
   return users
+}
+
+export async function getTechnicians(session: AuthSession): Promise<User[]> {
+  const users = await listUsers(session)
+  return users.filter((user) => user.role === 'TECHNICIAN' && user.enabled)
 }

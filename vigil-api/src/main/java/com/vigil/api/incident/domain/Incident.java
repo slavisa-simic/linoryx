@@ -159,6 +159,9 @@ public class Incident {
     }
 
     public void close(){
+        if (status != IncidentStatus.RESOLVED) {
+            throw new IllegalStateException("Only resolved incidents can be closed");
+        }
         this.status = IncidentStatus.CLOSED;
         this.updatedAt = LocalDateTime.now();
     }

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { Incident, IncidentStatus } from '../../models/incidents'
+import type { Incident, IncidentStatus, IncidentCategory, Severity } from '../../models/incidents'
 import {
   categoryLabels,
   formatDate,
@@ -13,22 +13,50 @@ interface IncidentsTableProps {
   status: IncidentStatus | 'ALL'
   onStatusChange(status: IncidentStatus | 'ALL'): void
   onOpen(incident: Incident): void
+  fullFilters?: boolean
 }
 
 const priorityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }
 const pageSize = 6
 
-export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: IncidentsTableProps) {
+export function IncidentsTable({
+  incidents,
+  status,
+  onStatusChange,
+  onOpen,
+  fullFilters = false
+}: IncidentsTableProps) {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('newest')
   const [page, setPage] = useState(0)
+  const [severity, setSeverity] = useState<Severity | 'ALL'>('ALL')
+  const [category, setCategory] = useState<IncidentCategory | 'ALL'>('ALL')
+  let dateSort: 'descending' | 'none' = 'none'
+  let prioritySort: 'descending' | 'none' = 'none'
+  if (sort === 'newest') {
+    dateSort = 'descending'
+  }
+  if (sort === 'priority') {
+    prioritySort = 'descending'
+  }
 
   function matchesFilters(incident: Incident): boolean {
     if (status !== 'ALL' && incident.status !== status) {
       return false
     }
+    if (severity !== 'ALL' && incident.severity !== severity) {
+      return false
+    }
+    if (category !== 'ALL' && incident.category !== category) {
+      return false
+    }
 
-    let text = incident.title + ' INC-' + incident.id + ' ' + categoryLabels[incident.category]
+    let text =
+      incident.title +
+      ' INC-' +
+      incident.id +
+      ' ' +
+      categoryLabels[incident.category]
     if (incident.assignedToEmail) {
       text = text + ' ' + incident.assignedToEmail
     }
@@ -37,12 +65,15 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
 
   function compareIncidents(first: Incident, second: Incident): number {
     if (sort === 'priority') {
-      const difference = priorityOrder[second.severity] - priorityOrder[first.severity]
+      const difference =
+        priorityOrder[second.severity] - priorityOrder[first.severity]
       if (difference !== 0) {
         return difference
       }
     }
-    return new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+    return (
+      new Date(second.createdAt).getTime() - new Date(first.createdAt).getTime()
+    )
   }
 
   const filtered = incidents.filter(matchesFilters)
@@ -94,6 +125,8 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
 
   function clearFilters() {
     setSearch('')
+    setSeverity('ALL')
+    setCategory('ALL')
     onStatusChange('ALL')
     setPage(0)
   }
@@ -111,7 +144,10 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
         </div>
         <label className="sort-control">
           <span className="sr-only">Sort incidents</span>
-          <select value={sort} onChange={(event) => changeSort(event.target.value)}>
+          <select
+            value={sort}
+            onChange={(event) => changeSort(event.target.value)}
+          >
             <option value="newest">Newest first</option>
             <option value="priority">Highest priority</option>
           </select>
@@ -134,7 +170,9 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
           <span className="sr-only">Filter incidents by status</span>
           <select
             value={status}
-            onChange={(event) => changeStatus(event.target.value as IncidentStatus | 'ALL')}
+            onChange={(event) =>
+              changeStatus(event.target.value as IncidentStatus | 'ALL')
+            }
           >
             <option value="ALL">All statuses</option>
             <option value="OPEN">Open</option>
@@ -144,6 +182,46 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
           </select>
           <Icon name="chevron-down" size={15} />
         </label>
+        {fullFilters && (
+          <>
+            <label className="status-filter">
+              <span className="sr-only">Filter incidents by priority</span>
+              <select
+                value={severity}
+                onChange={(event) => {
+                  setSeverity(event.target.value as Severity | 'ALL')
+                  setPage(0)
+                }}
+              >
+                <option value="ALL">All priorities</option>
+                <option value="CRITICAL">Critical</option>
+                <option value="HIGH">High</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="LOW">Low</option>
+              </select>
+              <Icon name="chevron-down" size={15} />
+            </label>
+            <label className="status-filter">
+              <span className="sr-only">Filter incidents by category</span>
+              <select
+                value={category}
+                onChange={(event) => {
+                  setCategory(event.target.value as IncidentCategory | 'ALL')
+                  setPage(0)
+                }}
+              >
+                <option value="ALL">All categories</option>
+                <option value="SECURITY">Security</option>
+                <option value="NETWORK">Network</option>
+                <option value="APPLICATION">Application</option>
+                <option value="CLOUD">Cloud</option>
+                <option value="DATABASE">Database</option>
+                <option value="OTHER">Other</option>
+              </select>
+              <Icon name="chevron-down" size={15} />
+            </label>
+          </>
+        )}
       </div>
 
       <div className="incident-table-scroll">
@@ -151,11 +229,11 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
           <caption className="sr-only">Incident overview</caption>
           <thead>
             <tr>
-              <th scope="col" aria-sort={sort === 'newest' ? 'descending' : 'none'}>
+              <th scope="col" aria-sort={dateSort}>
                 Incident
               </th>
               <th scope="col">Status</th>
-              <th scope="col" aria-sort={sort === 'priority' ? 'descending' : 'none'}>
+              <th scope="col" aria-sort={prioritySort}>
                 Priority
               </th>
               <th scope="col">Assigned to</th>
@@ -191,20 +269,32 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
                     </button>
                   </td>
                   <td>
-                    <span className={'status-badge status-' + incident.status.toLowerCase()}>
+                    <span
+                      className={
+                        'status-badge status-' + incident.status.toLowerCase()
+                      }
+                    >
                       <span className="status-dot" />
                       {statusLabels[incident.status]}
                     </span>
                   </td>
                   <td>
-                    <span className={'severity-badge severity-' + incident.severity.toLowerCase()}>
+                    <span
+                      className={
+                        'severity-badge severity-' +
+                        incident.severity.toLowerCase()
+                      }
+                    >
                       <span className="severity-mark" />
                       {severityLabels[incident.severity]}
                     </span>
                   </td>
                   <td>
                     {incident.assignedToEmail && (
-                      <span className="table-assignee" title={incident.assignedToEmail}>
+                      <span
+                        className="table-assignee"
+                        title={incident.assignedToEmail}
+                      >
                         <span className="assignee-avatar" aria-hidden="true">
                           {initial}
                         </span>
@@ -215,7 +305,9 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
                       <span className="unassigned-label">Unassigned</span>
                     )}
                   </td>
-                  <td className="table-date">{formatDate(incident.createdAt)}</td>
+                  <td className="table-date">
+                    {formatDate(incident.createdAt)}
+                  </td>
                   <td>
                     <button
                       className="icon-button table-open-button"
@@ -238,7 +330,10 @@ export function IncidentsTable({ incidents, status, onStatusChange, onOpen }: In
           <Icon name="search" size={26} />
           <strong>{emptyTitle}</strong>
           <p>{emptyMessage}</p>
-          {(search || status !== 'ALL') && (
+          {(search ||
+            status !== 'ALL' ||
+            severity !== 'ALL' ||
+            category !== 'ALL') && (
             <button
               className="dashboard-button button-neutral"
               type="button"

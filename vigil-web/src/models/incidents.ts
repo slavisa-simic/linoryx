@@ -21,6 +21,30 @@ export interface Incident {
   resolvedAt: string | null
 }
 
+export interface CreateIncidentRequest {
+  title: string
+  description: string
+  severity: Severity
+  category: IncidentCategory
+}
+
+export interface IncidentComment {
+  id: number
+  incidentId: number
+  authorId: number
+  authorFirstName: string
+  authorLastName: string
+  content: string
+  createdAt: string
+}
+
+export interface CommentPage {
+  content: IncidentComment[]
+  totalPages: number
+}
+
+export type IncidentAction = 'start' | 'resolve' | 'close'
+
 export interface IncidentPage {
   content: Incident[]
   totalPages: number

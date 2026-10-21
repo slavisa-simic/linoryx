@@ -1,0 +1,107 @@
+.incidents-page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+.incidents-page-heading h1 { margin: 0 0 6px; font-size: 34px; font-weight: 500; letter-spacing: -1px; }
+.incidents-page-heading p { margin: 0; color: var(--color-text-muted); font-size: 14px; }
+.incidents-page-actions { display: flex; align-items: center; gap: 10px; }
+.incidents-notice { margin-bottom: 20px; }
+.incidents-loading { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 280px; color: var(--color-text-muted); }
+.incidents-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 24px; }
+.incidents-summary > div { position: relative; padding: 20px 24px; border: 1px solid var(--dashboard-border); border-radius: 12px; background: var(--color-white); }
+.incidents-summary span { display: block; color: var(--color-text-muted); font-size: 13px; }
+.incidents-summary strong { display: block; margin-top: 8px; font-size: 30px; font-weight: 500; line-height: 1.2; }
+.incidents-summary svg { position: absolute; top: 24px; right: 24px; color: var(--color-primary); }
+.incidents-summary > div:nth-child(3) svg { color: var(--color-warning); }
+.incidents-summary > div:nth-child(4) svg { color: var(--color-success); }
+.incidents-main .table-toolbar { flex-wrap: wrap; }
+.incidents-main .incident-search { flex-basis: 240px; }
+.incidents-main .incident-title-button { max-width: 480px; }
+.incidents-main .incident-title { font-size: 14px; }
+.incidents-main .incident-table th { font-size: 11px; }
+.incidents-main .incident-table td { padding-top: 12px; padding-bottom: 12px; }
+.incidents-main .table-assignee { max-width: 200px; font-size: 12px; }
+.incident-modal-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.incident-modal-heading h2 { margin: 0; font-size: 24px; }
+.incident-modal-heading p { margin: 6px 0 0; color: var(--color-text-muted); font-size: 13px; }
+.incident-modal-heading .icon-button { align-self: flex-start; }
+.incident-form { display: flex; flex-direction: column; gap: 20px; margin-top: 28px; }
+.incident-form-field { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.incident-form label, .incident-comment-form label { display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; }
+.incident-textarea { height: auto; min-height: 100px; padding: 12px 14px; resize: vertical; line-height: 1.6; }
+.incident-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.incident-form-actions { display: flex; justify-content: flex-end; gap: 10px; padding-top: 20px; border-top: 1px solid var(--dashboard-border); }
+.critical-incident-note { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: 7px; background: var(--color-danger-light); color: var(--color-danger); font-size: 12px; line-height: 1.5; }
+.critical-incident-note svg { flex-shrink: 0; margin-top: 1px; }
+.incident-detail-modal { width: min(820px, calc(100% - 32px)); }
+.detail-reference { color: var(--color-primary); font-size: 12px; font-weight: 500; }
+.detail-reference > span { margin-left: 8px; color: var(--color-text-muted); font-weight: 400; }
+.incident-dialog .detail-title { margin: 8px 0 12px; font-size: 27px; line-height: 1.3; }
+.detail-status-row { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; }
+.detail-status-row .status-badge, .detail-status-row .severity-badge { font-size: 12px; }
+.detail-status-row .export-button { margin-left: auto; color: var(--color-primary); font-size: 12px; }
+.export-button:disabled { opacity: 0.5; cursor: wait; }
+.incident-steps { display: flex; justify-content: space-between; gap: 12px; margin: 24px 0; padding: 16px; border-radius: 8px; background: var(--color-surface); list-style: none; }
+.incident-steps li { display: flex; align-items: center; gap: 8px; color: var(--color-text-muted); font-size: 12px; }
+.incident-steps li > span { display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border: 1px solid var(--color-border); border-radius: 50%; font-size: 11px; }
+.incident-steps .step-complete { color: var(--color-primary); }
+.incident-steps .step-complete > span { border-color: var(--color-primary-border); background: var(--color-primary-light); }
+.incident-steps li[aria-current="step"] > span { border-color: var(--color-primary); background: var(--color-primary); color: var(--color-white); }
+.detail-section { margin-top: 24px; }
+.detail-section h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 14px; font-weight: 500; }
+.detail-description { margin: 0; color: var(--color-text-muted); font-size: 14px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail-facts { margin-top: 24px; padding-bottom: 0; }
+.detail-facts dd { font-size: 13px; line-height: 1.5; }
+.incident-muted { margin: 10px 0; color: var(--color-text-muted); font-size: 12px; }
+.incident-success { display: flex; align-items: center; gap: 8px; color: var(--color-success); font-size: 13px; }
+.incident-error { margin-top: 18px; }
+.assignment-section { padding: 18px; border: 1px solid var(--dashboard-border); border-radius: 8px; }
+.assignment-form { display: flex; gap: 12px; }
+.assignment-form select { flex: 1; min-width: 0; }
+.incident-workflow-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 20px; }
+.comments-section { padding-top: 24px; border-top: 1px solid var(--dashboard-border); }
+.comments-empty { margin: 18px 0; color: var(--color-text-muted); font-size: 13px; }
+.incident-comments { margin: 0; padding: 0; list-style: none; }
+.incident-comments li { margin-bottom: 12px; padding: 16px; border: 1px solid var(--dashboard-border); border-radius: 8px; }
+.comment-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.comment-heading strong { font-size: 13px; font-weight: 500; }
+.comment-heading time { color: var(--color-text-muted); font-size: 11px; }
+.incident-comments p { margin: 10px 0 0; color: var(--color-text-muted); font-size: 13px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.incident-comment-form { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.incident-comment-form button { align-self: flex-end; }
+.dialog-footer { gap: 10px; }
+
+@media (max-width: 760px) {
+  .incidents-page-heading { align-items: flex-start; flex-direction: column; gap: 18px; }
+  .incidents-page-heading h1 { font-size: 30px; }
+  .incidents-summary { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .incidents-summary > div { padding: 18px; }
+  .incidents-summary svg { top: 20px; right: 18px; }
+  .incidents-main .incident-search { flex-basis: 100%; }
+  .incidents-main .status-filter { flex: 1; min-width: 120px; }
+  .incidents-main .status-filter select { width: 100%; max-width: none; }
+  .incidents-main .incident-table { min-width: 720px; }
+  .incident-steps { flex-wrap: wrap; }
+  .incident-steps li { flex-basis: 44%; }
+  .assignment-form { flex-direction: column; }
+}
+
+@media (max-width: 480px) {
+  .incidents-page-heading p { font-size: 13px; line-height: 1.6; }
+  .incidents-page-actions { width: 100%; }
+  .incidents-page-actions .dashboard-button { flex: 1; }
+  .incidents-summary span { font-size: 12px; }
+  .incidents-summary strong { font-size: 27px; }
+  .incidents-summary svg { width: 18px; height: 18px; }
+  .incident-form-row { grid-template-columns: 1fr; }
+  .incident-modal-heading h2 { font-size: 22px; }
+  .incident-form .field-input, .incident-comment-form .field-input, .assignment-form .field-input { font-size: 16px; }
+  .incident-dialog .detail-title { font-size: 23px; }
+  .detail-status-row { gap: 10px; }
+  .detail-status-row .export-button { flex-basis: 100%; margin-left: 0; }
+  .detail-facts { grid-template-columns: 1fr; gap: 16px; }
+  .incident-steps { padding: 12px; gap: 14px 8px; }
+}

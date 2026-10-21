@@ -50,7 +50,7 @@ public class IncidentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')")
     public Page<IncidentResponse> getIncidents(
 
             @RequestParam(required = false)
@@ -132,4 +132,12 @@ public class IncidentController {
         );
     }
 
+    @PatchMapping("/{id}/close")
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
+    public IncidentResponse closeIncident(
+            @PathVariable Long id,
+            @AuthenticationPrincipal Jwt jwt
+    ) {
+        return incidentService.closeIncident(id, jwt.getSubject());
+    }
 }

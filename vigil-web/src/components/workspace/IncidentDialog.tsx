@@ -1,11 +1,25 @@
 import { useEffect } from 'react'
 import type { Incident } from '../../models/incidents'
-import { categoryLabels, formatDate, statusLabels } from '../../services/dashboardData'
+import {
+  categoryLabels,
+  formatDate,
+  statusLabels
+} from '../../services/dashboardData'
 import { Icon } from '../Icon'
 
-export function IncidentDialog({ incident, onClose }: { incident: Incident; onClose(): void }) {
+export function IncidentDialog({
+  incident,
+  onClose,
+  onManage
+}: {
+  incident: Incident
+  onClose(): void
+  onManage(): void
+}) {
   useEffect(() => {
-    const dialog = document.getElementById('incident-dialog') as HTMLDialogElement
+    const dialog = document.getElementById(
+      'incident-dialog'
+    ) as HTMLDialogElement
     dialog.showModal()
     document.body.style.overflow = 'hidden'
     return () => {
@@ -20,7 +34,10 @@ export function IncidentDialog({ incident, onClose }: { incident: Incident; onCl
     assignedTo = incident.assignedToEmail
   }
   if (incident.resolvedAt) {
-    resolvedAt = formatDate(incident.resolvedAt, { dateStyle: 'medium', timeStyle: 'short' })
+    resolvedAt = formatDate(incident.resolvedAt, {
+      dateStyle: 'medium',
+      timeStyle: 'short'
+    })
   }
 
   return (
@@ -50,11 +67,17 @@ export function IncidentDialog({ incident, onClose }: { incident: Incident; onCl
         </div>
         <h2 id="incident-dialog-title">{incident.title}</h2>
         <div className="dialog-badges">
-          <span className={'status-badge status-' + incident.status.toLowerCase()}>
+          <span
+            className={'status-badge status-' + incident.status.toLowerCase()}
+          >
             <span className="status-dot" />
             {statusLabels[incident.status]}
           </span>
-          <span className={'severity-badge severity-' + incident.severity.toLowerCase()}>
+          <span
+            className={
+              'severity-badge severity-' + incident.severity.toLowerCase()
+            }
+          >
             {incident.severity.toLowerCase()}
           </span>
         </div>
@@ -74,11 +97,21 @@ export function IncidentDialog({ incident, onClose }: { incident: Incident; onCl
           </div>
           <div>
             <dt>Reported</dt>
-            <dd>{formatDate(incident.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}</dd>
+            <dd>
+              {formatDate(incident.createdAt, {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+              })}
+            </dd>
           </div>
           <div>
             <dt>Last updated</dt>
-            <dd>{formatDate(incident.updatedAt, { dateStyle: 'medium', timeStyle: 'short' })}</dd>
+            <dd>
+              {formatDate(incident.updatedAt, {
+                dateStyle: 'medium',
+                timeStyle: 'short'
+              })}
+            </dd>
           </div>
           <div>
             <dt>Resolved</dt>
@@ -86,7 +119,14 @@ export function IncidentDialog({ incident, onClose }: { incident: Incident; onCl
           </div>
         </dl>
         <div className="dialog-footer">
-          <button className="dashboard-button button-neutral" type="button" onClick={onClose}>
+          <button className="dashboard-button" type="button" onClick={onManage}>
+            Open in Incidents <Icon name="arrow-up-right" size={16} />
+          </button>
+          <button
+            className="dashboard-button button-neutral"
+            type="button"
+            onClick={onClose}
+          >
             Close details
           </button>
         </div>

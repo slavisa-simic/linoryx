@@ -40,6 +40,9 @@ public class CommentService {
         String currentUserEmail
     ) {
         User author = userService.getActiveUser(currentUserEmail);
+        if (author.getRole() != UserRole.ADMIN && author.getRole() != UserRole.TECHNICIAN) {
+            throw new AccessDeniedException("Only technicians and administrators can add comments");
+        }
         Incident incident = incidentRepository
                 .findById(incidentId)
                 .orElseThrow(
