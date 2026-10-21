@@ -3,8 +3,11 @@ package com.vigil.api.user.service;
 import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
+import com.vigil.api.audit.domain.AuditAction;
+import com.vigil.api.audit.domain.AuditLog;
+import com.vigil.api.audit.repository.AuditLogRepository;
 import com.vigil.api.exception.UnauthorizedException;
-import com.vigil.api.user.dto.ChangeUserRoleRequest;
+import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.dto.UserResponse;
 import com.vigil.api.user.repository.UserRepository;
 
@@ -18,11 +21,17 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final AuditLogRepository auditLogRepository;
+    private final IncidentRepository incidentRepository;
 
     public UserService(
-            UserRepository userRepository
+            UserRepository userRepository,
+            AuditLogRepository auditLogRepository,
+            IncidentRepository incidentRepository
     ) {
         this.userRepository = userRepository;
+        this.auditLogRepository = auditLogRepository;
+        this.incidentRepository = incidentRepository;
     }
 
     @Transactional(readOnly = true)
@@ -59,10 +68,11 @@ public class UserService {
 
     @Transactional
     public UserResponse changeUserRole(
+            String currentUserEmail,
             Long userId,
             UserRole role
     ) {
-
+        User currentUser = getAdminForUpdate(currentUserEmail);
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -70,16 +80,30 @@ public class UserService {
                         )
                 );
 
+        if (user.getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("You cannot change your own role.");
+        }
+        if (role == null) {
+            throw new IllegalArgumentException("Choose a role.");
+        }
+        if (user.getRole() == role) {
+            return toResponse(user);
+        }
+        ensureAnotherAdmin(user);
+        ensureNoAssignedIncidents(user);
+
+        UserRole previousRole = user.getRole();
         user.changeRole(role);
 
         User savedUser = userRepository.save(user);
+        auditLogRepository.save(new AuditLog(currentUser, savedUser, previousRole, role));
 
         return toResponse(savedUser);
     }
 
     @Transactional
-    public UserResponse disableUser(Long userId){
-
+    public UserResponse disableUser(String currentUserEmail, Long userId){
+        User currentUser = getAdminForUpdate(currentUserEmail);
         User user = userRepository
                 .findById(userId)
                 .orElseThrow(
@@ -88,16 +112,25 @@ public class UserService {
                         )
                 );
 
+        ensureAnotherAdmin(user);
+        if (user.getId().equals(currentUser.getId())) {
+            throw new IllegalStateException("You cannot disable your own account.");
+        }
+        if (!user.isEnabled()) {
+            return toResponse(user);
+        }
+        ensureNoAssignedIncidents(user);
         user.disable();
 
         User savedUser = userRepository.save(user);
+        auditLogRepository.save(new AuditLog(null, currentUser, AuditAction.USER_DISABLED, savedUser));
 
         return toResponse(savedUser);
     }
 
     @Transactional
-    public UserResponse enableUser(Long userId) {
-
+    public UserResponse enableUser(String currentUserEmail, Long userId) {
+        User currentUser = getAdminForUpdate(currentUserEmail);
         User user = userRepository.findById(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
@@ -105,11 +138,42 @@ public class UserService {
                         )
                 );
 
+        if (user.isEnabled()) {
+            return toResponse(user);
+        }
         user.enable();
 
         User savedUser = userRepository.save(user);
+        auditLogRepository.save(new AuditLog(null, currentUser, AuditAction.USER_ENABLED, savedUser));
 
         return toResponse(savedUser);
+    }
+
+    private User getAdminForUpdate(String email) {
+        userRepository.findByRoleOrderByIdAsc(UserRole.ADMIN);
+        User currentUser = getActiveUser(email);
+        if (currentUser.getRole() != UserRole.ADMIN) {
+            throw new AccessDeniedException("Only administrators can manage users.");
+        }
+        return currentUser;
+    }
+
+    private void ensureAnotherAdmin(User user) {
+        if (user.getRole() == UserRole.ADMIN && user.isEnabled()) {
+            int activeAdmins = userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN).size();
+            if (activeAdmins <= 1) {
+                throw new IllegalStateException("At least one active administrator must remain.");
+            }
+        }
+    }
+
+    private void ensureNoAssignedIncidents(User user) {
+        if (user.getRole() == UserRole.TECHNICIAN) {
+            long assignedIncidents = incidentRepository.countByAssignedToId(user.getId());
+            if (assignedIncidents != 0) {
+                throw new IllegalStateException("This technician still has assigned incidents. Reassign them before changing the role or disabling the account.");
+            }
+        }
     }
 
     private UserResponse toResponse(

@@ -1,4 +1,5 @@
 import type { AuthSession } from '../models/auth'
+import type { UserRole } from '../models/users'
 import type { User, UserPage } from '../models/users'
 import { apiRequest } from './apiRequest'
 
@@ -27,4 +28,26 @@ export async function listUsers(session: AuthSession): Promise<User[]> {
 export async function getTechnicians(session: AuthSession): Promise<User[]> {
   const users = await listUsers(session)
   return users.filter((user) => user.role === 'TECHNICIAN' && user.enabled)
+}
+
+export async function changeUserRole(
+  session: AuthSession,
+  id: number,
+  role: UserRole
+): Promise<User> {
+  return apiRequest('/users/' + id + '/role', session.token, 'PATCH', {
+    role: role
+  })
+}
+
+export async function setUserEnabled(
+  session: AuthSession,
+  id: number,
+  enabled: boolean
+): Promise<User> {
+  let action = 'disable'
+  if (enabled) {
+    action = 'enable'
+  }
+  return apiRequest('/users/' + id + '/' + action, session.token, 'PATCH')
 }

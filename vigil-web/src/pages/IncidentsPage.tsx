@@ -15,7 +15,7 @@ import '../Incidents.css'
 
 interface IncidentsPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit',
     incidentId?: number
   ): void
 }

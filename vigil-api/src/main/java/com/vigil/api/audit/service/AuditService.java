@@ -173,9 +173,14 @@ public class AuditService {
             targetUserLastName = targetUser.getLastName();
         }
 
+        Long incidentId = null;
+        if (auditLog.getIncident() != null) {
+            incidentId = auditLog.getIncident().getId();
+        }
+
         return new AuditResponse(
                 auditLog.getId(),
-                auditLog.getIncident().getId(),
+                incidentId,
 
                 actorId,
                 actorFirstName,
@@ -186,7 +191,9 @@ public class AuditService {
                 targetUserLastName,
 
                 auditLog.getAction(),
-                auditLog.getCreatedAt()
+                auditLog.getCreatedAt(),
+                auditLog.getPreviousRole(),
+                auditLog.getNewRole()
         );
     }
 }

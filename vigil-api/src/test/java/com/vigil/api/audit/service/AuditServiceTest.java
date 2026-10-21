@@ -29,6 +29,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 
 import java.util.Optional;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -47,6 +49,35 @@ class AuditServiceTest {
 
     @InjectMocks
     private AuditService auditService;
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"USER", "TECHNICIAN"})
+    void onlyAdminCanReadAllAuditLogs(UserRole role) {
+        User user = new User("user@test.com", "hash", "Test", "User", role);
+        when(userService.getActiveUser("user@test.com")).thenReturn(user);
+        assertThrows(AccessDeniedException.class,
+                () -> auditService.getAllAuditLogs("user@test.com", PageRequest.of(0, 20)));
+        verifyNoInteractions(auditLogRepository);
+    }
+
+    @Test
+    void allAuditLogsIncludeRoleChangesWithoutAnIncident() {
+        User admin = new User("admin@test.com", "hash", "Ana", "Admin", UserRole.ADMIN);
+        User target = new User("user@test.com", "hash", "Marko", "User", UserRole.TECHNICIAN);
+        var log = new com.vigil.api.audit.domain.AuditLog(admin, target, UserRole.USER, UserRole.TECHNICIAN);
+        Pageable pageable = PageRequest.of(0, 20);
+        when(userService.getActiveUser("admin@test.com")).thenReturn(admin);
+        when(auditLogRepository.findAllByOrderByCreatedAtDesc(pageable))
+                .thenReturn(new org.springframework.data.domain.PageImpl<>(java.util.List.of(log)));
+
+        var response = auditService.getAllAuditLogs("admin@test.com", pageable).getContent().getFirst();
+
+        assertNull(response.incidentId());
+        assertEquals(UserRole.USER, response.previousRole());
+        assertEquals(UserRole.TECHNICIAN, response.newRole());
+        assertEquals("Ana", response.actorFirstName());
+        assertEquals("Marko", response.targetUserFirstName());
+    }
 
     @Test
     void getIncidentAudit_whenIncidentDoesNotExist_throwsResourceNotFoundException() {

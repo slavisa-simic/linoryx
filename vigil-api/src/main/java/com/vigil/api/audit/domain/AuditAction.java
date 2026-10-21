@@ -6,5 +6,8 @@ public enum AuditAction {
     STARTED,
     RESOLVED,
     CLOSED,
-    COMMENT_ADDED
+    COMMENT_ADDED,
+    USER_ROLE_CHANGED,
+    USER_DISABLED,
+    USER_ENABLED
 }

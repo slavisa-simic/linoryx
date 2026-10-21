@@ -15,6 +15,8 @@ import java.util.Collection;
 public interface IncidentRepository
         extends JpaRepository<Incident, Long> {
 
+    long countByAssignedToId(Long technicianId);
+
     @Query("""
             select incident from Incident incident
             left join incident.assignedTo technician

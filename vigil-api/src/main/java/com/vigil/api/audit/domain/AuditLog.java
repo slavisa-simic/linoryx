@@ -2,6 +2,7 @@ package com.vigil.api.audit.domain;
 
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.user.domain.User;
+import com.vigil.api.user.domain.UserRole;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -15,7 +16,7 @@ public class AuditLog {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "incident_id", nullable = false)
+    @JoinColumn(name = "incident_id")
     private Incident incident;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -29,6 +30,14 @@ public class AuditLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "target_user_id")
     private User targetUser;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "previous_role")
+    private UserRole previousRole;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "new_role")
+    private UserRole newRole;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
@@ -59,6 +68,20 @@ public class AuditLog {
 
     public Long getId() {
         return id;
+    }
+
+    public AuditLog(User actor, User targetUser, UserRole previousRole, UserRole newRole) {
+        this(null, actor, AuditAction.USER_ROLE_CHANGED, targetUser);
+        this.previousRole = previousRole;
+        this.newRole = newRole;
+    }
+
+    public UserRole getPreviousRole() {
+        return previousRole;
+    }
+
+    public UserRole getNewRole() {
+        return newRole;
     }
 
     public Incident getIncident() {

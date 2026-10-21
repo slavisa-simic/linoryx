@@ -15,10 +15,23 @@ const activityLabels = {
   STARTED: 'started working on an incident',
   RESOLVED: 'resolved an incident',
   CLOSED: 'closed an incident',
-  COMMENT_ADDED: 'commented on an incident'
+  COMMENT_ADDED: 'commented on an incident',
+  USER_ROLE_CHANGED: 'changed a user role',
+  USER_DISABLED: 'disabled an account',
+  USER_ENABLED: 'enabled an account'
 }
 
-export function DashboardActivity({ activity, incidents, onOpen }: DashboardActivityProps) {
+const roleLabels = {
+  ADMIN: 'Administrator',
+  TECHNICIAN: 'Technician',
+  USER: 'User'
+}
+
+export function DashboardActivity({
+  activity,
+  incidents,
+  onOpen
+}: DashboardActivityProps) {
   return (
     <section className="dashboard-panel activity-panel">
       <header className="panel-heading">
@@ -40,8 +53,24 @@ export function DashboardActivity({ activity, incidents, onOpen }: DashboardActi
 
       <ol className="activity-list">
         {activity.map(function (entry) {
-          const incident = incidents.find((item) => item.id === entry.incidentId)
-          let icon: 'layers' | 'check' | 'assign' | 'clock' = 'layers'
+          const incident = incidents.find(
+            (item) => item.id === entry.incidentId
+          )
+          let icon: 'layers' | 'check' | 'assign' | 'clock' | 'users' = 'layers'
+          let userDetail = ''
+          if (entry.incidentId === null) {
+            icon = 'users'
+            userDetail =
+              entry.targetUserFirstName + ' ' + entry.targetUserLastName
+            if (entry.previousRole && entry.newRole) {
+              userDetail =
+                userDetail +
+                ' · ' +
+                roleLabels[entry.previousRole] +
+                ' → ' +
+                roleLabels[entry.newRole]
+            }
+          }
 
           if (entry.action === 'RESOLVED' || entry.action === 'CLOSED') {
             icon = 'check'
@@ -53,7 +82,11 @@ export function DashboardActivity({ activity, incidents, onOpen }: DashboardActi
 
           return (
             <li key={entry.id}>
-              <span className={'activity-dot activity-' + entry.action.toLowerCase()}>
+              <span
+                className={
+                  'activity-dot activity-' + entry.action.toLowerCase()
+                }
+              >
                 <Icon name={icon} size={14} />
               </span>
               <div>
@@ -73,7 +106,14 @@ export function DashboardActivity({ activity, incidents, onOpen }: DashboardActi
                     <Icon name="arrow-up-right" size={12} />
                   </button>
                 )}
-                {!incident && <span className="incident-reference">INC-{entry.incidentId}</span>}
+                {!incident && entry.incidentId !== null && (
+                  <span className="incident-reference">
+                    INC-{entry.incidentId}
+                  </span>
+                )}
+                {userDetail && (
+                  <span className="incident-reference">{userDetail}</span>
+                )}
                 <time dateTime={entry.createdAt}>
                   {formatDate(entry.createdAt, {
                     day: 'numeric',

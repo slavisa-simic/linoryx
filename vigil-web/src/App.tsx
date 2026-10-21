@@ -4,6 +4,8 @@ import { LoginPage } from './pages/LoginPage'
 import { RegisterPage } from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
 import { IncidentsPage } from './pages/IncidentsPage'
+import { UsersPage } from './pages/UsersPage'
+import { AuditPage } from './pages/AuditPage'
 import type { AuthResponse, AuthSession } from './models/auth'
 import type { AuthApi } from './api/authApi'
 import type { SessionService } from './services/SessionService'
@@ -14,9 +16,15 @@ interface AppProps {
   sessionService: SessionService
 }
 
-type Page = 'login' | 'register' | 'dashboard' | 'incidents'
+type Page = 'login' | 'register' | 'dashboard' | 'incidents' | 'users' | 'audit'
 
 function getCurrentPage(): Page {
+  if (window.location.pathname === '/audit') {
+    return 'audit'
+  }
+  if (window.location.pathname === '/users') {
+    return 'users'
+  }
   if (window.location.pathname === '/incidents') {
     return 'incidents'
   }
@@ -31,6 +39,16 @@ function getCurrentPage(): Page {
 
 function getSessionPage(session: AuthSession | null): Page {
   const page = getCurrentPage()
+  if (
+    session &&
+    (page === 'users' || page === 'audit') &&
+    session.role !== 'ADMIN'
+  ) {
+    if (session.role === 'USER') {
+      return 'incidents'
+    }
+    return 'dashboard'
+  }
   if (session && (page === 'login' || page === 'register')) {
     if (session.role === 'USER') {
       return 'incidents'
@@ -40,7 +58,9 @@ function getSessionPage(session: AuthSession | null): Page {
   if (
     !session &&
     (page === 'dashboard' ||
-      page === 'incidents')
+      page === 'incidents' ||
+      page === 'users' ||
+      page === 'audit')
   ) {
     return 'login'
   }
@@ -70,6 +90,12 @@ function App({ authApi, sessionService }: AppProps) {
       document.title = 'Dashboard · Vigil'
       if (page === 'incidents') {
         document.title = 'Incidents · Vigil'
+      }
+      if (page === 'users') {
+        document.title = 'Users · Vigil'
+      }
+      if (page === 'audit') {
+        document.title = 'Audit logs · Vigil'
       }
     } else if (page === 'register') {
       document.title = 'Create account · Vigil'
@@ -142,7 +168,19 @@ function App({ authApi, sessionService }: AppProps) {
 
   let content
 
-  if (session && page === 'incidents') {
+  if (session && page === 'audit' && session.role === 'ADMIN') {
+    content = (
+      <AuditPage
+        onNavigate={navigate}
+      />
+    )
+  } else if (session && page === 'users' && session.role === 'ADMIN') {
+    content = (
+      <UsersPage
+        onNavigate={navigate}
+      />
+    )
+  } else if (session && page === 'incidents') {
     content = (
       <IncidentsPage
         key={session.userId}

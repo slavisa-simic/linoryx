@@ -1,6 +1,7 @@
 package com.vigil.api.audit.dto;
 
 import com.vigil.api.audit.domain.AuditAction;
+import com.vigil.api.user.domain.UserRole;
 
 import java.time.LocalDateTime;
 
@@ -17,6 +18,8 @@ public record AuditResponse(
         String targetUserLastName,
 
         AuditAction action,
-        LocalDateTime createdAt
+        LocalDateTime createdAt,
+        UserRole previousRole,
+        UserRole newRole
 ) {
 }

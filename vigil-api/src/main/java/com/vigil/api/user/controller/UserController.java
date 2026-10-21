@@ -60,10 +60,12 @@ public class UserController {
     @PatchMapping("/{id}/role")
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse changeUserRole(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id,
             @Valid @RequestBody ChangeUserRoleRequest request
     ) {
         return userService.changeUserRole(
+                jwt.getSubject(),
                 id,
                 request.role()
         );
@@ -72,16 +74,18 @@ public class UserController {
     @PatchMapping("/{id}/disable")
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse disableUser(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id
     ) {
-        return userService.disableUser(id);
+        return userService.disableUser(jwt.getSubject(), id);
     }
 
     @PatchMapping("/{id}/enable")
     @PreAuthorize("hasRole('ADMIN')")
     public UserResponse enableUser(
+            @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long id
     ) {
-        return userService.enableUser(id);
+        return userService.enableUser(jwt.getSubject(), id);
     }
 }

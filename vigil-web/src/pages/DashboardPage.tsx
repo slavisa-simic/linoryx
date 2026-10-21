@@ -20,7 +20,7 @@ import '../Dashboard.css'
 
 interface DashboardPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit',
     incidentId?: number
   ): void
 }
