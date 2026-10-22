@@ -1,14 +1,4 @@
-.audit-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
-.audit-page-heading h1 { margin: 0 0 6px; font-size: 34px; font-weight: 500; letter-spacing: -1px; }
-.audit-page-heading p { margin: 0; color: var(--color-text-muted); font-size: 14px; }
-.audit-message { margin-bottom: 20px; }
-.audit-loading { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 280px; color: var(--color-text-muted); }
-.audit-panel > .panel-heading { padding: 18px 22px 12px; }
-.audit-panel .table-toolbar { flex-wrap: wrap; }
-.audit-panel .incident-search { flex-basis: 280px; }
 .audit-table { min-width: 820px; }
-.audit-table th { font-size: 11px; }
-.audit-table td { padding-top: 12px; padding-bottom: 12px; }
 .audit-date { display: flex; flex-direction: column; gap: 3px; color: var(--color-text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
 .audit-date span:last-child { font-size: 11px; }
 .audit-actor { max-width: 180px; font-weight: 500; white-space: normal; overflow-wrap: anywhere; }
@@ -20,15 +10,6 @@
 .audit-target { font-size: 12px; }
 .audit-details { max-width: 240px; color: var(--color-text-muted); white-space: normal; overflow-wrap: anywhere; }
 
-@media (max-width: 760px) {
-  .audit-page-heading h1 { font-size: 30px; }
-  .audit-panel .incident-search { flex-basis: 100%; }
-  .audit-panel .status-filter { flex: 1; min-width: 130px; }
-  .audit-panel .status-filter select { width: 100%; max-width: none; }
-}
-
 @media (max-width: 480px) {
   .audit-page-heading { align-items: flex-start; gap: 16px; }
-  .audit-page-heading p { max-width: 220px; font-size: 13px; line-height: 1.6; }
-  .audit-panel > .panel-heading { padding: 16px 16px 12px; }
 }

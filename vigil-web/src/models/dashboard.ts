@@ -1,11 +1,9 @@
 import type { Incident, IncidentStatus } from './incidents'
 import type { User } from './users'
-import type { AuditEntry } from './audit'
 
 export interface DashboardSnapshot {
   incidents: Incident[]
   users: User[]
-  activity: AuditEntry[]
   loadedAt: number
 }
 
@@ -45,10 +43,8 @@ export interface DashboardStatistics {
   active: number
   critical: number
   unassigned: number
-  completed: number
   resolutionRate: number
   averageResolutionHours: number | null
-  resolutionSampleSize: number
   reportedInWindow: number
   resolvedInWindow: number
   status: StatusCount[]

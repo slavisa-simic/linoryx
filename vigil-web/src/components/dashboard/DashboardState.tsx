@@ -1,14 +1,12 @@
 import { Icon } from '../Icon'
 
 interface DashboardStateProps {
-  name: string
   restricted: boolean
-  loading: boolean
   error: string
   onRetry(): void
 }
 
-export function DashboardState({ name, restricted, loading, error, onRetry }: DashboardStateProps) {
+export function DashboardState({ restricted, error, onRetry }: DashboardStateProps) {
   return (
     <>
       {restricted && (
@@ -16,17 +14,11 @@ export function DashboardState({ name, restricted, loading, error, onRetry }: Da
           <div className="state-icon">
             <Icon name="shield" size={28} />
           </div>
-          <h2>Welcome to your workspace, {name}.</h2>
+          <h2>Access restricted</h2>
           <p>
-            The incident analytics overview is available to administrators and
-            technicians. Your account has the User role.
+            Available to administrators and technicians.
           </p>
         </section>
-      )}
-      {loading && (
-        <div className="dashboard-panel dashboard-state" role="status">
-          Loading dashboard…
-        </div>
       )}
       {error && error !== 'SESSION_EXPIRED' && (
         <div className="dashboard-error" role="alert">

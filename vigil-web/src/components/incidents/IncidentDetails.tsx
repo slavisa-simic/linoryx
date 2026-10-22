@@ -344,11 +344,6 @@ export function IncidentDetails({
           )}
         </dl>
 
-        {loading && (
-          <p className="incident-muted" role="status">
-            Loading current details and comments…
-          </p>
-        )}
         {loadError && (
           <div className="incident-error">
             <FormMessage message={loadError} />

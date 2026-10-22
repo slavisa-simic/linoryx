@@ -15,12 +15,11 @@ import {
   YAxis
 } from 'recharts'
 import type { DashboardStatistics, StatusCount } from '../../models/dashboard'
-import type { IncidentStatus } from '../../models/incidents'
 import { Icon } from '../Icon'
+import { CategoryRadar } from './CategoryRadar'
 
 interface ChartPanelProps {
   title: string
-  description: string
   className?: string
   children: ReactNode
 }
@@ -34,16 +33,14 @@ interface DashboardChartsProps {
   data: DashboardStatistics
   days: number
   onDaysChange(days: number): void
-  onStatusSelect(status: IncidentStatus): void
 }
 
-function ChartPanel({ title, description, className = '', children }: ChartPanelProps) {
+function ChartPanel({ title, className = '', children }: ChartPanelProps) {
   return (
-    <section className={'dashboard-panel chart-panel ' + className}>
+    <section className={'dashboard-panel ' + className}>
       <header className="panel-heading">
         <div>
           <h2>{title}</h2>
-          <p>{description}</p>
         </div>
       </header>
       {children}
@@ -101,22 +98,6 @@ const tooltipStyle = {
   padding: '10px 14px'
 }
 const axisStyle = { fill: 'var(--color-text-muted)', fontSize: 12, fontFamily: 'var(--font-sans)' }
-function shortCategory(name: string): string {
-  if (name === 'Security') {
-    return 'Sec.'
-  }
-  if (name === 'Network') {
-    return 'Net.'
-  }
-  if (name === 'Application') {
-    return 'App'
-  }
-  if (name === 'Database') {
-    return 'DB'
-  }
-  return name
-}
-
 function percentage(value: number, total: number): number {
   if (total === 0) {
     return 0
@@ -134,13 +115,10 @@ function shortName(name: string): string {
 export function DashboardCharts({
   data,
   days,
-  onDaysChange,
-  onStatusSelect
+  onDaysChange
 }: DashboardChartsProps) {
   const [showReported, setShowReported] = useState(true)
   const [showResolved, setShowResolved] = useState(true)
-  const [showActiveCategories, setShowActiveCategories] = useState(true)
-  const [showCompletedCategories, setShowCompletedCategories] = useState(true)
 
   const trendRows: (string | number)[][] = []
   const severityRows: (string | number)[][] = []
@@ -175,12 +153,8 @@ export function DashboardCharts({
   const statusSummary = data.total + ' incidents: ' + statusDescriptions.join(', ')
   const severitySummary = severityDescriptions.join(', ') + ' active incidents.'
   let workloadSummary = 'No assigned active incidents.'
-  let assignmentMessage = 'active incidents need assignment'
   if (workloadDescriptions.length > 0) {
     workloadSummary = workloadDescriptions.join(', ')
-  }
-  if (data.unassigned === 1) {
-    assignmentMessage = 'active incident needs assignment'
   }
 
   return (
@@ -189,7 +163,6 @@ export function DashboardCharts({
         <header className="panel-heading trend-heading">
           <div>
             <h2>Incident activity</h2>
-            <p>Reported and resolved each day</p>
           </div>
           <div className="period-control" role="group" aria-label="Activity chart period">
             {[7, 30, 90].map((period) => (
@@ -306,7 +279,6 @@ export function DashboardCharts({
 
       <ChartPanel
         title="Incident status"
-        description="The full picture, at a glance"
         className="status-panel"
       >
         <div className="status-chart" role="img" aria-label={statusSummary}>
@@ -339,28 +311,18 @@ export function DashboardCharts({
         </div>
         <div className="status-legend">
           {data.status.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => onStatusSelect(item.key)}
-              aria-label={`Show ${item.name.toLowerCase()} incidents in the table`}
-            >
+            <div key={item.key}>
               <span className="legend-dot" style={{ background: item.fill }} />
               <span>{item.name}</span>
               <strong>{item.value.toLocaleString()}</strong>
               <span className="status-percentage">{percentage(item.value, data.total)}%</span>
-            </button>
+            </div>
           ))}
-        </div>
-        <div className="panel-footnote">
-          <Icon name="inbox" size={15} />
-          {data.unassigned} {assignmentMessage}
         </div>
       </ChartPanel>
 
       <ChartPanel
         title="Priority breakdown"
-        description="Severity of active incidents"
         className="severity-panel"
       >
         <div className="small-chart" role="img" aria-label={severitySummary}>
@@ -410,99 +372,22 @@ export function DashboardCharts({
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <ChartEmpty message="No active incidents. You're all caught up." />
+            <ChartEmpty message="No active incidents" />
           )}
         </div>
         <DataTable headers={['Priority', 'Active incidents']} rows={severityRows} />
       </ChartPanel>
 
-      <ChartPanel
-        title="Incidents by category"
-        description="Where incidents are happening"
-        className="category-panel"
-      >
-        <div className="chart-legend">
-          <button
-            type="button"
-            aria-pressed={showActiveCategories}
-            onClick={() => setShowActiveCategories(!showActiveCategories)}
-            className={!showActiveCategories ? 'legend-muted' : ''}
-          >
-            <span className="legend-dot legend-blue" />
-            Active
-          </button>
-          <button
-            type="button"
-            aria-pressed={showCompletedCategories}
-            onClick={() => setShowCompletedCategories(!showCompletedCategories)}
-            className={!showCompletedCategories ? 'legend-muted' : ''}
-          >
-            <span className="legend-dot legend-pale-blue" />
-            Completed
-          </button>
-        </div>
-        <div
-          className="small-chart category-chart"
-          role="img"
-          aria-label="Active and completed incident counts by category. Exact values are available below."
-        >
-          {data.total ? (
-            <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-              <BarChart
-                data={data.categories}
-                margin={{ top: 8, right: 4, left: -26, bottom: 0 }}
-                barSize={23}
-                accessibilityLayer
-              >
-                <CartesianGrid
-                  vertical={false}
-                  stroke="var(--dashboard-grid)"
-                  strokeDasharray="4 4"
-                />
-                <XAxis
-                  dataKey="name"
-                  tick={axisStyle}
-                  tickLine={false}
-                  axisLine={false}
-                  interval={0}
-                  tickFormatter={shortCategory}
-                  tickMargin={10}
-                />
-                <YAxis allowDecimals={false} tick={axisStyle} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={tooltipStyle} cursor={{ fill: 'var(--color-surface)' }} />
-                <Bar
-                  dataKey="active"
-                  name="Active"
-                  stackId="category"
-                  fill="var(--chart-blue)"
-                  hide={!showActiveCategories}
-                  isAnimationActive={false}
-                  radius={[0, 0, 0, 0]}
-                />
-                <Bar
-                  dataKey="completed"
-                  name="Completed"
-                  stackId="category"
-                  fill="var(--chart-pale-blue)"
-                  hide={!showCompletedCategories}
-                  isAnimationActive={false}
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <ChartEmpty message="Categories will appear with your first incident." />
-          )}
-        </div>
+      <ChartPanel title="Incidents by category" className="category-panel">
+        <CategoryRadar categories={data.categories} total={data.total} />
         <DataTable headers={['Category', 'Active', 'Completed']} rows={categoryRows} />
       </ChartPanel>
 
       <ChartPanel
         title="Team workload"
-        description="Top 5 · active assigned incidents"
         className="workload-panel"
       >
-        <div className="small-chart workload-chart" role="img" aria-label={workloadSummary}>
+        <div className="small-chart" role="img" aria-label={workloadSummary}>
           {data.workload.length ? (
             <ResponsiveContainer width="100%" height="100%" minWidth={0}>
               <BarChart
@@ -551,7 +436,7 @@ export function DashboardCharts({
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <ChartEmpty message="No active assignments at the moment." />
+            <ChartEmpty message="No active assignments" />
           )}
         </div>
         <DataTable headers={['Technician', 'Active assignments']} rows={workloadRows} />

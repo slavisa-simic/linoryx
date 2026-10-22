@@ -16,8 +16,6 @@ interface AuditPageProps {
   ): void
 }
 
-const currentYear = new Date().getFullYear()
-
 export function AuditPage({
   onNavigate
 }: AuditPageProps) {
@@ -75,13 +73,12 @@ export function AuditPage({
         page="audit"
         onNavigate={onNavigate}
       />
-      <main className="dashboard-main audit-main" id="audit-main">
-        <div className="audit-page-heading">
+      <main className="dashboard-main" id="audit-main">
+        <div className="page-heading audit-page-heading">
           <div>
             <h1>
               Audit logs<span className="heading-period">.</span>
             </h1>
-            <p>Review incident updates and user changes.</p>
           </div>
           <button
             className="dashboard-button button-neutral"
@@ -93,7 +90,7 @@ export function AuditPage({
           </button>
         </div>
         {error && error !== 'SESSION_EXPIRED' && (
-          <div className="audit-message">
+          <div className="page-message">
             <FormMessage message={error} />
             <button
               className="export-button"
@@ -104,18 +101,9 @@ export function AuditPage({
             </button>
           </div>
         )}
-        {loading && (
-          <div className="dashboard-panel audit-loading" role="status">
-            <Icon name="loader" className="loading-icon" /> Loading audit logs…
-          </div>
-        )}
         {!loading && !error && (
           <AuditTable entries={entries} onNavigate={onNavigate} />
         )}
-        <footer className="workspace-footer">
-          <span>© {currentYear} Vigil</span>
-          <span>Stay aware. Stay ahead.</span>
-        </footer>
       </main>
     </div>
   )

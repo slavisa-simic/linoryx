@@ -138,7 +138,7 @@ export function RegisterPage({ authApi, onRegister, onNavigate }: RegisterPagePr
           disabled={loading}
         />
         <FormMessage message={error} />
-        <SubmitButton label="Create account" loadingLabel="Creating account…" loading={loading} />
+        <SubmitButton label="Create account" disabled={loading} />
       </form>
       <p className="auth-switch">
         Already have an account?{' '}

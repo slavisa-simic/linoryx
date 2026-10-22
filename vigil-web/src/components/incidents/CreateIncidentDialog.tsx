@@ -94,7 +94,6 @@ export function CreateIncidentDialog({
         <div className="incident-modal-heading">
           <div>
             <h2 id="create-incident-title">New incident</h2>
-            <p>Describe what happened so the team can help.</p>
           </div>
           <button
             className="icon-button"

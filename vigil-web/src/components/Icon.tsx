@@ -2,7 +2,6 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  LoaderCircle,
   CircleAlert,
   CircleCheck,
   Check,
@@ -22,7 +21,6 @@ import {
   ChevronRight,
   Search,
   Clock,
-  TrendingUp,
   X,
   ShieldCheck,
   Inbox,
@@ -39,7 +37,6 @@ const icons = {
   eye: Eye,
   'eye-off': EyeOff,
   'arrow-right': ArrowRight,
-  loader: LoaderCircle,
   alert: CircleAlert,
   'check-circle': CircleCheck,
   check: Check,
@@ -59,7 +56,6 @@ const icons = {
   'chevron-right': ChevronRight,
   search: Search,
   clock: Clock,
-  trend: TrendingUp,
   close: X,
   shield: ShieldCheck,
   inbox: Inbox,
@@ -72,8 +68,10 @@ const icons = {
   send: Send
 }
 
+export type IconName = keyof typeof icons
+
 interface IconProps {
-  name: keyof typeof icons
+  name: IconName
   size?: number
   className?: string
 }

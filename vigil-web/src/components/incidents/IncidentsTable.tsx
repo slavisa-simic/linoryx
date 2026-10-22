@@ -13,7 +13,6 @@ interface IncidentsTableProps {
   status: IncidentStatus | 'ALL'
   onStatusChange(status: IncidentStatus | 'ALL'): void
   onOpen(incident: Incident): void
-  fullFilters?: boolean
 }
 
 const priorityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }
@@ -23,8 +22,7 @@ export function IncidentsTable({
   incidents,
   status,
   onStatusChange,
-  onOpen,
-  fullFilters = false
+  onOpen
 }: IncidentsTableProps) {
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('newest')
@@ -133,7 +131,7 @@ export function IncidentsTable({
 
   return (
     <section
-      className="dashboard-panel incidents-panel"
+      className="dashboard-panel table-panel incidents-panel"
       id="incident-list"
       aria-labelledby="incidents-title"
     >
@@ -182,46 +180,42 @@ export function IncidentsTable({
           </select>
           <Icon name="chevron-down" size={15} />
         </label>
-        {fullFilters && (
-          <>
-            <label className="status-filter">
-              <span className="sr-only">Filter incidents by priority</span>
-              <select
-                value={severity}
-                onChange={(event) => {
-                  setSeverity(event.target.value as Severity | 'ALL')
-                  setPage(0)
-                }}
-              >
-                <option value="ALL">All priorities</option>
-                <option value="CRITICAL">Critical</option>
-                <option value="HIGH">High</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="LOW">Low</option>
-              </select>
-              <Icon name="chevron-down" size={15} />
-            </label>
-            <label className="status-filter">
-              <span className="sr-only">Filter incidents by category</span>
-              <select
-                value={category}
-                onChange={(event) => {
-                  setCategory(event.target.value as IncidentCategory | 'ALL')
-                  setPage(0)
-                }}
-              >
-                <option value="ALL">All categories</option>
-                <option value="SECURITY">Security</option>
-                <option value="NETWORK">Network</option>
-                <option value="APPLICATION">Application</option>
-                <option value="CLOUD">Cloud</option>
-                <option value="DATABASE">Database</option>
-                <option value="OTHER">Other</option>
-              </select>
-              <Icon name="chevron-down" size={15} />
-            </label>
-          </>
-        )}
+        <label className="status-filter">
+          <span className="sr-only">Filter incidents by priority</span>
+          <select
+            value={severity}
+            onChange={(event) => {
+              setSeverity(event.target.value as Severity | 'ALL')
+              setPage(0)
+            }}
+          >
+            <option value="ALL">All priorities</option>
+            <option value="CRITICAL">Critical</option>
+            <option value="HIGH">High</option>
+            <option value="MEDIUM">Medium</option>
+            <option value="LOW">Low</option>
+          </select>
+          <Icon name="chevron-down" size={15} />
+        </label>
+        <label className="status-filter">
+          <span className="sr-only">Filter incidents by category</span>
+          <select
+            value={category}
+            onChange={(event) => {
+              setCategory(event.target.value as IncidentCategory | 'ALL')
+              setPage(0)
+            }}
+          >
+            <option value="ALL">All categories</option>
+            <option value="SECURITY">Security</option>
+            <option value="NETWORK">Network</option>
+            <option value="APPLICATION">Application</option>
+            <option value="CLOUD">Cloud</option>
+            <option value="DATABASE">Database</option>
+            <option value="OTHER">Other</option>
+          </select>
+          <Icon name="chevron-down" size={15} />
+        </label>
       </div>
 
       <div className="incident-table-scroll">
@@ -238,18 +232,13 @@ export function IncidentsTable({
               </th>
               <th scope="col">Assigned to</th>
               <th scope="col">Reported</th>
-              <th scope="col">
-                <span className="sr-only">Details</span>
-              </th>
             </tr>
           </thead>
           <tbody>
             {visible.map(function (incident) {
               let assignee = 'Unassigned'
-              let initial = ''
               if (incident.assignedToEmail) {
                 assignee = incident.assignedToEmail.split('@')[0]
-                initial = assignee.charAt(0).toUpperCase()
               }
 
               return (
@@ -258,6 +247,7 @@ export function IncidentsTable({
                     <button
                       className="incident-title-button"
                       type="button"
+                      aria-label={'Open incident INC-' + incident.id + ': ' + incident.title}
                       onClick={() => onOpen(incident)}
                     >
                       <span className="incident-reference">
@@ -265,7 +255,10 @@ export function IncidentsTable({
                         <span>·</span>
                         {categoryLabels[incident.category]}
                       </span>
-                      <span className="incident-title">{incident.title}</span>
+                      <span className="incident-title-row">
+                        <span className="incident-title">{incident.title}</span>
+                        <Icon name="arrow-up-right" size={14} />
+                      </span>
                     </button>
                   </td>
                   <td>
@@ -295,9 +288,7 @@ export function IncidentsTable({
                         className="table-assignee"
                         title={incident.assignedToEmail}
                       >
-                        <span className="assignee-avatar" aria-hidden="true">
-                          {initial}
-                        </span>
+                        <Icon name="wrench" size={15} />
                         <span>{assignee}</span>
                       </span>
                     )}
@@ -307,16 +298,6 @@ export function IncidentsTable({
                   </td>
                   <td className="table-date">
                     {formatDate(incident.createdAt)}
-                  </td>
-                  <td>
-                    <button
-                      className="icon-button table-open-button"
-                      type="button"
-                      aria-label={'View incident INC-' + incident.id}
-                      onClick={() => onOpen(incident)}
-                    >
-                      <Icon name="arrow-up-right" size={17} />
-                    </button>
                   </td>
                 </tr>
               )

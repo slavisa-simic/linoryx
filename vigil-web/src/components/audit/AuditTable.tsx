@@ -92,7 +92,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
 
   return (
     <section
-      className="dashboard-panel audit-panel"
+      className="dashboard-panel table-panel"
       aria-labelledby="audit-title"
     >
       <header className="panel-heading">

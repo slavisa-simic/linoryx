@@ -72,7 +72,7 @@ export function UsersTable({
 
   return (
     <section
-      className="dashboard-panel users-panel"
+      className="dashboard-panel table-panel"
       aria-labelledby="users-title"
     >
       <header className="panel-heading">
@@ -197,8 +197,7 @@ export function UsersTable({
         </div>
       </footer>
       <p className="users-table-note">
-        You cannot change your own role or disable your account. Role changes
-        require the user to sign in again.
+        Role changes require a new sign-in.
       </p>
     </section>
   )

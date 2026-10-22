@@ -150,11 +150,6 @@ export function WorkspaceNavbar({
           </button>
         </div>
       </div>
-      {session.role === 'TECHNICIAN' && (
-        <div className="workspace-scope">
-          Technician workspace · Showing incidents assigned to you
-        </div>
-      )}
     </header>
   )
 }

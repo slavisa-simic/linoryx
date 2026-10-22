@@ -15,8 +15,6 @@ interface UsersPageProps {
   onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit'): void
 }
 
-const currentYear = new Date().getFullYear()
-
 export function UsersPage({
   onNavigate
 }: UsersPageProps) {
@@ -151,13 +149,12 @@ export function UsersPage({
         page="users"
         onNavigate={onNavigate}
       />
-      <main className="dashboard-main users-main" id="users-main">
-        <div className="users-page-heading">
+      <main className="dashboard-main" id="users-main">
+        <div className="page-heading users-page-heading">
           <div>
             <h1>
               Users<span className="heading-period">.</span>
             </h1>
-            <p>Manage user roles and account access.</p>
           </div>
           <button
             className="dashboard-button button-neutral"
@@ -170,12 +167,12 @@ export function UsersPage({
         </div>
 
         {notice && (
-          <div className="users-message">
+          <div className="page-message">
             <FormMessage message={notice} type="success" />
           </div>
         )}
         {error && error !== 'SESSION_EXPIRED' && (
-          <div className="users-message">
+          <div className="page-message">
             <FormMessage message={error} />
             {users.length === 0 && (
               <button
@@ -188,11 +185,6 @@ export function UsersPage({
             )}
           </div>
         )}
-        {loading && (
-          <div className="dashboard-panel users-loading" role="status">
-            <Icon name="loader" className="loading-icon" /> Loading users…
-          </div>
-        )}
         {!loading && (!error || users.length > 0) && (
           <UsersTable
             users={users}
@@ -202,10 +194,6 @@ export function UsersPage({
             onAccessChange={changeAccess}
           />
         )}
-        <footer className="workspace-footer">
-          <span>© {currentYear} Vigil</span>
-          <span>Stay aware. Stay ahead.</span>
-        </footer>
       </main>
     </div>
   )

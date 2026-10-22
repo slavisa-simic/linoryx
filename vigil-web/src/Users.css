@@ -1,14 +1,4 @@
-.users-page-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
-.users-page-heading h1 { margin: 0 0 6px; font-size: 34px; font-weight: 500; letter-spacing: -1px; }
-.users-page-heading p { margin: 0; color: var(--color-text-muted); font-size: 14px; }
-.users-message { margin-bottom: 20px; }
-.users-loading { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 280px; color: var(--color-text-muted); }
-.users-panel > .panel-heading { padding: 18px 22px 12px; }
-.users-panel .table-toolbar { flex-wrap: wrap; }
-.users-panel .incident-search { flex-basis: 280px; }
 .users-table { min-width: 900px; }
-.users-table th { font-size: 11px; }
-.users-table td { padding-top: 12px; padding-bottom: 12px; }
 .user-table-name { display: flex; align-items: center; gap: 10px; }
 .user-table-name > svg { flex-shrink: 0; color: var(--color-text-muted); }
 .user-table-name strong { display: block; font-size: 13px; font-weight: 500; }
@@ -26,17 +16,8 @@
 .user-disabled { color: var(--color-text-muted); }
 .users-table-note { margin: 0; padding: 14px 22px; border-top: 1px solid var(--dashboard-border); color: var(--color-text-muted); font-size: 12px; line-height: 1.6; }
 
-@media (max-width: 760px) {
-  .users-page-heading h1 { font-size: 30px; }
-  .users-panel .incident-search { flex-basis: 100%; }
-  .users-panel .status-filter { flex: 1; min-width: 120px; }
-  .users-panel .status-filter select { width: 100%; max-width: none; }
-}
-
 @media (max-width: 480px) {
   .users-page-heading { align-items: flex-start; }
-  .users-page-heading p { max-width: 210px; font-size: 13px; line-height: 1.6; }
-  .users-panel > .panel-heading { padding: 16px 16px 12px; }
   .users-table-note { padding: 14px 16px; }
   .user-role-form select { font-size: 16px; }
 }

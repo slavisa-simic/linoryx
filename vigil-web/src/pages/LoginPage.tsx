@@ -81,18 +81,12 @@ export function LoginPage({ authApi, initialEmail, notice, onLogin, onNavigate }
           disabled={loading}
         />
         <FormMessage message={error} />
-        <SubmitButton label="Sign in" loadingLabel="Signing in…" loading={loading} />
+        <SubmitButton label="Sign in" disabled={loading} />
       </form>
-      {loading ? (
-        <p className="auth-switch" role="status">
-          Signing in…
-        </p>
-      ) : (
-        <p className="auth-switch">
-          No account yet?{' '}
-          <AuthPageLink page="register" label="Create account" onNavigate={onNavigate} />
-        </p>
-      )}
+      <p className="auth-switch">
+        No account yet?{' '}
+        <AuthPageLink page="register" label="Create account" onNavigate={onNavigate} />
+      </p>
     </AuthLayout>
   )
 }

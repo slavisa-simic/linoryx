@@ -147,7 +147,7 @@
 .field-input:disabled {
   background: var(--color-surface);
   color: var(--color-text-muted);
-  cursor: wait;
+  cursor: default;
 }
 
 .field-input-error {
@@ -275,11 +275,6 @@
 .text-link:hover {
   color: var(--color-primary-hover);
   text-decoration: underline;
-}
-
-.form-panel-footer {
-  color: var(--color-text-muted);
-  font-size: 11px;
 }
 
 .card-panel {
@@ -442,14 +437,6 @@
   overflow-wrap: anywhere;
 }
 
-.loading-icon {
-  animation: spin 900ms linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
 @media (min-width: 1600px) {
   .form-panel { padding: 48px 72px 32px; }
   .card-float { width: 340px; height: 460px; }
@@ -469,7 +456,6 @@
   .auth-main { padding: 48px 0; }
   .auth-content { max-width: 380px; }
   .card-panel { width: 100%; min-height: 560px; padding: 72px 24px; }
-  .form-panel-footer { text-align: center; }
   .field-input { font-size: 16px; }
 }
 
@@ -500,6 +486,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .loading-icon { animation: none; }
   .field-input, .primary-button { transition: none; }
 }

@@ -19,18 +19,12 @@ export function DashboardOperations({ data, users, admin }: DashboardOperationsP
 
   let teamLabel = 'Your workload'
   let teamCount = data.active
-  let teamDescription = 'active incidents assigned to you'
   let teamIcon: 'shield' | 'users' = 'shield'
-  let resolutionDescription = 'No resolved incidents yet'
 
   if (admin) {
     teamLabel = 'Available technicians'
     teamCount = availableTechnicians
-    teamDescription = 'enabled technician accounts'
     teamIcon = 'users'
-  }
-  if (data.resolutionSampleSize > 0) {
-    resolutionDescription = 'across ' + data.resolutionSampleSize + ' timed resolutions'
   }
 
   return (
@@ -43,7 +37,6 @@ export function DashboardOperations({ data, users, admin }: DashboardOperationsP
           <span>Average resolution</span>
           <strong>
             {formatDuration(data.averageResolutionHours)}
-            <small>{resolutionDescription}</small>
           </strong>
         </div>
       </div>
@@ -55,7 +48,6 @@ export function DashboardOperations({ data, users, admin }: DashboardOperationsP
           <span>Awaiting assignment</span>
           <strong>
             {data.unassigned}
-            <small>active incidents without a technician</small>
           </strong>
         </div>
       </div>
@@ -67,7 +59,6 @@ export function DashboardOperations({ data, users, admin }: DashboardOperationsP
           <span>{teamLabel}</span>
           <strong>
             {teamCount}
-            <small>{teamDescription}</small>
           </strong>
         </div>
       </div>

@@ -3,8 +3,6 @@ import type { ReactNode } from 'react'
 import { AccessCard } from './AccessCard'
 import { BrandLogo } from './BrandLogo'
 
-const currentYear = new Date().getFullYear()
-
 interface AuthLayoutProps {
   children: ReactNode
   page: 'login' | 'register'
@@ -29,7 +27,7 @@ export function AuthLayout({
     }
   }, [])
 
-  let layoutClass = 'auth-layout login-layout'
+  let layoutClass = 'auth-layout'
   let cardVariant: 'profile' | 'login' = 'login'
   if (page === 'register') {
     layoutClass = 'auth-layout register-layout'
@@ -48,7 +46,6 @@ export function AuthLayout({
         <main className="auth-main" id="main-content">
           <div className="auth-content">{children}</div>
         </main>
-        <footer className="form-panel-footer">© {currentYear} Vigil</footer>
       </section>
       <aside className="card-panel" aria-label="Access card preview" aria-hidden={page === 'login'}>
         <AccessCard

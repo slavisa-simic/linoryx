@@ -10,12 +10,11 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ loadedAt, restricted, loading, onRefresh }: DashboardHeaderProps) {
   return (
-    <div className="dashboard-heading">
+    <div className="page-heading dashboard-heading">
       <div>
         <h1>
           Dashboard<span className="heading-period">.</span>
         </h1>
-        <p>A clear view of your incidents. A better handle on what’s next.</p>
       </div>
       <div className="dashboard-heading-actions">
         <div className="dashboard-date">

@@ -17,8 +17,3 @@ export async function listAuditLogs(session: AuthSession): Promise<AuditEntry[]>
   }
   return entries
 }
-
-export async function getRecentAuditLogs(session: AuthSession): Promise<AuditEntry[]> {
-  const page: AuditPage = await apiRequest('/audit?size=6&sort=createdAt,desc', session.token)
-  return page.content
-}

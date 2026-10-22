@@ -2,25 +2,14 @@ import { Icon } from '../Icon'
 
 interface SubmitButtonProps {
   label: string
-  loadingLabel: string
-  loading: boolean
+  disabled: boolean
 }
 
-export function SubmitButton({ label, loadingLabel, loading }: SubmitButtonProps) {
-  let text = label
-  let icon: 'loader' | 'arrow-right' = 'arrow-right'
-  let iconClass = ''
-
-  if (loading) {
-    text = loadingLabel
-    icon = 'loader'
-    iconClass = 'loading-icon'
-  }
-
+export function SubmitButton({ label, disabled }: SubmitButtonProps) {
   return (
-    <button className="primary-button" type="submit" disabled={loading}>
-      <span>{text}</span>
-      <Icon name={icon} className={iconClass} />
+    <button className="primary-button" type="submit" disabled={disabled}>
+      <span>{label}</span>
+      <Icon name="arrow-right" />
     </button>
   )
 }

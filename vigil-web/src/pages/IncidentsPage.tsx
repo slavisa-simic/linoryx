@@ -5,7 +5,9 @@ import type { User } from '../models/users'
 import { getIncident, listIncidents } from '../api/incidentsApi'
 import { getTechnicians } from '../api/usersApi'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
-import { IncidentsTable } from '../components/dashboard/IncidentsTable'
+import { MetricCard } from '../components/workspace/MetricCard'
+import { IncidentsTable } from '../components/incidents/IncidentsTable'
+import { ExportIncidentsButton } from '../components/incidents/ExportIncidentsButton'
 import { CreateIncidentDialog } from '../components/incidents/CreateIncidentDialog'
 import { IncidentDetails } from '../components/incidents/IncidentDetails'
 import { FormMessage } from '../components/auth/FormMessage'
@@ -19,8 +21,6 @@ interface IncidentsPageProps {
     incidentId?: number
   ): void
 }
-
-const currentYear = new Date().getFullYear()
 
 export function IncidentsPage({
   onNavigate
@@ -89,14 +89,6 @@ export function IncidentsPage({
     }
   }, [error, onSessionExpired])
 
-  let description = 'All reported incidents. Assign, investigate and resolve.'
-  if (session.role === 'TECHNICIAN') {
-    description = 'Your assigned incidents. Keep the investigation moving.'
-  }
-  if (session.role === 'USER') {
-    description = 'Report a problem and follow the progress of your incidents.'
-  }
-
   const open = incidents.filter((incident) => incident.status === 'OPEN').length
   const inProgress = incidents.filter(
     (incident) => incident.status === 'IN_PROGRESS'
@@ -139,12 +131,11 @@ export function IncidentsPage({
         onNavigate={onNavigate}
       />
       <main className="dashboard-main incidents-main" id="incidents-main">
-        <div className="incidents-page-heading">
+        <div className="page-heading incidents-page-heading">
           <div>
             <h1>
               Incidents<span className="heading-period">.</span>
             </h1>
-            <p>{description}</p>
           </div>
           <div className="incidents-page-actions">
             <button
@@ -170,12 +161,12 @@ export function IncidentsPage({
         </div>
 
         {notice && (
-          <div className="incidents-notice">
+          <div className="page-message">
             <FormMessage message={notice} type="success" />
           </div>
         )}
         {error && error !== 'SESSION_EXPIRED' && (
-          <div className="incidents-notice">
+          <div className="page-message">
             <FormMessage message={error} />
             <button
               className="export-button"
@@ -186,48 +177,28 @@ export function IncidentsPage({
             </button>
           </div>
         )}
-        {loading && (
-          <div className="dashboard-panel incidents-loading" role="status">
-            <Icon name="loader" className="loading-icon" /> Loading incidents…
-          </div>
-        )}
         {!loading && !error && (
           <>
-            <div className="incidents-summary" aria-label="Incident counts">
-              <div>
-                <span>Total incidents</span>
-                <strong>{incidents.length}</strong>
-                <Icon name="layers" size={22} />
-              </div>
-              <div>
-                <span>Open</span>
-                <strong>{open}</strong>
-                <Icon name="inbox" size={22} />
-              </div>
-              <div>
-                <span>In progress</span>
-                <strong>{inProgress}</strong>
-                <Icon name="clock" size={22} />
-              </div>
-              <div>
-                <span>Completed</span>
-                <strong>{completed}</strong>
-                <Icon name="check-circle" size={22} />
-              </div>
-            </div>
+            <section className="metric-grid" aria-label="Incident counts">
+              <MetricCard label="Total incidents" value={incidents.length} icon="layers" color="blue" />
+              <MetricCard label="Open" value={open} icon="inbox" color="dark-blue" />
+              <MetricCard label="In progress" value={inProgress} icon="clock" color="orange" />
+              <MetricCard label="Completed" value={completed} icon="check-circle" color="green" />
+            </section>
             <IncidentsTable
               incidents={incidents}
               status={status}
               onStatusChange={setStatus}
               onOpen={setSelected}
-              fullFilters
             />
+            <div className="incidents-export">
+              <ExportIncidentsButton
+                incidents={incidents}
+                disabled={incidents.length === 0}
+              />
+            </div>
           </>
         )}
-        <footer className="workspace-footer">
-          <span>© {currentYear} Vigil</span>
-          <span>Stay aware. Stay ahead.</span>
-        </footer>
       </main>
       {creating && (
         <CreateIncidentDialog
