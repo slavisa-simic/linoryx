@@ -16,84 +16,35 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleUnauthorized(
             UnauthorizedException exception
     ) {
-        ApiError error = new ApiError(
-                HttpStatus.UNAUTHORIZED.value(),
-                "Unauthorized",
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.UNAUTHORIZED)
-                .body(error);
+        return errorResponse(HttpStatus.UNAUTHORIZED, exception.getMessage());
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiError> handleNotFound(
             ResourceNotFoundException exception
     ) {
-
-        ApiError error = new ApiError(
-                HttpStatus.NOT_FOUND.value(),
-                "Not Found",
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(error);
+        return errorResponse(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiError> handleBadRequest(
             IllegalArgumentException exception
     ) {
-
-        ApiError error = new ApiError(
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(error);
+        return errorResponse(HttpStatus.BAD_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(IllegalStateException.class)
     public ResponseEntity<ApiError> handleConflict(
             IllegalStateException exception
     ) {
-
-        ApiError error = new ApiError(
-                HttpStatus.CONFLICT.value(),
-                "Conflict",
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CONFLICT)
-                .body(error);
+        return errorResponse(HttpStatus.CONFLICT, exception.getMessage());
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiError> handleAccessDenied(
             AccessDeniedException exception
     ) {
-
-        ApiError error = new ApiError(
-                HttpStatus.FORBIDDEN.value(),
-                "Forbidden",
-                exception.getMessage(),
-                LocalDateTime.now()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(error);
+        return errorResponse(HttpStatus.FORBIDDEN, exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -112,15 +63,17 @@ public class GlobalExceptionHandler {
                 )
                 .orElse("Validation failed");
 
+        return errorResponse(HttpStatus.BAD_REQUEST, message);
+    }
+
+    private ResponseEntity<ApiError> errorResponse(HttpStatus status, String message) {
         ApiError error = new ApiError(
-                HttpStatus.BAD_REQUEST.value(),
-                "Bad Request",
+                status.value(),
+                status.getReasonPhrase(),
                 message,
                 LocalDateTime.now()
         );
 
-        return ResponseEntity
-                .status(HttpStatus.BAD_REQUEST)
-                .body(error);
+        return ResponseEntity.status(status).body(error);
     }
 }

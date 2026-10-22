@@ -29,21 +29,6 @@ public class NotificationService {
         this.incidentRepository = incidentRepository;
     }
 
-    public void notifyCriticalIncident(
-            Incident incident
-    ) {
-
-        List<User> admins =
-                userRepository.findAllByRoleAndEnabledTrue(
-                        UserRole.ADMIN
-                );
-
-        emailService.sendCriticalIncidentAlert(
-                incident,
-                admins
-        );
-    }
-
     public void processIncidentAlerts(Incident incident) {
 
         List<User> admins =
