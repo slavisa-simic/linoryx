@@ -6,8 +6,6 @@ import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { AuditTable } from '../components/audit/AuditTable'
 import { FormMessage } from '../components/auth/FormMessage'
 import { Icon } from '../components/Icon'
-import '../Dashboard.css'
-import '../Audit.css'
 
 interface AuditPageProps {
   onNavigate(

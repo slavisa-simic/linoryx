@@ -9,7 +9,6 @@ import { AuditPage } from './pages/AuditPage'
 import type { AuthResponse, AuthSession } from './models/auth'
 import type { AuthApi } from './api/authApi'
 import type { SessionService } from './services/SessionService'
-import './App.css'
 
 interface AppProps {
   authApi: AuthApi

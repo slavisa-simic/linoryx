@@ -1,0 +1,127 @@
+.form-field {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.field-input {
+  display: block;
+  width: 100%;
+  height: var(--field-height);
+  padding: 0 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 7px;
+  outline: none;
+  background: var(--color-white);
+  color: var(--color-text);
+  font-size: 14px;
+  transition: border-color 150ms, box-shadow 150ms;
+}
+
+.field-input::placeholder {
+  color: var(--color-placeholder);
+  opacity: 1;
+}
+
+.field-input:hover {
+  border-color: var(--color-placeholder);
+}
+
+.field-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.field-input:disabled {
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  cursor: default;
+}
+
+.field-input-error {
+  border-color: var(--color-danger);
+}
+
+.password-input {
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--field-height) - 4px);
+  height: calc(var(--field-height) - 4px);
+  padding: 0;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--color-text-muted);
+}
+
+.password-toggle:hover {
+  color: var(--color-primary);
+}
+
+.field-hint, .field-error {
+  margin: 7px 0 0;
+  font-size: 12px;
+}
+
+.field-hint {
+  color: var(--color-text-muted);
+}
+
+.field-error {
+  color: var(--color-danger);
+}
+
+.form-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-danger-border);
+  border-radius: 7px;
+  background: var(--color-danger-light);
+  color: var(--color-danger);
+  font-size: 13px;
+}
+
+.message-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.message-success {
+  border-color: var(--color-success-border);
+  background: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.message-warning {
+  border-color: var(--color-warning-border);
+  background: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+@media (max-width: 900px) {
+  .field-input { font-size: 16px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field-input { transition: none; }
+}

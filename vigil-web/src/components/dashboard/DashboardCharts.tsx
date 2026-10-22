@@ -422,7 +422,7 @@ export function DashboardCharts({
                 <Bar
                   dataKey="value"
                   name="Active incidents"
-                  fill="var(--chart-indigo)"
+                  fill="var(--chart-orange-dark)"
                   radius={[0, 4, 4, 0]}
                   isAnimationActive={false}
                 >

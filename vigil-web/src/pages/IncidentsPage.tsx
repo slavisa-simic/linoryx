@@ -12,8 +12,6 @@ import { CreateIncidentDialog } from '../components/incidents/CreateIncidentDial
 import { IncidentDetails } from '../components/incidents/IncidentDetails'
 import { FormMessage } from '../components/auth/FormMessage'
 import { Icon } from '../components/Icon'
-import '../Dashboard.css'
-import '../Incidents.css'
 
 interface IncidentsPageProps {
   onNavigate(

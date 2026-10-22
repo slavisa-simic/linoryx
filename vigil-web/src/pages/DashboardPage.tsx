@@ -11,7 +11,6 @@ import { DashboardCharts } from '../components/dashboard/DashboardCharts'
 import { DashboardHeader } from '../components/dashboard/DashboardHeader'
 import { DashboardState } from '../components/dashboard/DashboardState'
 import { DashboardOperations } from '../components/dashboard/DashboardOperations'
-import '../Dashboard.css'
 
 interface DashboardPageProps {
   onNavigate(

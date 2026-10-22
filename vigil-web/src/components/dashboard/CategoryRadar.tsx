@@ -52,8 +52,8 @@ export function CategoryRadar({ categories, total }: CategoryRadarProps) {
               <Radar
                 name="Completed"
                 dataKey="completed"
-                stroke="var(--chart-indigo)"
-                fill="var(--chart-indigo)"
+                stroke="var(--chart-orange-dark)"
+                fill="var(--chart-orange-dark)"
                 fillOpacity={0.06}
                 strokeDasharray="4 3"
                 strokeWidth={2}
@@ -72,7 +72,7 @@ export function CategoryRadar({ categories, total }: CategoryRadarProps) {
           Active
         </button>
         <button type="button" aria-pressed={showCompleted} onClick={() => setShowCompleted(!showCompleted)}>
-          <span className="legend-dot legend-indigo" />
+          <span className="legend-dot legend-orange-dark" />
           Completed
         </button>
       </div>

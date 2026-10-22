@@ -8,8 +8,6 @@ import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { UsersTable } from '../components/users/UsersTable'
 import { FormMessage } from '../components/auth/FormMessage'
 import { Icon } from '../components/Icon'
-import '../Dashboard.css'
-import '../Users.css'
 
 interface UsersPageProps {
   onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit'): void

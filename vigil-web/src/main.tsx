@@ -3,6 +3,14 @@ import { createRoot } from 'react-dom/client'
 import App from './App'
 import { createAuthApi } from './api/authApi'
 import { createSessionService } from './services/createSessionService'
+// Redosled CSS importa cuva postojeci izgled stranica.
+import './workspace.css'
+import './Dashboard.css'
+import './Incidents.css'
+import './Users.css'
+import './Audit.css'
+import './forms.css'
+import './App.css'
 import './index.css'
 
 // URL i vreme cekanja citamo iz .env, a servise prosledjujemo komponentama.
