@@ -7,6 +7,7 @@ import com.vigil.api.audit.domain.AuditAction;
 import com.vigil.api.audit.domain.AuditLog;
 import com.vigil.api.audit.repository.AuditLogRepository;
 import com.vigil.api.exception.UnauthorizedException;
+import com.vigil.api.incident.domain.IncidentStatus;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.dto.UserResponse;
 import com.vigil.api.user.repository.UserRepository;
@@ -16,6 +17,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 public class UserService {
@@ -90,7 +93,7 @@ public class UserService {
             return toResponse(user);
         }
         ensureAnotherAdmin(user);
-        ensureNoAssignedIncidents(user);
+        ensureNoActiveAssignedIncidents(user);
 
         UserRole previousRole = user.getRole();
         user.changeRole(role);
@@ -119,7 +122,7 @@ public class UserService {
         if (!user.isEnabled()) {
             return toResponse(user);
         }
-        ensureNoAssignedIncidents(user);
+        ensureNoActiveAssignedIncidents(user);
         user.disable();
 
         User savedUser = userRepository.save(user);
@@ -167,11 +170,13 @@ public class UserService {
         }
     }
 
-    private void ensureNoAssignedIncidents(User user) {
+    private void ensureNoActiveAssignedIncidents(User user) {
         if (user.getRole() == UserRole.TECHNICIAN) {
-            long assignedIncidents = incidentRepository.countByAssignedToId(user.getId());
-            if (assignedIncidents != 0) {
-                throw new IllegalStateException("This technician still has assigned incidents. Reassign them before changing the role or disabling the account.");
+            boolean hasActiveIncidents = incidentRepository.existsByAssignedToIdAndStatusIn(
+                    user.getId(), List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
+            );
+            if (hasActiveIncidents) {
+                throw new IllegalStateException("This technician still has active assigned incidents. Reassign them before changing the role or disabling the account.");
             }
         }
     }

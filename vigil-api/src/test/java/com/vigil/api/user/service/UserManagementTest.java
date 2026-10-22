@@ -5,6 +5,7 @@ import com.vigil.api.audit.domain.AuditLog;
 import com.vigil.api.audit.repository.AuditLogRepository;
 import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.exception.UnauthorizedException;
+import com.vigil.api.incident.domain.IncidentStatus;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
@@ -75,11 +76,13 @@ class UserManagementTest {
 
     @ParameterizedTest
     @EnumSource(value = UserRole.class, names = {"USER", "ADMIN"})
-    void cannotChangeTechnicianRoleWhileIncidentsAreAssigned(UserRole role) {
+    void cannotChangeTechnicianRoleWhileActiveIncidentsAreAssigned(UserRole role) {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.countByAssignedToId(2L)).thenReturn(1L);
+        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+                2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
+        )).thenReturn(true);
 
         var exception = assertThrows(IllegalStateException.class,
                 () -> userService.changeUserRole(admin.getEmail(), 2L, role));
@@ -92,11 +95,13 @@ class UserManagementTest {
 
     @ParameterizedTest
     @EnumSource(value = UserRole.class, names = {"USER", "ADMIN"})
-    void canChangeTechnicianRoleWhenNoIncidentsAreAssigned(UserRole role) {
+    void canChangeTechnicianRoleWhenNoActiveIncidentsAreAssigned(UserRole role) {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.countByAssignedToId(2L)).thenReturn(0L);
+        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+                2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
+        )).thenReturn(false);
         when(userRepository.save(technician)).thenReturn(technician);
 
         assertEquals(role, userService.changeUserRole(admin.getEmail(), 2L, role).role());
@@ -104,11 +109,13 @@ class UserManagementTest {
     }
 
     @Test
-    void cannotDisableTechnicianWhileIncidentsAreAssigned() {
+    void cannotDisableTechnicianWhileActiveIncidentsAreAssigned() {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.countByAssignedToId(2L)).thenReturn(1L);
+        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+                2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
+        )).thenReturn(true);
 
         var exception = assertThrows(IllegalStateException.class,
                 () -> userService.disableUser(admin.getEmail(), 2L));
@@ -120,11 +127,13 @@ class UserManagementTest {
     }
 
     @Test
-    void canDisableTechnicianWhenNoIncidentsAreAssigned() {
+    void canDisableTechnicianWhenNoActiveIncidentsAreAssigned() {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.countByAssignedToId(2L)).thenReturn(0L);
+        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+                2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
+        )).thenReturn(false);
         when(userRepository.save(technician)).thenReturn(technician);
 
         assertFalse(userService.disableUser(admin.getEmail(), 2L).enabled());
