@@ -20,7 +20,7 @@ spring:
     name: vigil-api
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/vigil_db
+    url: ${DB_URL}
     username: vigil_api_user
     password: ${DB_PASSWORD}
 

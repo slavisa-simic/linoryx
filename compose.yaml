@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:18.6
+    environment:
+      POSTGRES_DB: vigil_db
+      POSTGRES_USER: vigil_api_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-h",
+          "127.0.0.1",
+          "-U",
+          "vigil_api_user",
+          "-d",
+          "vigil_db",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    image: vigil-api:local
+    env_file:
+      - ./vigil-api/.env
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/vigil_db
+      DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: vigil-web:local
+    ports:
+      - "127.0.0.1:8081:80"
+    depends_on:
+      api:
+        condition: service_started
+        restart: true
+
+volumes:
+  postgres_data:
