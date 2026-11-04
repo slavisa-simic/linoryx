@@ -1,25 +1,18 @@
 package com.vigil.api.audit.service;
 
 import com.vigil.api.audit.repository.AuditLogRepository;
-import com.vigil.api.incident.repository.IncidentRepository;
-import com.vigil.api.user.service.UserService;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.*;
-import com.vigil.api.audit.repository.AuditLogRepository;
 import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.repository.IncidentRepository;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.service.UserService;
-
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,10 +20,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
-
-import java.util.Optional;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -47,6 +36,7 @@ class AuditServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock private CustomerReportRepository reports;
     @InjectMocks
     private AuditService auditService;
 
@@ -113,7 +103,6 @@ class AuditServiceTest {
         String email = "user@test.com";
 
         User currentUser = mock(User.class);
-        User creator = mock(User.class);
         Incident incident = mock(Incident.class);
 
         Pageable pageable = PageRequest.of(0, 20);
@@ -126,15 +115,6 @@ class AuditServiceTest {
 
         when(currentUser.getRole())
                 .thenReturn(UserRole.USER);
-
-        when(currentUser.getId())
-                .thenReturn(10L);
-
-        when(incident.getCreatedBy())
-                .thenReturn(creator);
-
-        when(creator.getId())
-                .thenReturn(20L);
 
         assertThrows(
                 AccessDeniedException.class,

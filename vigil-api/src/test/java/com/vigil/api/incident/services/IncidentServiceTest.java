@@ -6,32 +6,25 @@ import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.dto.IncidentResponse;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.notification.NotificationService;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
-import com.vigil.api.user.repository.UserRepository;
 import com.vigil.api.user.service.UserService;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mock;
 
 @ExtendWith(MockitoExtension.class)
 class IncidentServiceTest {
 
     @Mock
     private IncidentRepository incidentRepository;
-
-    @Mock
-    private UserRepository userRepository;
 
     @Mock
     private UserService userService;
@@ -42,6 +35,7 @@ class IncidentServiceTest {
     @Mock
     private NotificationService notificationService;
 
+    @Mock private CustomerReportRepository reports;
     @InjectMocks
     private IncidentService incidentService;
 
@@ -115,39 +109,4 @@ class IncidentServiceTest {
         );
     }
 
-    @Test
-    void assignIncident_whenTargetUserIsNotTechnician_throwsIllegalArgumentException() {
-
-        Long incidentId = 1L;
-        Long technicianId = 2L;
-        String adminEmail = "admin@test.com";
-
-        User admin = mock(User.class);
-        User targetUser = mock(User.class);
-        Incident incident = mock(Incident.class);
-
-        when(userService.getActiveUser(adminEmail))
-                .thenReturn(admin);
-
-        when(admin.getRole())
-                .thenReturn(UserRole.ADMIN);
-
-        when(userRepository.findById(technicianId))
-                .thenReturn(Optional.of(targetUser));
-
-        when(incidentRepository.findById(incidentId))
-                .thenReturn(Optional.of(incident));
-
-        when(targetUser.getRole())
-                .thenReturn(UserRole.USER);
-
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> incidentService.assignIncident(
-                        incidentId,
-                        technicianId,
-                        adminEmail
-                )
-        );
-    }
 }

@@ -1,6 +1,14 @@
 import type { AuditEntry } from '../models/audit'
 
 export const auditActionLabels = {
+  REPORT_CREATED: 'Report created',
+  REPORT_LINKED: 'Report linked to incident',
+  REPORT_ASSIGNED: 'Report technician assigned',
+  REPORT_STARTED: 'Report work started',
+  REPORT_RESOLVED: 'Report resolved',
+  CUSTOMER_CONFIRMED: 'Customer confirmed fix',
+  CUSTOMER_STILL_NOT_WORKING: 'Customer: still not working',
+  REPORT_CLOSED: 'Report closed',
   CREATED: 'Incident created',
   ASSIGNED: 'Technician assigned',
   STARTED: 'Work started',

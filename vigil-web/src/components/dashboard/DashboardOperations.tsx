@@ -29,7 +29,7 @@ export function DashboardOperations({ data, technicians, canManageIncidents }: D
           <Icon name="clock" size={20} />
         </span>
         <div>
-          <span>Average resolution</span>
+          <span>Average incident closure</span>
           <strong>
             {formatDuration(data.averageResolutionHours)}
           </strong>
@@ -40,7 +40,7 @@ export function DashboardOperations({ data, technicians, canManageIncidents }: D
           <Icon name="assign" size={20} />
         </span>
         <div>
-          <span>Awaiting assignment</span>
+          <span>Reports awaiting assignment</span>
           <strong>
             {data.unassigned}
           </strong>

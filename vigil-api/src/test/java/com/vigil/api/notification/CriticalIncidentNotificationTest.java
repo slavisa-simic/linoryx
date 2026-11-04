@@ -8,10 +8,12 @@ import com.vigil.api.incident.domain.Severity;
 import com.vigil.api.incident.dto.CreateIncidentRequest;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.incident.services.IncidentService;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
 import com.vigil.api.user.service.UserService;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,14 +25,13 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CriticalIncidentNotificationTest {
+    @Mock private CustomerReportRepository reports;
     @Mock private IncidentRepository incidentRepository;
     @Mock private UserRepository userRepository;
     @Mock private UserService userService;
@@ -43,9 +44,10 @@ class CriticalIncidentNotificationTest {
     void setUp() {
         EmailService emailService = new EmailService(mailSender, "alerts@test.com");
         NotificationService notifications = new NotificationService(userRepository, emailService, incidentRepository);
-        incidentService = new IncidentService(incidentRepository, userRepository, userService, auditService, notifications);
-        creator = new User("user@test.com", "hash", "Marko", "Petrovic", UserRole.USER);
+        incidentService = new IncidentService(incidentRepository, reports, userService, auditService, notifications);
+        creator = new User("user@test.com", "hash", "Marko", "Petrovic", UserRole.DISPATCHER);
         ReflectionTestUtils.setField(creator, "id", 3L);
+        when(reports.findForUpdate(1L)).thenReturn(java.util.Optional.of(new com.vigil.api.report.domain.CustomerReport(null, com.vigil.api.report.domain.ReportCategory.NO_INTERNET, "No connection")));
         when(userService.getActiveUser(creator.getEmail())).thenReturn(creator);
         when(incidentRepository.save(any(Incident.class))).thenAnswer(invocation -> {
             Incident incident = invocation.getArgument(0);
@@ -61,7 +63,7 @@ class CriticalIncidentNotificationTest {
         when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN)).thenReturn(List.of(admin, secondAdmin));
 
         var result = incidentService.createIncident(new CreateIncidentRequest(
-                "Critical network outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.NETWORK
+                "Critical network outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.NETWORK, List.of(1L)
         ), creator.getEmail());
 
         ArgumentCaptor<SimpleMailMessage> mail = ArgumentCaptor.forClass(SimpleMailMessage.class);
@@ -85,7 +87,7 @@ class CriticalIncidentNotificationTest {
         doThrow(new MailSendException("SMTP unavailable")).doNothing().when(mailSender).send(any(SimpleMailMessage.class));
 
         var result = incidentService.createIncident(new CreateIncidentRequest(
-                "Critical outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.NETWORK
+                "Critical outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.NETWORK, List.of(1L)
         ), creator.getEmail());
 
         assertEquals(91L, result.id());

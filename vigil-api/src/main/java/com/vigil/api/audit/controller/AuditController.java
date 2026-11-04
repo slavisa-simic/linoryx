@@ -2,7 +2,6 @@ package com.vigil.api.audit.controller;
 
 import com.vigil.api.audit.dto.AuditResponse;
 import com.vigil.api.audit.service.AuditService;
-
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springdoc.core.annotations.ParameterObject;
@@ -33,7 +32,7 @@ public class AuditController {
 
     @GetMapping("/incidents/{incidentId}/audit")
     @PreAuthorize(
-            "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN', 'DISPATCHER')"
+            "hasAnyRole('TECHNICIAN', 'ADMIN', 'DISPATCHER')"
     )
     public Page<AuditResponse> getIncidentAudit(
             @PathVariable Long incidentId,

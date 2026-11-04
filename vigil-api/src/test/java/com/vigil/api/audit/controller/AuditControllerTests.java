@@ -7,6 +7,8 @@ import com.vigil.api.config.JwtConfig;
 import com.vigil.api.config.SecurityConfig;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.service.UserService;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -17,9 +19,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -42,7 +41,7 @@ class AuditControllerTests {
     @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
     void operatorsCanReadAuditLogsIncludingRoleChanges(UserRole role) throws Exception {
         AuditResponse entry = new AuditResponse(
-                12L, null, 1L, "Ana", "Admin", 2L, "Marko", "User",
+                12L, null, null, 1L, "Ana", "Admin", 2L, "Marko", "User",
                 AuditAction.USER_ROLE_CHANGED, LocalDateTime.now(), UserRole.USER, UserRole.TECHNICIAN
         );
         when(auditService.getAllAuditLogs(eq("admin@test.com"), any()))
@@ -74,7 +73,7 @@ class AuditControllerTests {
     void allRolesCanRequestVisibleIncidentHistory(UserRole role) throws Exception {
         mvc.perform(get("/api/incidents/10/audit")
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role.name()))))
-                .andExpect(status().isOk());
+                .andExpect(status().is(role == UserRole.USER ? 403 : 200));
     }
 
     @Test

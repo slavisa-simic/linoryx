@@ -1,3 +1,4 @@
+import type { CustomerReport } from '../../models/reports'
 import { useUser } from '../../context/UserContext'
 import { useEffect, useState } from 'react'
 import type { SubmitEvent } from 'react'
@@ -7,11 +8,13 @@ import { FormMessage } from '../auth/FormMessage'
 import { Icon } from '../Icon'
 
 interface CreateIncidentDialogProps {
+  reports: CustomerReport[]
   onCreated(incident: Incident): void
   onClose(): void
 }
 
 export function CreateIncidentDialog({
+  reports,
   onCreated,
   onClose
 }: CreateIncidentDialogProps) {
@@ -52,6 +55,7 @@ export function CreateIncidentDialog({
     setError('')
     try {
       const incident = await createIncident(session, {
+        reportIds: reports.map(report => report.id),
         title: title.trim(),
         description: description.trim(),
         category: category,
@@ -105,6 +109,7 @@ export function CreateIncidentDialog({
             <Icon name="close" size={20} />
           </button>
         </div>
+        <p>Selected reports: {reports.map(report => 'REP-' + report.id).join(', ')}</p>
         <form className="incident-form" onSubmit={submit} aria-busy={saving}>
           <div className="incident-form-field">
             <label htmlFor="new-incident-title">Title</label>

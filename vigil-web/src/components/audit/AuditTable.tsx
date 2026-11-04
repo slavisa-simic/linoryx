@@ -12,7 +12,7 @@ import { Icon } from '../Icon'
 interface AuditTableProps {
   entries: AuditEntry[]
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'reports',
     incidentId?: number
   ): void
 }
@@ -32,7 +32,8 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
     if (scope === 'INCIDENTS' && entry.incidentId === null) {
       return false
     }
-    if (scope === 'USERS' && entry.incidentId !== null) {
+    if (scope === 'REPORTS' && !entry.reportId) return false
+    if (scope === 'USERS' && (entry.incidentId !== null || entry.reportId)) {
       return false
     }
     let text =
@@ -44,6 +45,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
     if (entry.incidentId !== null) {
       text = text + ' INC-' + entry.incidentId
     }
+    if (entry.reportId) text += ' REP-' + entry.reportId
     if (entry.previousRole && entry.newRole) {
       text =
         text +
@@ -128,6 +130,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
             }}
           >
             <option value="ALL">All actions</option>
+{Object.entries(auditActionLabels).filter(([value]) => value.startsWith('REPORT_') || value.startsWith('CUSTOMER_')).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             <option value="CREATED">Incident created</option>
             <option value="ASSIGNED">Technician assigned</option>
             <option value="STARTED">Work started</option>
@@ -154,7 +157,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
           >
             <option value="ALL">All types</option>
             <option value="INCIDENTS">Incidents</option>
-            <option value="USERS">Users</option>
+            <option value="USERS">Users</option><option value="REPORTS">Reports</option>
           </select>
           <Icon name="chevron-down" size={14} />
         </div>
@@ -176,7 +179,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
           <tbody>
             {visible.map(function (entry) {
               let details = '—'
-              if (entry.action === 'ASSIGNED' && entry.targetUserId !== null) {
+              if ((entry.action === 'ASSIGNED' || entry.action === 'REPORT_ASSIGNED') && entry.targetUserId !== null) {
                 details = 'Assigned to ' + auditTargetName(entry)
               }
               if (entry.previousRole && entry.newRole) {
@@ -217,6 +220,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
                     </span>
                   </td>
                   <td>
+                    {entry.reportId && <a className="audit-incident-link" href="/reports" onClick={event => { event.preventDefault(); onNavigate('reports') }}>REP-{entry.reportId}</a>}
                     {entry.incidentId !== null && (
                       <a
                         className="audit-incident-link"
@@ -240,7 +244,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
                         <Icon name="arrow-up-right" size={13} />
                       </a>
                     )}
-                    {entry.incidentId === null && (
+                    {entry.incidentId === null && !entry.reportId && (
                       <span className="audit-target">
                         {auditTargetName(entry)}
                       </span>

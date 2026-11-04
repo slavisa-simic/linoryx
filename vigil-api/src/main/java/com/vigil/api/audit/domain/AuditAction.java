@@ -1,6 +1,14 @@
 package com.vigil.api.audit.domain;
 
 public enum AuditAction {
+    REPORT_CREATED,
+    REPORT_LINKED,
+    REPORT_ASSIGNED,
+    REPORT_STARTED,
+    REPORT_RESOLVED,
+    CUSTOMER_CONFIRMED,
+    CUSTOMER_STILL_NOT_WORKING,
+    REPORT_CLOSED,
     CREATED,
     ASSIGNED,
     STARTED,

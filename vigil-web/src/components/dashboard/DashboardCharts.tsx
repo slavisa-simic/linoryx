@@ -118,7 +118,7 @@ export function DashboardCharts({
   onDaysChange
 }: DashboardChartsProps) {
   const [showReported, setShowReported] = useState(true)
-  const [showResolved, setShowResolved] = useState(true)
+  const [showClosed, setShowClosed] = useState(true)
 
   const trendRows: (string | number)[][] = []
   const severityRows: (string | number)[][] = []
@@ -152,7 +152,7 @@ export function DashboardCharts({
 
   const statusSummary = data.total + ' incidents: ' + statusDescriptions.join(', ')
   const severitySummary = severityDescriptions.join(', ') + ' active incidents.'
-  let workloadSummary = 'No assigned active incidents.'
+  let workloadSummary = 'No assigned active reports.'
   if (workloadDescriptions.length > 0) {
     workloadSummary = workloadDescriptions.join(', ')
   }
@@ -186,7 +186,7 @@ export function DashboardCharts({
           <div className="trend-summary-divider" />
           <div>
             <strong>{data.resolvedInWindow.toLocaleString()}</strong>
-            <span>resolved in this period</span>
+            <span>closed in this period</span>
           </div>
         </div>
         <div className="chart-legend">
@@ -201,18 +201,18 @@ export function DashboardCharts({
           </button>
           <button
             type="button"
-            aria-pressed={showResolved}
-            onClick={() => setShowResolved(!showResolved)}
-            className={!showResolved ? 'legend-muted' : ''}
+            aria-pressed={showClosed}
+            onClick={() => setShowClosed(!showClosed)}
+            className={!showClosed ? 'legend-muted' : ''}
           >
             <span className="legend-line legend-green" />
-            Resolved
+            Closed
           </button>
         </div>
         <div
           className="trend-chart"
           role="img"
-          aria-label={`${data.reportedInWindow} incidents reported and ${data.resolvedInWindow} resolved over ${days} days. Chart data is available below.`}
+          aria-label={`${data.reportedInWindow} incidents reported and ${data.resolvedInWindow} closed over ${days} days. Chart data is available below.`}
         >
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <AreaChart
@@ -261,8 +261,8 @@ export function DashboardCharts({
               />
               <Area
                 dataKey="resolved"
-                name="Resolved"
-                hide={!showResolved}
+                name="Closed"
+                hide={!showClosed}
                 type="monotone"
                 stroke="var(--chart-green)"
                 strokeWidth={2.5}
@@ -274,7 +274,7 @@ export function DashboardCharts({
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <DataTable headers={['Date', 'Reported', 'Resolved']} rows={trendRows} />
+        <DataTable headers={['Date', 'Reported', 'Closed']} rows={trendRows} />
       </section>
 
       <ChartPanel

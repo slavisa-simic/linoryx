@@ -3,7 +3,6 @@ package com.vigil.api.incident.dto;
 import com.vigil.api.incident.domain.IncidentCategory;
 import com.vigil.api.incident.domain.IncidentStatus;
 import com.vigil.api.incident.domain.Severity;
-
 import java.time.LocalDateTime;
 
 public record IncidentResponse(
@@ -23,7 +22,12 @@ public record IncidentResponse(
 
         LocalDateTime createdAt,
         LocalDateTime updatedAt,
-        LocalDateTime resolvedAt
+        LocalDateTime resolvedAt,
+        LocalDateTime closedAt,
+        boolean legacy,
+        String legacyStatus,
+        long reportCount,
+        long closedReportCount
 
 ) {
 }

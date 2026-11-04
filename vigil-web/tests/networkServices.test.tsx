@@ -149,9 +149,10 @@ describe('provisioning forms', () => {
     expect(await screen.findByRole('button', { name: 'Edit service' })).toBeTruthy()
   })
 
-  it('customers get a read-only service table', async () => {
+  it('customers can report active services without seeing network details', async () => {
     render(<Provider role="USER"><ServicesPage onNavigate={vi.fn()} /></Provider>)
-    expect(await screen.findByText(node.code)).toBeTruthy()
+    expect(await screen.findByRole('button', { name: 'Report a problem' })).toBeTruthy()
+    expect(screen.queryByText(node.code)).toBeNull()
     expect(screen.queryByRole('button', { name: 'Edit service' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Terminate' })).toBeNull()
     expect(screen.queryByRole('link', { name: 'Network' })).toBeNull()

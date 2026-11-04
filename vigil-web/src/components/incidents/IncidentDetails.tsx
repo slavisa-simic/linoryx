@@ -1,514 +1,169 @@
-import { useUser } from '../../context/UserContext'
 import { useEffect, useState } from 'react'
-import type { ReactNode, SubmitEvent } from 'react'
-import type {
-  Incident,
-  IncidentAction,
-  IncidentComment,
-  IncidentStatus
-} from '../../models/incidents'
+import type { SubmitEvent } from 'react'
+import { useUser } from '../../context/UserContext'
+import type { Incident, IncidentAction, IncidentComment } from '../../models/incidents'
 import type { Technician } from '../../models/users'
-import {
-  addComment as postComment,
-  assignIncident,
-  getComments,
-  getIncident,
-  progressIncident
-} from '../../api/incidentsApi'
-import {
-  categoryLabels,
-  formatDate,
-  severityLabels,
-  statusLabels
-} from '../../services/dashboardData'
+import type { CustomerReport } from '../../models/reports'
+import { addComment, getComments, getIncident, progressIncident } from '../../api/incidentsApi'
+import { listReports } from '../../api/reportsApi'
+import { categoryLabels, formatDate, severityLabels, statusLabels } from '../../services/dashboardData'
+import { FormDialog } from '../workspace/FormDialog'
 import { FormMessage } from '../auth/FormMessage'
-import { Icon } from '../Icon'
+import { ReportsTable } from '../reports/ReportsTable'
+import '../../Reports.css'
 
-interface IncidentDetailsProps {
+interface Props {
   incident: Incident
   technicians: Technician[]
   onUpdate(incident: Incident): void
   onClose(): void
 }
 
-const steps: IncidentStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
-
-export function IncidentDetails({
-  incident,
-  technicians,
-  onUpdate,
-  onClose
-}: IncidentDetailsProps) {
+export function IncidentDetails({ incident, technicians, onUpdate, onClose }: Props) {
   const { session, onSessionExpired } = useUser()
-  let initialTechnicianId = ''
-  if (incident.assignedToId) {
-    initialTechnicianId = String(incident.assignedToId)
-  }
   const [item, setItem] = useState(incident)
+  const [reports, setReports] = useState<CustomerReport[]>([])
   const [comments, setComments] = useState<IncidentComment[]>([])
   const [comment, setComment] = useState('')
-  const [technicianId, setTechnicianId] = useState(initialTechnicianId)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [exporting, setExporting] = useState(false)
   const [error, setError] = useState('')
-  const [loadError, setLoadError] = useState('')
   const [notice, setNotice] = useState('')
   const [refresh, setRefresh] = useState(0)
-
-  useEffect(() => {
-    const dialog = document.getElementById(
-      'incident-details'
-    ) as HTMLDialogElement
-    dialog.showModal()
-    document.body.style.overflow = 'hidden'
-    return () => {
-      dialog.close()
-      document.body.style.overflow = ''
-    }
-  }, [])
+  const operator = session.role === 'ADMIN' || session.role === 'DISPATCHER'
 
   useEffect(() => {
     let active = true
     async function load() {
       setLoading(true)
-      setLoadError('')
+      setError('')
       try {
         const current = await getIncident(session, incident.id)
         const discussion = await getComments(session, incident.id)
+        const linked = await listReports(session, incident.id)
         if (active) {
           setItem(current)
-          let assignedId = ''
-          if (current.assignedToId) {
-            assignedId = String(current.assignedToId)
-          }
-          setTechnicianId(assignedId)
           setComments(discussion)
+          setReports(linked)
         }
       } catch (error) {
-        if (active) {
-          if (error instanceof Error) {
-            setLoadError(error.message)
-          } else {
-            setLoadError('Incident details could not be loaded.')
-          }
-        }
+        if (active) setError(error instanceof Error ? error.message : 'Incident details could not be loaded.')
       } finally {
-        if (active) {
-          setLoading(false)
-        }
+        if (active) setLoading(false)
       }
     }
     load()
-    return () => {
-      active = false
-    }
+    return () => { active = false }
   }, [session, incident.id, refresh])
 
   useEffect(() => {
-    if (loadError === 'SESSION_EXPIRED' || error === 'SESSION_EXPIRED') {
-      onSessionExpired()
-    }
-  }, [loadError, error, onSessionExpired])
-
-  const canAssign = session.role === 'ADMIN' || session.role === 'DISPATCHER'
-  let canWork = false
-  if (canAssign) {
-    canWork = true
-  }
-  if (session.role === 'TECHNICIAN' && item.assignedToId === session.userId) {
-    canWork = true
-  }
-  const active = item.status === 'OPEN' || item.status === 'IN_PROGRESS'
-  const currentStep = steps.indexOf(item.status)
-  const disabled = loading || saving || loadError !== ''
-
-  function showError(error: unknown, defaultMessage: string) {
-    if (error instanceof Error) {
-      setError(error.message)
-    } else {
-      setError(defaultMessage)
-    }
-  }
-
-  function updated(result: Incident) {
-    setItem(result)
-    onUpdate(result)
-    setNotice('Incident updated.')
-  }
+    if (error === 'SESSION_EXPIRED') onSessionExpired()
+  }, [error, onSessionExpired])
 
   async function progress(action: IncidentAction) {
+    if (saving) return
     setSaving(true)
     setError('')
-    setNotice('')
     try {
-      const result = await progressIncident(
-        session,
-        item.id,
-        action
-      )
-      updated(result)
+      const updated = await progressIncident(session, item.id, action)
+      setItem(updated)
+      onUpdate(updated)
+      setNotice('Incident updated.')
     } catch (error) {
-      showError(error, 'The status could not be updated.')
+      setError(error instanceof Error ? error.message : 'The incident could not be updated.')
     } finally {
       setSaving(false)
     }
   }
 
-  async function assign(event: SubmitEvent<HTMLFormElement>) {
+  async function postComment(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!technicianId || saving) {
-      return
-    }
+    if (saving || !comment.trim()) return
     setSaving(true)
     setError('')
-    setNotice('')
     try {
-      const result = await assignIncident(
-        session,
-        item.id,
-        Number(technicianId)
-      )
-      updated(result)
-    } catch (error) {
-      showError(error, 'The technician could not be assigned.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  async function addComment(event: SubmitEvent<HTMLFormElement>) {
-    event.preventDefault()
-    if (!comment.trim() || saving) {
-      return
-    }
-    setSaving(true)
-    setError('')
-    setNotice('')
-    try {
-      const added = await postComment(
-        session,
-        item.id,
-        comment.trim()
-      )
+      const added = await addComment(session, item.id, comment.trim())
       setComments([...comments, added])
       setComment('')
-      setNotice('Comment added.')
     } catch (error) {
-      showError(error, 'The comment could not be added.')
+      setError(error instanceof Error ? error.message : 'The comment could not be added.')
     } finally {
       setSaving(false)
     }
   }
 
   async function exportPdf() {
-    setExporting(true)
-    setError('')
+    setSaving(true)
     try {
-      // PDF biblioteku ucitamo tek kada je potrebna.
-      const pdfModule = await import('../../services/exportIncidentPdf')
-      await pdfModule.downloadIncidentPdf(item, comments)
+      const pdf = await import('../../services/exportIncidentPdf')
+      await pdf.downloadIncidentPdf(item, comments)
     } catch {
-      setError('The PDF could not be generated. Please try again.')
+      setError('The PDF could not be generated.')
     } finally {
-      setExporting(false)
+      setSaving(false)
     }
   }
 
-  let assignedEmail = 'Unassigned'
-  if (item.assignedToEmail) {
-    assignedEmail = item.assignedToEmail
+  async function updateReport(updated: CustomerReport) {
+    setReports(reports.map(report => report.id === updated.id ? updated : report))
+    setLoading(true)
+    try {
+      const current = await getIncident(session, item.id)
+      setItem(current)
+      onUpdate(current)
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Incident totals could not be refreshed.')
+    } finally {
+      setLoading(false)
+    }
   }
-  return (
-    <dialog
-      id="incident-details"
-      className="incident-dialog incident-detail-modal"
-      aria-labelledby="detail-title"
-      onCancel={(event) => {
-        event.preventDefault()
-        if (!saving && !exporting) {
-          onClose()
-        }
-      }}
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !saving && !exporting) {
-          onClose()
-        }
-      }}
-    >
-      <div className="incident-dialog-content">
-        <div className="incident-modal-heading">
-          <span className="detail-reference">
-            INC-{item.id} <span>· {categoryLabels[item.category]}</span>
-          </span>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={saving || exporting}
-            onClick={onClose}
-            aria-label="Close incident details"
-            autoFocus
-          >
-            <Icon name="close" size={20} />
-          </button>
-        </div>
-        <h2 id="detail-title" className="detail-title">
-          {item.title}
-        </h2>
-        <div className="detail-status-row">
-          <span className={'status-badge status-' + item.status.toLowerCase()}>
-            <span className="status-dot" />
-            {statusLabels[item.status]}
-          </span>
-          <span
-            className={'severity-badge severity-' + item.severity.toLowerCase()}
-          >
-            <span className="severity-mark" />
-            {severityLabels[item.severity]} priority
-          </span>
-          <button
-            className="export-button"
-            type="button"
-            onClick={exportPdf}
-            disabled={disabled || exporting}
-          >
-            <Icon name="pdf" size={17} />
-            Export PDF
-          </button>
-        </div>
 
-        <ol className="incident-steps" aria-label="Incident progress">
-          {steps.map(function (step, index) {
-            let stepClass = ''
-            let current: 'step' | undefined
-            let indicator: ReactNode = index + 1
-            if (index <= currentStep) {
-              stepClass = 'step-complete'
-            }
-            if (index === currentStep) {
-              current = 'step'
-            }
-            if (index < currentStep) {
-              indicator = <Icon key={step} name="check" size={13} />
-            }
-            return (
-              <li key={step} className={stepClass} aria-current={current}>
-                <span>{indicator}</span>
-                {statusLabels[step]}
-              </li>
-            )
-          })}
-        </ol>
-        <section className="detail-section">
-          <h3>Description</h3>
-          <p className="detail-description">{item.description}</p>
-        </section>
-        <dl className="incident-facts detail-facts">
-          <div>
-            <dt>Reported by</dt>
-            <dd>{item.createdByEmail}</dd>
-          </div>
-          <div>
-            <dt>Assigned to</dt>
-            <dd>{assignedEmail}</dd>
-          </div>
-          <div>
-            <dt>Reported</dt>
-            <dd>
-              {formatDate(item.createdAt, {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-              })}
-            </dd>
-          </div>
-          <div>
-            <dt>Last updated</dt>
-            <dd>
-              {formatDate(item.updatedAt, {
-                dateStyle: 'medium',
-                timeStyle: 'short'
-              })}
-            </dd>
-          </div>
-          {item.resolvedAt && (
-            <div>
-              <dt>Resolved</dt>
-              <dd>
-                {formatDate(item.resolvedAt, {
-                  dateStyle: 'medium',
-                  timeStyle: 'short'
-                })}
-              </dd>
-            </div>
-          )}
-        </dl>
+  const canClose = item.status === 'IN_PROGRESS' && item.reportCount > 0 && item.reportCount === item.closedReportCount
+  const disabled = loading || saving
 
-        {loadError && (
-          <div className="incident-error">
-            <FormMessage message={loadError} />
-            <button
-              className="export-button"
-              type="button"
-              onClick={() => setRefresh(refresh + 1)}
-            >
-              Try again
-            </button>
-          </div>
-        )}
-        <FormMessage message={error} />
-        {notice && (
-          <p className="incident-success" role="status">
-            <Icon name="check-circle" size={16} />
-            {notice}
-          </p>
-        )}
-
-        {canAssign && active && (
-          <section className="detail-section assignment-section">
-            <h3>
-              <Icon name="assign" size={17} />
-              Assignment
-            </h3>
-            <form className="assignment-form" onSubmit={assign}>
-              <label className="sr-only" htmlFor="assigned-technician">
-                Assign technician
-              </label>
-              <select
-                id="assigned-technician"
-                className="field-input"
-                value={technicianId}
-                onChange={(event) => setTechnicianId(event.target.value)}
-                disabled={disabled}
-                required
-              >
-                <option value="">Select a technician</option>
-                {technicians.map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.firstName} {user.lastName}
-                  </option>
-                ))}
-              </select>
-              <button
-                className="dashboard-button button-neutral"
-                type="submit"
-                disabled={
-                  disabled ||
-                  !technicianId ||
-                  Number(technicianId) === item.assignedToId
-                }
-              >
-                Assign technician
-              </button>
-            </form>
-            {technicians.length === 0 && (
-              <p className="incident-muted">
-                No enabled technicians are available.
-              </p>
-            )}
-          </section>
-        )}
-
-        {canWork && item.status !== 'CLOSED' && (
-          <div className="incident-workflow-actions">
-            {item.status === 'OPEN' && (
-              <>
-                <button
-                  className="dashboard-button"
-                  type="button"
-                  onClick={() => progress('start')}
-                  disabled={disabled || !item.assignedToId}
-                >
-                  <Icon name="play" size={16} />
-                  Start work
-                </button>
-                {!item.assignedToId && (
-                  <p className="incident-muted">
-                    Assign a technician before starting work.
-                  </p>
-                )}
-              </>
-            )}
-            {item.status === 'IN_PROGRESS' && (
-              <button
-                className="dashboard-button"
-                type="button"
-                onClick={() => progress('resolve')}
-                disabled={disabled}
-              >
-                <Icon name="check-circle" size={16} />
-                Mark as resolved
-              </button>
-            )}
-            {item.status === 'RESOLVED' && (
-              <button
-                className="dashboard-button button-neutral"
-                type="button"
-                onClick={() => progress('close')}
-                disabled={disabled}
-              >
-                <Icon name="archive" size={16} />
-                Close incident
-              </button>
-            )}
-          </div>
-        )}
-
-        <section className="detail-section comments-section">
-          <h3>
-            <Icon name="comment" size={17} />
-            Comments <span className="count-badge">{comments.length}</span>
-          </h3>
-          {!loading && !loadError && comments.length === 0 && (
-            <p className="comments-empty">No comments yet.</p>
-          )}
-          <ul className="incident-comments">
-            {comments.map((entry) => (
-              <li key={entry.id}>
-                <div className="comment-heading">
-                  <strong>
-                    {entry.authorFirstName} {entry.authorLastName}
-                  </strong>
-                  <time dateTime={entry.createdAt}>
-                    {formatDate(entry.createdAt, {
-                      dateStyle: 'medium',
-                      timeStyle: 'short'
-                    })}
-                  </time>
-                </div>
-                <p>{entry.content}</p>
-              </li>
-            ))}
-          </ul>
-          {canWork && (
-            <form
-              className="incident-comment-form"
-              onSubmit={addComment}
-              aria-busy={saving}
-            >
-              <label htmlFor="incident-comment">Add a comment</label>
-              <textarea
-                id="incident-comment"
-                className="field-input incident-textarea"
-                rows={3}
-                maxLength={2000}
-                value={comment}
-                onChange={(event) => setComment(event.target.value)}
-                placeholder="Add an investigation note or update…"
-                required
-                disabled={disabled}
-              />
-              <button
-                className="dashboard-button"
-                type="submit"
-                disabled={disabled || !comment.trim()}
-              >
-                <Icon name="send" size={16} />
-                Post comment
-              </button>
-            </form>
-          )}
-        </section>
-      </div>
-    </dialog>
-  )
+  return <FormDialog wide id="incident-details" title={'INC-' + item.id + ' · ' + item.title} busy={saving} onClose={onClose}>
+    <div className="detail-status-row">
+      <span className={'status-badge status-' + item.status.toLowerCase()}>{statusLabels[item.status]}</span>
+      <span className={'severity-badge severity-' + item.severity.toLowerCase()}>{severityLabels[item.severity]} priority</span>
+      <button className="export-button" disabled={disabled} onClick={exportPdf}>Export PDF</button>
+    </div>
+    <p className="detail-description">{item.description}</p>
+    <dl className="incident-facts detail-facts">
+      <div><dt>Created by</dt><dd>{item.createdByEmail}</dd></div>
+      <div><dt>Category</dt><dd>{categoryLabels[item.category]}</dd></div>
+      <div><dt>Created</dt><dd>{formatDate(item.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>
+      <div><dt>Reports closed</dt><dd>{item.closedReportCount}/{item.reportCount}</dd></div>
+      {item.closedAt && <div><dt>Closed</dt><dd>{formatDate(item.closedAt, { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
+    </dl>
+    {item.legacy && <p className="incident-muted">Historical incident · read-only. Original status: {item.legacyStatus || item.status}.
+      {item.assignedToEmail && ' Historical technician: ' + item.assignedToEmail + '.'}
+      {' '}Customer reports were not created for historical records.</p>}
+    <FormMessage message={error} />
+    {notice && <FormMessage message={notice} type="success" />}
+    <button className="export-button" disabled={disabled} onClick={() => setRefresh(refresh + 1)}>Refresh details</button>
+    {loading && <p role="status">Loading incident details…</p>}
+    {operator && !item.legacy && item.status !== 'CLOSED' && <div className="incident-workflow-actions">
+      {item.status === 'OPEN' && <button className="dashboard-button" disabled={disabled} onClick={() => progress('start')}>Start incident</button>}
+      {item.status === 'IN_PROGRESS' && <>
+        <button className="dashboard-button" disabled={disabled || !canClose} onClick={() => progress('close')}>Close incident</button>
+        {!canClose && <p className="incident-muted">Close every associated report before closing the incident.</p>}
+      </>}
+    </div>}
+    <section className="detail-section"><h3>Associated reports</h3>
+      {session.role === 'TECHNICIAN' && <p className="incident-muted">Only your assigned reports are shown.</p>}
+      {!loading && <ReportsTable reports={reports} technicians={technicians} onUpdated={updateReport} />}
+    </section>
+    <section className="detail-section comments-section"><h3>Internal comments</h3>
+      <ul className="incident-comments">{comments.map(entry => <li key={entry.id}>
+        <div className="comment-heading"><strong>{entry.authorFirstName} {entry.authorLastName}</strong><time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time></div>
+        <p>{entry.content}</p>
+      </li>)}</ul>
+      <form className="incident-comment-form" onSubmit={postComment}>
+        <label htmlFor="incident-comment">Add a comment</label>
+        <textarea id="incident-comment" className="field-input incident-textarea" required rows={3} maxLength={2000}
+          value={comment} onChange={event => setComment(event.target.value)} disabled={disabled} />
+        <button className="dashboard-button" type="submit" disabled={disabled || !comment.trim()}>Post comment</button>
+      </form>
+    </section>
+  </FormDialog>
 }

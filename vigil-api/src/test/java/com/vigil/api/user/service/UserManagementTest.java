@@ -1,16 +1,19 @@
 package com.vigil.api.user.service;
 
 import com.vigil.api.audit.domain.AuditAction;
-import com.vigil.api.customerservice.repository.CustomerServiceRepository;
 import com.vigil.api.audit.domain.AuditLog;
 import com.vigil.api.audit.repository.AuditLogRepository;
+import com.vigil.api.customerservice.repository.CustomerServiceRepository;
 import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.exception.UnauthorizedException;
 import com.vigil.api.incident.domain.IncidentStatus;
 import com.vigil.api.incident.repository.IncidentRepository;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -24,9 +27,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -37,6 +37,7 @@ class UserManagementTest {
     @Mock private AuditLogRepository auditLogRepository;
     @Mock private IncidentRepository incidentRepository;
     @Mock private CustomerServiceRepository customerServiceRepository;
+    @Mock private CustomerReportRepository reports;
     @InjectMocks private UserService userService;
 
     private User user(long id, UserRole role) {
@@ -82,14 +83,14 @@ class UserManagementTest {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+        when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(true);
 
         var exception = assertThrows(IllegalStateException.class,
                 () -> userService.changeUserRole(admin.getEmail(), 2L, role));
 
-        assertTrue(exception.getMessage().contains("assigned incidents"));
+        assertTrue(exception.getMessage().contains("active assigned work"));
         assertEquals(UserRole.TECHNICIAN, technician.getRole());
         verify(userRepository, never()).save(any());
         verifyNoInteractions(auditLogRepository);
@@ -101,7 +102,7 @@ class UserManagementTest {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+        when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(false);
         when(userRepository.save(technician)).thenReturn(technician);
@@ -115,14 +116,14 @@ class UserManagementTest {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+        when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(true);
 
         var exception = assertThrows(IllegalStateException.class,
                 () -> userService.disableUser(admin.getEmail(), 2L));
 
-        assertTrue(exception.getMessage().contains("assigned incidents"));
+        assertTrue(exception.getMessage().contains("active assigned work"));
         assertTrue(technician.isEnabled());
         verify(userRepository, never()).save(any());
         verifyNoInteractions(auditLogRepository);
@@ -133,7 +134,7 @@ class UserManagementTest {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
         when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
-        when(incidentRepository.existsByAssignedToIdAndStatusIn(
+        when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(false);
         when(userRepository.save(technician)).thenReturn(technician);

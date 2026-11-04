@@ -4,27 +4,30 @@ import { formatDate } from '../../services/dashboardData'
 
 interface ServicesTableProps {
   services: CustomerService[]
+  onReport?(service: CustomerService): void
+  showNetwork?: boolean
   busy?: boolean
   onEdit?(service: CustomerService): void
   onTerminate?(service: CustomerService): void
 }
 
-export function ServicesTable({ services, busy = false, onEdit, onTerminate }: ServicesTableProps) {
+export function ServicesTable({ services, busy = false, onEdit, onTerminate, onReport, showNetwork = true }: ServicesTableProps) {
   return (
     <div>
       <div className="incident-table-scroll">
         <table className="incident-table services-table">
           <caption className="sr-only">Customer internet services</caption>
           <thead><tr><th scope="col">Service</th><th scope="col">Status</th><th scope="col">Location</th>
-            <th scope="col">Network node</th><th scope="col">Created</th>
-            {onEdit && <th scope="col">Actions</th>}</tr></thead>
+            {showNetwork && <th scope="col">Network node</th>}<th scope="col">Created</th>
+            {(onEdit || onReport) && <th scope="col">Actions</th>}</tr></thead>
           <tbody>{services.map((service) => (
             <tr key={service.id}>
               <td><strong>{serviceTypeLabels[service.serviceType]}</strong><div className="incident-muted">#{service.id}</div></td>
               <td><span className={'service-status service-status-' + service.status.toLowerCase()}>{serviceStatusLabels[service.status]}</span></td>
               <td className="location-cell">{service.serviceLocation.formattedAddress}</td>
-              <td>{service.networkNodeCode}<div className="incident-muted">{service.networkNodeName}</div></td>
+              {showNetwork && <td>{service.networkNodeCode}<div className="incident-muted">{service.networkNodeName}</div></td>}
               <td className="table-date">{formatDate(service.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+              {onReport && <td>{service.status === 'ACTIVE' && <button className="user-save-button" type="button" onClick={() => onReport(service)}>Report a problem</button>}</td>}
               {onEdit && <td><div className="service-row-actions">
                 <button className="user-save-button" type="button" disabled={busy} onClick={() => onEdit(service)}>Edit service</button>
                 {onTerminate && service.status !== 'TERMINATED' && <button className="user-access-button danger-action"

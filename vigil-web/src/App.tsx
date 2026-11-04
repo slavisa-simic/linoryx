@@ -7,6 +7,7 @@ import { IncidentsPage } from './pages/IncidentsPage'
 import { UsersPage } from './pages/UsersPage'
 import { AuditPage } from './pages/AuditPage'
 import { NetworkPage } from './pages/NetworkPage'
+import { ReportsPage } from './pages/ReportsPage'
 import { ServicesPage } from './pages/ServicesPage'
 import type { AuthResponse, AuthSession } from './models/auth'
 import type { AuthApi } from './api/authApi'
@@ -17,9 +18,10 @@ interface AppProps {
   sessionService: SessionService
 }
 
-type Page = 'login' | 'register' | 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'
+type Page = 'login' | 'register' | 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'
 
 function getCurrentPage(): Page {
+  if (window.location.pathname === '/reports') return 'reports'
   if (window.location.pathname === '/network') return 'network'
   if (window.location.pathname === '/services') return 'services'
   if (window.location.pathname === '/audit') {
@@ -46,16 +48,17 @@ function getSessionPage(session: AuthSession | null): Page {
     session &&
     (((page === 'users' || page === 'network') && session.role !== 'ADMIN') ||
       (page === 'services' && session.role !== 'USER') ||
+      (page === 'incidents' && session.role === 'USER') ||
       (page === 'audit' && session.role !== 'ADMIN' && session.role !== 'DISPATCHER'))
   ) {
     if (session.role === 'USER') {
-      return 'incidents'
+      return 'services'
     }
     return 'dashboard'
   }
   if (session && (page === 'login' || page === 'register')) {
     if (session.role === 'USER') {
-      return 'incidents'
+      return 'services'
     }
     return 'dashboard'
   }
@@ -65,6 +68,7 @@ function getSessionPage(session: AuthSession | null): Page {
       page === 'incidents' ||
       page === 'users' ||
       page === 'network' ||
+      page === 'reports' ||
       page === 'services' ||
       page === 'audit')
   ) {
@@ -108,6 +112,7 @@ function App({ authApi, sessionService }: AppProps) {
         document.title = 'Audit logs · Vigil'
       }
       if (page === 'network') document.title = 'Network · Vigil'
+      if (page === 'reports') document.title = 'Reports · Vigil'
       if (page === 'services') document.title = 'My services · Vigil'
     } else if (page === 'register') {
       document.title = 'Create account · Vigil'
@@ -153,7 +158,7 @@ function App({ authApi, sessionService }: AppProps) {
     const savedSession = sessionService.saveSession(response, loginEmail)
     setSession(savedSession)
     if (savedSession.role === 'USER') {
-      navigate('incidents')
+      navigate('services')
     } else {
       navigate('dashboard')
     }
@@ -180,7 +185,9 @@ function App({ authApi, sessionService }: AppProps) {
 
   let content
 
-  if (session && page === 'network' && session.role === 'ADMIN') {
+  if (session && page === 'reports') {
+    content = <ReportsPage onNavigate={navigate} />
+  } else if (session && page === 'network' && session.role === 'ADMIN') {
     content = <NetworkPage onNavigate={navigate} />
   } else if (session && page === 'services' && session.role === 'USER') {
     content = <ServicesPage onNavigate={navigate} />

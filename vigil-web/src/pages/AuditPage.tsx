@@ -9,7 +9,7 @@ import { Icon } from '../components/Icon'
 
 interface AuditPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports',
     incidentId?: number
   ): void
 }

@@ -8,14 +8,13 @@ import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { MetricCard } from '../components/workspace/MetricCard'
 import { IncidentsTable } from '../components/incidents/IncidentsTable'
 import { ExportIncidentsButton } from '../components/incidents/ExportIncidentsButton'
-import { CreateIncidentDialog } from '../components/incidents/CreateIncidentDialog'
 import { IncidentDetails } from '../components/incidents/IncidentDetails'
 import { FormMessage } from '../components/auth/FormMessage'
 import { Icon } from '../components/Icon'
 
 interface IncidentsPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports',
     incidentId?: number
   ): void
 }
@@ -28,10 +27,8 @@ export function IncidentsPage({
   const [technicians, setTechnicians] = useState<Technician[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [notice, setNotice] = useState('')
   const [refresh, setRefresh] = useState(0)
   const [status, setStatus] = useState<IncidentStatus | 'ALL'>('ALL')
-  const [creating, setCreating] = useState(false)
   const [selected, setSelected] = useState<Incident | null>(null)
 
   useEffect(() => {
@@ -92,7 +89,7 @@ export function IncidentsPage({
     (incident) => incident.status === 'IN_PROGRESS'
   ).length
   const completed = incidents.filter(
-    (incident) => incident.status === 'RESOLVED' || incident.status === 'CLOSED'
+    (incident) => incident.status === 'CLOSED'
   ).length
 
   function updateIncident(updated: Incident) {
@@ -104,14 +101,6 @@ export function IncidentsPage({
         return incident
       })
     )
-  }
-
-  function incidentCreated(incident: Incident) {
-    setIncidents([incident, ...incidents])
-    setCreating(false)
-    setStatus('ALL')
-    setNotice('Incident INC-' + incident.id + ' created.')
-    setSelected(incident)
   }
 
   function closeDetails() {
@@ -150,19 +139,14 @@ export function IncidentsPage({
               <button
                 className="dashboard-button"
                 type="button"
-                onClick={() => setCreating(true)}
+                onClick={() => onNavigate('reports')}
               >
-                <Icon name="plus" size={17} /> New incident
+                <Icon name="plus" size={17} /> Create from reports
               </button>
             )}
           </div>
         </div>
 
-        {notice && (
-          <div className="page-message">
-            <FormMessage message={notice} type="success" />
-          </div>
-        )}
         {error && error !== 'SESSION_EXPIRED' && (
           <div className="page-message">
             <FormMessage message={error} />
@@ -198,12 +182,6 @@ export function IncidentsPage({
           </>
         )}
       </main>
-      {creating && (
-        <CreateIncidentDialog
-          onCreated={incidentCreated}
-          onClose={() => setCreating(false)}
-        />
-      )}
       {selected && (
         <IncidentDetails
           key={selected.id}

@@ -8,10 +8,11 @@ import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.exception.UnauthorizedException;
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.repository.IncidentRepository;
+import com.vigil.api.report.domain.CustomerReport;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.service.UserService;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
@@ -24,15 +25,18 @@ public class AuditService {
     private final AuditLogRepository auditLogRepository;
     private final IncidentRepository incidentRepository;
     private final UserService userService;
+    private final CustomerReportRepository reports;
 
     public AuditService(
             AuditLogRepository auditLogRepository,
             IncidentRepository incidentRepository,
-            UserService userService
+            UserService userService,
+            CustomerReportRepository reports
     ) {
         this.auditLogRepository = auditLogRepository;
         this.incidentRepository = incidentRepository;
         this.userService = userService;
+        this.reports = reports;
     }
 
     @Transactional
@@ -63,6 +67,16 @@ public class AuditService {
         );
 
         auditLogRepository.save(auditLog);
+    }
+
+    @Transactional
+    public void logReport(CustomerReport report, User actor, AuditAction action) {
+        if (!actor.isEnabled()) {
+            throw new UnauthorizedException("Authentication required");
+        }
+        AuditLog entry = new AuditLog(report.getIncident(), actor, action, report.getAssignedTechnician());
+        entry.setReport(report);
+        auditLogRepository.save(entry);
     }
 
     @Transactional(readOnly = true)
@@ -117,21 +131,11 @@ public class AuditService {
             return;
         }
 
-        if (currentUser.getRole() == UserRole.USER) {
-
-            if (incident.getCreatedBy()
-                    .getId()
-                    .equals(currentUser.getId())) {
-                return;
-            }
-
-            throw new AccessDeniedException(
-                    "You cannot view this incident history"
-            );
-        }
-
         if (currentUser.getRole() == UserRole.TECHNICIAN) {
 
+            if (reports.existsByIncidentIdAndAssignedTechnicianId(incident.getId(), currentUser.getId())) {
+                return;
+            }
             if (incident.getAssignedTo() != null &&
                     incident.getAssignedTo()
                             .getId()
@@ -181,6 +185,7 @@ public class AuditService {
         return new AuditResponse(
                 auditLog.getId(),
                 incidentId,
+                auditLog.getReport() == null ? null : auditLog.getReport().getId(),
 
                 actorId,
                 actorFirstName,

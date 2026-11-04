@@ -1,10 +1,10 @@
 package com.vigil.api.audit.domain;
 
 import com.vigil.api.incident.domain.Incident;
+import com.vigil.api.report.domain.CustomerReport;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,6 +18,10 @@ public class AuditLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "incident_id")
     private Incident incident;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "report_id")
+    private CustomerReport report;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "actor_id")
@@ -65,6 +69,9 @@ public class AuditLog {
         this.targetUser = targetUser;
         this.createdAt = LocalDateTime.now();
     }
+
+    public void setReport(CustomerReport report) { this.report = report; }
+    public CustomerReport getReport() { return report; }
 
     public Long getId() {
         return id;

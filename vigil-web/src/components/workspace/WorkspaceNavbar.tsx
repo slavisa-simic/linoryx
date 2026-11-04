@@ -5,8 +5,8 @@ import { BrandLogo } from '../auth/BrandLogo'
 import { Icon } from '../Icon'
 
 interface WorkspaceNavbarProps {
-  page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'): void
+  page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'
+  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'): void
 }
 
 const roleLabels = {
@@ -33,9 +33,12 @@ export function WorkspaceNavbar({
   }
   const admin = session.role === 'ADMIN'
   const canViewAudit = admin || session.role === 'DISPATCHER'
-  let homePage: 'dashboard' | 'incidents' = 'dashboard'
+  let reportsLabel = 'Reports'
+  if (session.role === 'USER') reportsLabel = 'My reports'
+  if (session.role === 'TECHNICIAN') reportsLabel = 'Assigned reports'
+  let homePage: 'dashboard' | 'services' = 'dashboard'
   if (session.role === 'USER') {
-    homePage = 'incidents'
+    homePage = 'services'
   }
   let dashboardClass = 'workspace-nav-item'
   let incidentsClass = 'workspace-nav-item'
@@ -64,7 +67,7 @@ export function WorkspaceNavbar({
 
   function navigate(
     event: MouseEvent<HTMLAnchorElement>,
-    nextPage: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'
+    nextPage: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'
   ) {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
       return
@@ -97,7 +100,7 @@ export function WorkspaceNavbar({
               Dashboard
             </a>
           )}
-          <a
+          {session.role !== 'USER' && <a
             className={incidentsClass}
             href="/incidents"
             aria-current={incidentsCurrent}
@@ -105,6 +108,10 @@ export function WorkspaceNavbar({
           >
             <Icon name="layers" size={17} />
             Incidents
+          </a>}
+          <a className={page === 'reports' ? 'workspace-nav-item is-active' : 'workspace-nav-item'}
+            href="/reports" aria-current={page === 'reports' ? 'page' : undefined} onClick={event => navigate(event, 'reports')}>
+            <Icon name="inbox" size={17} />{reportsLabel}
           </a>
           {admin && (
             <a

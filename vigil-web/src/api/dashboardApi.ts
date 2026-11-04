@@ -1,3 +1,4 @@
+import { listReports } from './reportsApi'
 import type { AuthSession } from '../models/auth'
 import type { DashboardSnapshot } from '../models/dashboard'
 import type { Technician } from '../models/users'
@@ -18,6 +19,7 @@ export async function getDashboard(session: AuthSession): Promise<DashboardSnaps
 
   return {
     incidents: incidents,
+    reports: await listReports(session),
     technicians: technicians,
     loadedAt: Date.now()
   }

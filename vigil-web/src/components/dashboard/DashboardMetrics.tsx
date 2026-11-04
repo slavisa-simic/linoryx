@@ -13,7 +13,7 @@ export function DashboardMetrics({ data }: { data: DashboardStatistics }) {
       <MetricCard label="Total incidents" value={data.total} icon="layers" color="blue" />
       <MetricCard label="Active incidents" value={data.active} icon="clock" color="orange" />
       <MetricCard label="Critical incidents" value={data.critical} icon="alert" color="red" />
-      <MetricCard label="Resolution rate" value={resolution} icon="check-circle" color="green" />
+      <MetricCard label="Closure rate" value={resolution} icon="check-circle" color="green" />
     </section>
   )
 }

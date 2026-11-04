@@ -2,12 +2,12 @@ package com.vigil.api.audit.dto;
 
 import com.vigil.api.audit.domain.AuditAction;
 import com.vigil.api.user.domain.UserRole;
-
 import java.time.LocalDateTime;
 
 public record AuditResponse(
         Long id,
         Long incidentId,
+        Long reportId,
 
         Long actorId,
         String actorFirstName,

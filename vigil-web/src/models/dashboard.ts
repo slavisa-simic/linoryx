@@ -1,8 +1,10 @@
+import type { CustomerReport } from './reports'
 import type { Incident, IncidentStatus } from './incidents'
 import type { Technician } from './users'
 
 export interface DashboardSnapshot {
   incidents: Incident[]
+  reports: CustomerReport[]
   technicians: Technician[]
   loadedAt: number
 }

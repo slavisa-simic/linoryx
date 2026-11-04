@@ -14,7 +14,7 @@ import { DashboardOperations } from '../components/dashboard/DashboardOperations
 
 interface DashboardPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports',
     incidentId?: number
   ): void
 }
@@ -74,7 +74,7 @@ export default function DashboardPage({
     loadedAt = snapshot.loadedAt
   }
 
-  const data = buildDashboard(incidents, technicians, days, new Date(loadedAt))
+  const data = buildDashboard(incidents, technicians, days, new Date(loadedAt), snapshot?.reports || [])
   const canManageIncidents = session.role === 'ADMIN' || session.role === 'DISPATCHER'
   const restricted = session.role === 'USER'
 

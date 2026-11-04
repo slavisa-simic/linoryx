@@ -1,4 +1,4 @@
-export type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'
+export type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED'
 
 export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
@@ -19,9 +19,15 @@ export interface Incident {
   createdAt: string
   updatedAt: string
   resolvedAt: string | null
+  closedAt: string | null
+  legacy: boolean
+  legacyStatus: string | null
+  reportCount: number
+  closedReportCount: number
 }
 
 export interface CreateIncidentRequest {
+  reportIds: number[]
   title: string
   description: string
   severity: Severity
@@ -43,7 +49,7 @@ export interface CommentPage {
   totalPages: number
 }
 
-export type IncidentAction = 'start' | 'resolve' | 'close'
+export type IncidentAction = 'start' | 'close'
 
 export interface IncidentPage {
   content: Incident[]

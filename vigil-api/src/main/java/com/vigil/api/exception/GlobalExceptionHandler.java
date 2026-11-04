@@ -1,16 +1,16 @@
 package com.vigil.api.exception;
 
+import com.vigil.api.location.provider.GeocodingUnavailableException;
+import java.time.LocalDateTime;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.PessimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.time.LocalDateTime;
-import com.vigil.api.location.provider.GeocodingUnavailableException;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -18,6 +18,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(GeocodingUnavailableException.class)
     public ResponseEntity<ApiError> handleGeocodingUnavailable(GeocodingUnavailableException exception) {
         return errorResponse(HttpStatus.SERVICE_UNAVAILABLE, exception.getMessage());
+    }
+
+    @ExceptionHandler(PessimisticLockingFailureException.class)
+    public ResponseEntity<ApiError> handleConcurrentChange(PessimisticLockingFailureException exception) {
+        return errorResponse(HttpStatus.CONFLICT, "Another request is updating this record. Refresh and try again.");
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

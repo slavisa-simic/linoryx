@@ -77,7 +77,7 @@ export function IncidentPdf({
   incident: Incident
   comments: IncidentComment[]
 }) {
-  let assignedEmail = 'Unassigned'
+  let assignedEmail = 'Per customer report'
   if (incident.assignedToEmail) {
     assignedEmail = incident.assignedToEmail
   }
@@ -106,7 +106,7 @@ export function IncidentPdf({
             <Text>{incident.createdByEmail}</Text>
           </View>
           <View style={styles.fact}>
-            <Text style={styles.muted}>Assigned to</Text>
+            <Text style={styles.muted}>Historical technician / assignment</Text>
             <Text>{assignedEmail}</Text>
           </View>
           <View style={styles.fact}>

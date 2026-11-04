@@ -44,7 +44,7 @@ public class CommentController {
 
     @GetMapping
     @PreAuthorize(
-            "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN', 'DISPATCHER')"
+            "hasAnyRole('TECHNICIAN', 'ADMIN', 'DISPATCHER')"
     )
     public Page<CommentResponse> getIncidentComments(
             @PathVariable Long incidentId,

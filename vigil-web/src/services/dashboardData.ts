@@ -1,3 +1,4 @@
+import type { CustomerReport } from '../models/reports'
 import type {
   CategoryCount,
   ChartCount,
@@ -12,7 +13,6 @@ import type { Technician, User } from '../models/users'
 export const statusLabels = {
   OPEN: 'Open',
   IN_PROGRESS: 'In progress',
-  RESOLVED: 'Resolved',
   CLOSED: 'Closed'
 }
 
@@ -35,7 +35,6 @@ export const categoryLabels = {
 const statusColors = {
   OPEN: 'var(--chart-blue)',
   IN_PROGRESS: 'var(--chart-amber)',
-  RESOLVED: 'var(--chart-green)',
   CLOSED: 'var(--chart-slate)'
 }
 
@@ -90,9 +89,10 @@ export function buildDashboard(
   incidents: Incident[],
   technicians: Technician[],
   days: number,
-  now = new Date()
+  now = new Date(),
+  reports: CustomerReport[] = []
 ): DashboardStatistics {
-  const statusKeys: IncidentStatus[] = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED']
+  const statusKeys: IncidentStatus[] = ['OPEN', 'IN_PROGRESS', 'CLOSED']
   const severityKeys: Severity[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
   const categoryKeys: IncidentCategory[] = [
     'SECURITY',
@@ -160,32 +160,12 @@ export function buildDashboard(
       if (incident.severity === 'CRITICAL') {
         criticalCount = criticalCount + 1
       }
-
-      if (incident.assignedToId === null) {
-        unassignedCount = unassignedCount + 1
-      } else {
-        let technician = workload.find((item) => item.id === incident.assignedToId)
-
-        if (!technician) {
-          const user = technicians.find((item) => item.id === incident.assignedToId)
-          let name = 'Technician #' + incident.assignedToId
-          if (user) {
-            name = (user.firstName + ' ' + user.lastName).trim()
-          } else if (incident.assignedToEmail) {
-            name = incident.assignedToEmail.split('@')[0]
-          }
-
-          technician = { id: incident.assignedToId, name: name, value: 0 }
-          workload.push(technician)
-        }
-
-        technician.value = technician.value + 1
-      }
     }
 
-    if (incident.resolvedAt) {
+    const completedAt = incident.closedAt || incident.resolvedAt
+    if (completedAt) {
       const start = new Date(incident.createdAt).getTime()
-      const end = new Date(incident.resolvedAt).getTime()
+      const end = new Date(completedAt).getTime()
       const hours = (end - start) / 3600000
       if (hours >= 0) {
         resolutionHours = resolutionHours + hours
@@ -206,8 +186,9 @@ export function buildDashboard(
       if (createdDate.toDateString() === date.toDateString() && createdDate <= now) {
         reported = reported + 1
       }
-      if (incident.resolvedAt) {
-        const resolvedDate = new Date(incident.resolvedAt)
+      const completedAt = incident.closedAt || incident.resolvedAt
+      if (completedAt) {
+        const resolvedDate = new Date(completedAt)
         if (resolvedDate.toDateString() === date.toDateString() && resolvedDate <= now) {
           resolved = resolved + 1
         }
@@ -217,6 +198,23 @@ export function buildDashboard(
     trend.push({ name: formatDate(date.getTime()), reported: reported, resolved: resolved })
     reportedInWindow = reportedInWindow + reported
     resolvedInWindow = resolvedInWindow + resolved
+  }
+
+  for (const report of reports) {
+    if (report.status === 'CLOSED' || report.status === 'RESOLVED') continue
+    if (!report.assignedTechnicianId) {
+      unassignedCount += 1
+      continue
+    }
+    let technician = workload.find(item => item.id === report.assignedTechnicianId)
+    if (!technician) {
+      const user = technicians.find(item => item.id === report.assignedTechnicianId)
+      let name = report.assignedTechnicianName || 'Technician #' + report.assignedTechnicianId
+      if (user) name = user.firstName + ' ' + user.lastName
+      technician = { id: report.assignedTechnicianId, name, value: 0 }
+      workload.push(technician)
+    }
+    technician.value += 1
   }
 
   workload.sort(function (first, second) {
@@ -272,7 +270,7 @@ function csvCell(value: string | number | null): string {
 
 export function incidentsCsv(incidents: Incident[]): string {
   let csv =
-    '\uFEFF"ID","Title","Status","Severity","Category","Assigned to","Reported at","Resolved at"'
+    '\uFEFF"ID","Title","Status","Severity","Category","Historical technician","Created at","Closed at","Reports","Closed reports"'
 
   for (const incident of incidents) {
     const row = [
@@ -283,7 +281,9 @@ export function incidentsCsv(incidents: Incident[]): string {
       incident.category,
       incident.assignedToEmail,
       incident.createdAt,
-      incident.resolvedAt
+      incident.closedAt,
+      incident.reportCount,
+      incident.closedReportCount
     ]
     const cells: string[] = []
     for (const value of row) {

@@ -27,7 +27,7 @@ const incident: Incident = {
   assignedToEmail: null,
   createdAt: '2026-11-01T10:00:00',
   updatedAt: '2026-11-01T10:00:00',
-  resolvedAt: null
+  resolvedAt: null, closedAt: null, legacy: false, legacyStatus: null, reportCount: 1, closedReportCount: 0
 }
 
 function openApp(role: UserRole | null, path: string) {
@@ -69,6 +69,7 @@ beforeEach(() => {
     if (path.includes('/comments')) return { content: [], totalPages: 1 }
     if (path.startsWith('/incidents?')) return { content: [incident], totalPages: 1 }
     if (path.startsWith('/audit?')) return { content: [], totalPages: 1 }
+    if (path.startsWith('/reports')) return { content: [], totalPages: 1 }
     if (path.startsWith('/customer-services?')) return { content: [], totalPages: 1 }
     throw new Error('Unexpected API request: ' + path)
   })
@@ -117,18 +118,18 @@ describe('direct navigation and operational access', () => {
 
   it.each(['DISPATCHER', 'TECHNICIAN', 'USER'] as const)('%s cannot open Users directly', async role => {
     openApp(role, '/users')
-    await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/incidents' : '/dashboard'))
+    await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/services' : '/dashboard'))
     expect(screen.queryByRole('heading', { name: 'Users.' })).toBeNull()
     expect(request.mock.calls.some(([path]) => path.startsWith('/users?'))).toBe(false)
   })
 
   it.each(['TECHNICIAN', 'USER'] as const)('%s cannot open audit logs directly', async role => {
     openApp(role, '/audit')
-    await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/incidents' : '/dashboard'))
+    await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/services' : '/dashboard'))
     expect(request.mock.calls.some(([path]) => path.startsWith('/audit?'))).toBe(false)
   })
 
-  it.each(['/users', '/dashboard', '/audit', '/incidents', '/network', '/services'])('anonymous navigation to %s goes to login', async path => {
+  it.each(['/users', '/dashboard', '/audit', '/incidents', '/network', '/services', '/reports'])('anonymous navigation to %s goes to login', async path => {
     openApp(null, path)
     await waitFor(() => expect(window.location.pathname).toBe('/login'))
     expect(request).not.toHaveBeenCalled()
@@ -136,7 +137,7 @@ describe('direct navigation and operational access', () => {
 
   it.each(['DISPATCHER', 'TECHNICIAN', 'USER'] as const)('%s cannot open Network directly', async role => {
     openApp(role, '/network')
-    await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/incidents' : '/dashboard'))
+    await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/services' : '/dashboard'))
     expect(screen.queryByRole('link', { name: 'Network' })).toBeNull()
     expect(request.mock.calls.some(([path]) => path.startsWith('/network-nodes'))).toBe(false)
   })
@@ -160,27 +161,20 @@ describe('direct navigation and operational access', () => {
     expect(screen.getByRole('option', { name: 'Dispatchers' })).toBeTruthy()
   })
 
-  it('dispatcher can assign, start, resolve, close and comment from a direct incident link', async () => {
+  it('dispatcher starts an incident and sees report-based closure rules and internal comments', async () => {
     openApp('DISPATCHER', '/incidents?incident=10')
-    const selector = await screen.findByRole('combobox', { name: 'Assign technician' })
-    await waitFor(() => expect((selector as HTMLSelectElement).disabled).toBe(false))
-    expect(screen.getByRole('button', { name: 'New incident' })).toBeTruthy()
-    expect(within(selector).getByRole('option', { name: 'Ana Technician' })).toBeTruthy()
-    fireEvent.change(selector, { target: { value: '8' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Assign technician' }))
-    await waitFor(() => expect(request).toHaveBeenCalledWith('/incidents/10/assign', 'test-token', 'PATCH', { technicianId: 8 }))
-    await waitFor(() => expect((screen.getByRole('button', { name: 'Start work' }) as HTMLButtonElement).disabled).toBe(false))
-    fireEvent.click(screen.getByRole('button', { name: 'Start work' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Mark as resolved' }))
-    fireEvent.click(await screen.findByRole('button', { name: 'Close incident' }))
-    await waitFor(() => expect(screen.queryByRole('button', { name: 'Close incident' })).toBeNull())
+    const start = await screen.findByRole('button', { name: 'Start incident' })
+    await waitFor(() => expect((start as HTMLButtonElement).disabled).toBe(false))
+    expect(screen.getByRole('button', { name: 'Create from reports' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Mark as resolved' })).toBeNull()
+    fireEvent.click(start)
+    const close = await screen.findByRole('button', { name: 'Close incident' })
+    expect((close as HTMLButtonElement).disabled).toBe(true)
     fireEvent.change(screen.getByRole('textbox', { name: 'Add a comment' }), { target: { value: 'Checked the network' } })
     fireEvent.click(screen.getByRole('button', { name: 'Post comment' }))
     expect(await screen.findByText('Checked the network')).toBeTruthy()
-    expect(request).toHaveBeenCalledWith('/technicians', 'test-token')
-    expect(request.mock.calls.some(([path]) => path.startsWith('/users?'))).toBe(false)
-  })
-})
+    expect(request.mock.calls.some(([path]) => path.endsWith('/assign') || path.endsWith('/resolve'))).toBe(false)
+  })})
 
 it.each(['ADMIN', 'DISPATCHER', 'TECHNICIAN', 'USER'] as const)('accepts and restores a %s session', role => {
   const claims = { role, sub: 'user@test.com', userId: 7, exp: Math.floor(Date.now() / 1000) + 3600 }

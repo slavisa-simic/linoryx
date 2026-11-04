@@ -14,6 +14,8 @@ import com.vigil.api.user.domain.*;
 import com.vigil.api.user.repository.UserRepository;
 import com.vigil.api.user.service.UserService;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
+import java.util.UUID;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -23,8 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
-import java.util.UUID;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -102,7 +103,10 @@ class ProvisioningIntegrationTest {
         assign(createNode().id());
         assertThrows(AccessDeniedException.class,
                 () -> services.list(customer.getEmail(), admin.getId(), PageRequest.of(0, 20)));
-        assertEquals(1, services.list(customer.getEmail(), null, PageRequest.of(0, 20)).getTotalElements());
+        var ownServices = services.list(customer.getEmail(), null, PageRequest.of(0, 20));
+        assertEquals(1, ownServices.getTotalElements());
+        assertNull(ownServices.getContent().getFirst().networkNodeId());
+        assertNull(ownServices.getContent().getFirst().networkNodeCode());
     }
 
     @ParameterizedTest

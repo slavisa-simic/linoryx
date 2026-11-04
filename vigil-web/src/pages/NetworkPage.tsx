@@ -10,7 +10,7 @@ import { FormMessage } from '../components/auth/FormMessage'
 import { Icon } from '../components/Icon'
 
 interface NetworkPageProps {
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'): void
+  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'): void
 }
 
 export function NetworkPage({ onNavigate }: NetworkPageProps) {

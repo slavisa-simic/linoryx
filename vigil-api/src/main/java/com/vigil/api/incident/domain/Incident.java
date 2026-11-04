@@ -2,7 +2,6 @@ package com.vigil.api.incident.domain;
 
 import com.vigil.api.user.domain.User;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -48,8 +47,13 @@ public class Incident {
     @Column(name = "resolved_at")
     private LocalDateTime resolvedAt;
 
-    protected Incident(){
+    // Existing rows default to historical; new incidents explicitly set this to false.
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean legacy = true;
+    private String legacyStatus;
+    private LocalDateTime closedAt;
 
+    protected Incident() {
     }
 
     public Incident(
@@ -59,6 +63,7 @@ public class Incident {
             IncidentCategory category,
             User createdBy
     ) {
+        this.legacy = false;
         this.title = title;
         this.description = description;
         this.severity = severity;
@@ -114,55 +119,32 @@ public class Incident {
         return resolvedAt;
     }
 
-    public void assignTo(User technician) {
-
-        if (status == IncidentStatus.RESOLVED ||
-                status == IncidentStatus.CLOSED) {
-            throw new IllegalStateException(
-                    "Resolved or closed incident cannot be assigned"
-            );
-        }
-
-        this.assignedTo = technician;
-        this.updatedAt = LocalDateTime.now();
-    }
+    public boolean isLegacy() { return legacy; }
+    public String getLegacyStatus() { return legacyStatus; }
+    public LocalDateTime getClosedAt() { return closedAt; }
 
     public void startProgress() {
-
-        if (assignedTo == null) {
-            throw new IllegalStateException(
-                    "Incident must be assigned before work can start"
-            );
-        }
-
+        requireCurrentWorkflow();
         if (status != IncidentStatus.OPEN) {
-            throw new IllegalStateException(
-                    "Only open incidents can be started"
-            );
+            throw new IllegalStateException("Only open incidents can be started.");
         }
-
         this.status = IncidentStatus.IN_PROGRESS;
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void resolve() {
-
+    public void close() {
+        requireCurrentWorkflow();
         if (status != IncidentStatus.IN_PROGRESS) {
-            throw new IllegalStateException(
-                    "Only incidents in progress can be resolved"
-            );
-        }
-
-        this.status = IncidentStatus.RESOLVED;
-        this.resolvedAt = LocalDateTime.now();
-        this.updatedAt = this.resolvedAt;
-    }
-
-    public void close(){
-        if (status != IncidentStatus.RESOLVED) {
-            throw new IllegalStateException("Only resolved incidents can be closed");
+            throw new IllegalStateException("Only in-progress incidents can be closed.");
         }
         this.status = IncidentStatus.CLOSED;
-        this.updatedAt = LocalDateTime.now();
+        this.closedAt = LocalDateTime.now();
+        this.updatedAt = closedAt;
+    }
+
+    public void requireCurrentWorkflow() {
+        if (legacy) {
+            throw new IllegalStateException("Historical incidents are read-only. Create a new incident from customer reports.");
+        }
     }
 }

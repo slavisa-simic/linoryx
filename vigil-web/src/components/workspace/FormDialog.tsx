@@ -8,9 +8,10 @@ interface FormDialogProps {
   busy: boolean
   onClose(): void
   children: ReactNode
+  wide?: boolean
 }
 
-export function FormDialog({ id, title, busy, onClose, children }: FormDialogProps) {
+export function FormDialog({ id, title, busy, onClose, children, wide = false }: FormDialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const dialog = ref.current
@@ -27,7 +28,7 @@ export function FormDialog({ id, title, busy, onClose, children }: FormDialogPro
   }, [])
 
   return (
-    <dialog ref={ref} id={id} className="incident-dialog service-form-dialog"
+    <dialog ref={ref} id={id} className={wide ? 'incident-dialog incident-detail-modal' : 'incident-dialog service-form-dialog'}
       aria-labelledby={id + '-title'}
       onCancel={(event) => {
         event.preventDefault()

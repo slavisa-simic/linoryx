@@ -3,8 +3,11 @@ package com.vigil.api.incident.dto;
 import com.vigil.api.incident.domain.IncidentCategory;
 import com.vigil.api.incident.domain.Severity;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import java.util.List;
 
 public record CreateIncidentRequest(
 
@@ -20,7 +23,10 @@ public record CreateIncidentRequest(
         Severity severity,
 
         @NotNull
-        IncidentCategory category
+        IncidentCategory category,
+
+        @NotEmpty
+        List<@NotNull @Positive Long> reportIds
 
 ) {
 }

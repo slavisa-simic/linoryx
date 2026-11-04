@@ -3,9 +3,12 @@ package com.vigil.api.user.service;
 import com.vigil.api.audit.repository.AuditLogRepository;
 import com.vigil.api.exception.UnauthorizedException;
 import com.vigil.api.incident.repository.IncidentRepository;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,9 +19,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -27,6 +27,7 @@ class TechnicianListingTest {
     @Mock private UserRepository userRepository;
     @Mock private AuditLogRepository auditLogRepository;
     @Mock private IncidentRepository incidentRepository;
+    @Mock private CustomerReportRepository reports;
     @InjectMocks private UserService userService;
 
     @ParameterizedTest

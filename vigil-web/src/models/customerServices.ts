@@ -9,9 +9,9 @@ export interface CustomerService {
   serviceType: ServiceType
   serviceLocationId: number
   serviceLocation: LocationData
-  networkNodeId: number
-  networkNodeCode: string
-  networkNodeName: string
+  networkNodeId: number | null
+  networkNodeCode: string | null
+  networkNodeName: string | null
   status: ServiceStatus
   createdAt: string
 }

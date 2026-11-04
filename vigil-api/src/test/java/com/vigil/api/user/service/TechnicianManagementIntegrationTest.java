@@ -9,13 +9,13 @@ import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
 import jakarta.persistence.EntityManager;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -88,7 +88,6 @@ class TechnicianManagementIntegrationTest {
     void closedIncidentAllowsManagementAndPreservesAssignment() {
         Incident incident = assignedIncident();
         incident.startProgress();
-        incident.resolve();
         incident.close();
         incidentRepository.saveAndFlush(incident);
         Long technicianId = technician.getId();
@@ -109,7 +108,7 @@ class TechnicianManagementIntegrationTest {
         Incident incident = new Incident(
                 "Technician access test", "Test incident", Severity.LOW, IncidentCategory.OTHER, admin
         );
-        incident.assignTo(technician);
+        ReflectionTestUtils.setField(incident, "assignedTo", technician);
         return incidentRepository.saveAndFlush(incident);
     }
 }

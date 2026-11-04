@@ -15,7 +15,7 @@ import { ServiceDialog } from '../components/customerServices/ServiceDialog'
 import { CustomerServicesDialog } from '../components/customerServices/CustomerServicesDialog'
 
 interface UsersPageProps {
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'): void
+  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'): void
 }
 
 export function UsersPage({

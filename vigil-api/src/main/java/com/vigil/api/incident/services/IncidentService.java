@@ -1,330 +1,205 @@
 package com.vigil.api.incident.services;
 
-
 import com.vigil.api.audit.domain.AuditAction;
 import com.vigil.api.audit.service.AuditService;
 import com.vigil.api.exception.ResourceNotFoundException;
-import com.vigil.api.incident.domain.Incident;
-import com.vigil.api.incident.domain.IncidentCategory;
-import com.vigil.api.incident.domain.IncidentStatus;
-import com.vigil.api.incident.domain.Severity;
-import com.vigil.api.incident.dto.CreateIncidentRequest;
-import com.vigil.api.incident.dto.IncidentResponse;
+import com.vigil.api.incident.domain.*;
+import com.vigil.api.incident.dto.*;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.notification.NotificationService;
-import com.vigil.api.user.domain.User;
-import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.report.domain.*;
+import com.vigil.api.report.dto.IncidentReportCount;
+import com.vigil.api.report.repository.CustomerReportRepository;
+import com.vigil.api.user.domain.*;
 import com.vigil.api.user.service.UserService;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import java.util.*;
+import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.stereotype.Service;
-import com.vigil.api.user.domain.UserRole;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class IncidentService {
-    private final IncidentRepository incidentRepository;
-    private final UserRepository userRepository;
-    private final UserService userService;
-    private final AuditService auditService;
-    private final NotificationService notificationService;
+    private final IncidentRepository incidents;
+    private final CustomerReportRepository reports;
+    private final UserService users;
+    private final AuditService audit;
+    private final NotificationService notifications;
 
-    public IncidentService(
-            IncidentRepository incidentRepository,
-            UserRepository userRepository,
-            UserService userService,
-            AuditService auditService,
-            NotificationService notificationService
-    ){
-        this.incidentRepository = incidentRepository;
-        this.userRepository = userRepository;
-        this.userService = userService;
-        this.auditService = auditService;
-        this.notificationService = notificationService;
+    public IncidentService(IncidentRepository incidents, CustomerReportRepository reports, UserService users,
+                           AuditService audit, NotificationService notifications) {
+        this.incidents = incidents;
+        this.reports = reports;
+        this.users = users;
+        this.audit = audit;
+        this.notifications = notifications;
     }
 
     @Transactional
-    public IncidentResponse createIncident(
-            CreateIncidentRequest request,
-            String creatorEmail
-    ){
-        User creator = userService.getActiveUser(creatorEmail);
-        if (creator.getRole() != UserRole.USER && creator.getRole() != UserRole.ADMIN && creator.getRole() != UserRole.DISPATCHER) {
-            throw new AccessDeniedException("Only users, administrators and dispatchers can create incidents");
+    public IncidentResponse createIncident(CreateIncidentRequest request, String email) {
+        User actor = users.getActiveUser(email);
+        requireOperator(actor);
+        List<CustomerReport> selected = lockEligibleReports(request.reportIds());
+        Incident incident = incidents.save(new Incident(request.title().trim(), request.description().trim(),
+                request.severity(), request.category(), actor));
+        audit.log(incident, actor, AuditAction.CREATED);
+        linkReports(incident, selected, actor);
+        notifications.processIncidentAlerts(incident);
+        return response(incident, selected.size(), 0);
+    }
+
+    @Transactional
+    public IncidentResponse attachReports(Long id, List<Long> reportIds, String email) {
+        User actor = users.getActiveUser(email);
+        requireOperator(actor);
+        Incident incident = lockIncident(id);
+        incident.requireCurrentWorkflow();
+        if (incident.getStatus() == IncidentStatus.CLOSED) {
+            throw new IllegalStateException("Reports cannot be attached to a closed incident.");
         }
-
-        Incident incident = new Incident(
-                request.title(),
-                request.description(),
-                request.severity(),
-                request.category(),
-                creator
-        );
-
-        Incident savedIncident = incidentRepository.save(incident);
-
-        auditService.log(
-                savedIncident,
-                creator,
-                AuditAction.CREATED
-        );
-
-        notificationService.processIncidentAlerts(
-                savedIncident
-        );
-
-        return toResponse(savedIncident);
+        linkReports(incident, lockEligibleReports(reportIds), actor);
+        return responseWithCounts(incident);
     }
 
     @Transactional(readOnly = true)
-    public Page<IncidentResponse> getAllIncidents(
-            IncidentStatus status,
-            Severity severity,
-            IncidentCategory category,
-            String search,
-            String currentUserEmail,
-            Pageable pageable
-    ){
-        User currentUser = userService.getActiveUser(currentUserEmail);
+    public Page<IncidentResponse> getAllIncidents(IncidentStatus status, Severity severity, IncidentCategory category,
+                                                 String search, String email, Pageable pageable) {
+        User actor = users.getActiveUser(email);
+        requireStaff(actor);
         Long technicianId = null;
-        Long creatorId = null;
-        if (currentUser.getRole() == UserRole.TECHNICIAN) {
-            technicianId = currentUser.getId();
+        if (actor.getRole() == UserRole.TECHNICIAN) {
+            technicianId = actor.getId();
         }
-        if (currentUser.getRole() == UserRole.USER) {
-            creatorId = currentUser.getId();
-        }
-
         String searchText = null;
-        if (search != null) {
-            if (!search.isBlank()) {
-                searchText = search.trim();
+        if (search != null && !search.isBlank()) {
+            searchText = search.trim();
+        }
+        Page<Incident> page = incidents.findVisibleIncidents(technicianId, null, status, severity, category, searchText, pageable);
+        List<Long> ids = new ArrayList<>();
+        for (Incident incident : page) {
+            ids.add(incident.getId());
+        }
+        Map<Long, IncidentReportCount> counts = counts(ids);
+        return page.map(incident -> {
+            IncidentReportCount count = counts.getOrDefault(incident.getId(), new IncidentReportCount(incident.getId(), 0, 0));
+            return response(incident, count.total(), count.closed());
+        });
+    }
+
+    @Transactional(readOnly = true)
+    public IncidentResponse getIncident(Long id, String email) {
+        User actor = users.getActiveUser(email);
+        Incident incident = incidents.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Incident not found."));
+        requireStaff(actor);
+        if (actor.getRole() == UserRole.TECHNICIAN) {
+            boolean historicalAssignment = incident.isLegacy() && incident.getAssignedTo() != null
+                    && incident.getAssignedTo().getId().equals(actor.getId());
+            if (!historicalAssignment && !reports.existsByIncidentIdAndAssignedTechnicianId(id, actor.getId())) {
+                throw new AccessDeniedException("You can only read incidents containing your assigned reports.");
             }
         }
-
-        Page<Incident> incidents = incidentRepository.findVisibleIncidents(
-                technicianId, creatorId, status, severity, category, searchText, pageable
-        );
-        return incidents.map(this::toResponse);
-    }
-
-    @Transactional(readOnly = true)
-    public IncidentResponse getIncident(
-            Long id,
-            String currentUserEmail
-    ) {
-        User currentUser = userService.getActiveUser(currentUserEmail);
-        Incident incident = incidentRepository
-                .findById(id)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException("Incident not found!")
-                );
-
-        ensureCanReadIncident(incident, currentUser);
-
-        return toResponse(incident);
+        return responseWithCounts(incident);
     }
 
     @Transactional
-    public IncidentResponse assignIncident(
-            Long incidentId,
-            Long technicianId,
-            String currentUserEmail
-    ){
-        User currentUser = userService.getActiveUser(currentUserEmail);
-        if (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.DISPATCHER) {
-            throw new AccessDeniedException("Only administrators and dispatchers can assign incidents");
-        }
-
-        User technician = userRepository
-                .findById(technicianId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Technician not found!"
-                        )
-                );
-
-        Incident incident = incidentRepository
-                .findById(incidentId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Incident not found!"
-                        )
-                );
-
-        if (technician.getRole() != UserRole.TECHNICIAN) {
-            throw new IllegalArgumentException(
-                    "User must have TECHNICIAN role"
-            );
-        }
-
-        if (!technician.isEnabled()) {
-            throw new IllegalStateException("Incident cannot be assigned to a disabled technician");
-        }
-
-        incident.assignTo(technician);
-
-        Incident savedIncident = incidentRepository.save(incident);
-
-        auditService.log(
-                savedIncident,
-                currentUser,
-                AuditAction.ASSIGNED,
-                technician
-        );
-
-        return toResponse(savedIncident);
-    }
-
-    @Transactional
-    public IncidentResponse startProgress(
-            Long incidentId,
-            String currentUserEmail
-    ){
-        User currentUser = userService.getActiveUser(currentUserEmail);
-        Incident incident = incidentRepository
-                .findById(incidentId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Incident not found!"
-                        )
-                );
-
-        ensureCanWorkOnIncident(
-                incident,
-                currentUser
-        );
-
+    public IncidentResponse startProgress(Long id, String email) {
+        User actor = users.getActiveUser(email);
+        requireOperator(actor);
+        Incident incident = lockIncident(id);
         incident.startProgress();
-
-        Incident savedIncident = incidentRepository.save(incident);
-
-        auditService.log(
-                savedIncident,
-                currentUser,
-                AuditAction.STARTED
-        );
-
-        return toResponse(savedIncident);
+        audit.log(incident, actor, AuditAction.STARTED);
+        return responseWithCounts(incident);
     }
 
     @Transactional
-    public IncidentResponse resolveIncident(
-            Long incidentId,
-            String currentUserEmail
-    ){
-        User currentUser = userService.getActiveUser(currentUserEmail);
-        Incident incident = incidentRepository
-                .findById(incidentId)
-                .orElseThrow(
-                        () -> new ResourceNotFoundException(
-                                "Incident not found!"
-                        )
-                );
-
-        ensureCanWorkOnIncident(
-                incident,
-                currentUser
-        );
-
-        incident.resolve();
-
-        Incident savedIncident = incidentRepository.save(incident);
-
-        auditService.log(
-                savedIncident,
-                currentUser,
-                AuditAction.RESOLVED
-        );
-
-        return toResponse(savedIncident);
-    }
-
-    @Transactional
-    public IncidentResponse closeIncident(Long incidentId, String currentUserEmail) {
-        User currentUser = userService.getActiveUser(currentUserEmail);
-        Incident incident = incidentRepository.findById(incidentId)
-                .orElseThrow(() -> new ResourceNotFoundException("Incident not found!"));
-
-        ensureCanWorkOnIncident(incident, currentUser);
+    public IncidentResponse closeIncident(Long id, String email) {
+        User actor = users.getActiveUser(email);
+        requireOperator(actor);
+        Incident incident = lockIncident(id);
+        incident.requireCurrentWorkflow();
+        if (incident.getStatus() != IncidentStatus.IN_PROGRESS || !reports.existsByIncidentId(id)
+                || reports.existsByIncidentIdAndStatusNot(id, ReportStatus.CLOSED)) {
+            throw new IllegalStateException("Start the incident and close every associated report before closing it.");
+        }
         incident.close();
-        Incident savedIncident = incidentRepository.save(incident);
-        auditService.log(savedIncident, currentUser, AuditAction.CLOSED);
-        return toResponse(savedIncident);
+        audit.log(incident, actor, AuditAction.CLOSED);
+        return responseWithCounts(incident);
     }
 
-    private void ensureCanWorkOnIncident(
-            Incident incident,
-            User currentUser
-    ) {
+    private Incident lockIncident(Long id) {
+        return incidents.findForUpdate(id).orElseThrow(() -> new ResourceNotFoundException("Incident not found."));
+    }
 
-        if (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.DISPATCHER) {
-            return;
+    private List<CustomerReport> lockEligibleReports(List<Long> ids) {
+        if (ids == null || ids.isEmpty() || new HashSet<>(ids).size() != ids.size()) {
+            throw new IllegalArgumentException("Select at least one report, without duplicates.");
         }
-
-        if (currentUser.getRole() != UserRole.TECHNICIAN) {
-            throw new AccessDeniedException(
-                    "Only technicians can work on incidents"
-            );
+        for (Long id : ids) {
+            if (id == null || id <= 0) throw new IllegalArgumentException("Report IDs must be positive numbers.");
         }
+        List<Long> sortedIds = new ArrayList<>(ids);
+        Collections.sort(sortedIds);
+        List<CustomerReport> selected = new ArrayList<>();
+        // A stable order avoids deadlocks when dispatchers select overlapping reports.
+        for (Long id : sortedIds) {
+            CustomerReport report = reports.findForUpdate(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Report REP-" + id + " not found."));
+            if (report.getIncident() != null || report.getStatus() == ReportStatus.CLOSED) {
+                throw new IllegalStateException("Report REP-" + id + " is already linked or closed.");
+            }
+            selected.add(report);
+        }
+        return selected;
+    }
 
-        if (incident.getAssignedTo() == null || !incident.getAssignedTo()
-                .getId()
-                .equals(currentUser.getId())) {
-
-            throw new AccessDeniedException(
-                    "Incident is not assigned to you"
-            );
+    private void linkReports(Incident incident, List<CustomerReport> selected, User actor) {
+        for (CustomerReport report : selected) {
+            report.linkTo(incident);
+            audit.logReport(report, actor, AuditAction.REPORT_LINKED);
         }
     }
 
-    private void ensureCanReadIncident(Incident incident, User currentUser) {
-        if (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.DISPATCHER) {
-            return;
+    private void requireOperator(User actor) {
+        if (actor.getRole() != UserRole.ADMIN && actor.getRole() != UserRole.DISPATCHER) {
+            throw new AccessDeniedException("Only dispatchers and administrators can manage incidents.");
         }
-
-        if (currentUser.getRole() == UserRole.USER &&
-                incident.getCreatedBy().getId().equals(currentUser.getId())) {
-            return;
-        }
-
-        if (currentUser.getRole() == UserRole.TECHNICIAN &&
-                incident.getAssignedTo() != null &&
-                incident.getAssignedTo().getId().equals(currentUser.getId())) {
-            return;
-        }
-
-        throw new AccessDeniedException("You cannot access this incident");
     }
 
-    private IncidentResponse toResponse(Incident incident) {
-
-        User assignedTo = incident.getAssignedTo();
-        Long assignedToId = null;
-        String assignedToEmail = null;
-        if (assignedTo != null) {
-            assignedToId = assignedTo.getId();
-            assignedToEmail = assignedTo.getEmail();
+    private void requireStaff(User actor) {
+        if (actor.getRole() != UserRole.ADMIN && actor.getRole() != UserRole.DISPATCHER
+                && actor.getRole() != UserRole.TECHNICIAN) {
+            throw new AccessDeniedException("Incidents are internal. View your customer reports instead.");
         }
+    }
 
-        return new IncidentResponse(
-                incident.getId(),
-                incident.getTitle(),
-                incident.getDescription(),
-                incident.getSeverity(),
-                incident.getStatus(),
-                incident.getCategory(),
+    private Map<Long, IncidentReportCount> counts(List<Long> ids) {
+        Map<Long, IncidentReportCount> result = new HashMap<>();
+        if (!ids.isEmpty()) {
+            for (IncidentReportCount count : reports.countForIncidents(ids)) {
+                result.put(count.incidentId(), count);
+            }
+        }
+        return result;
+    }
 
-                incident.getCreatedBy().getId(),
-                incident.getCreatedBy().getEmail(),
+    private IncidentResponse responseWithCounts(Incident incident) {
+        IncidentReportCount count = counts(List.of(incident.getId()))
+                .getOrDefault(incident.getId(), new IncidentReportCount(incident.getId(), 0, 0));
+        return response(incident, count.total(), count.closed());
+    }
 
-                assignedToId,
-                assignedToEmail,
-
-                incident.getCreatedAt(),
-                incident.getUpdatedAt(),
-                incident.getResolvedAt()
-        );
+    private IncidentResponse response(Incident incident, long total, long closed) {
+        Long technicianId = null;
+        String technicianEmail = null;
+        if (incident.getAssignedTo() != null) {
+            technicianId = incident.getAssignedTo().getId();
+            technicianEmail = incident.getAssignedTo().getEmail();
+        }
+        return new IncidentResponse(incident.getId(), incident.getTitle(), incident.getDescription(),
+                incident.getSeverity(), incident.getStatus(), incident.getCategory(),
+                incident.getCreatedBy().getId(), incident.getCreatedBy().getEmail(), technicianId, technicianEmail,
+                incident.getCreatedAt(), incident.getUpdatedAt(), incident.getResolvedAt(), incident.getClosedAt(),
+                incident.isLegacy(), incident.getLegacyStatus(), total, closed);
     }
 }

@@ -3,6 +3,7 @@ import type { UserRole } from './users'
 export interface AuditEntry {
   id: number
   incidentId: number | null
+  reportId: number | null
   actorId: number | null
   actorFirstName: string | null
   actorLastName: string | null
@@ -10,6 +11,14 @@ export interface AuditEntry {
   targetUserFirstName: string | null
   targetUserLastName: string | null
   action:
+    | 'REPORT_CREATED'
+    | 'REPORT_LINKED'
+    | 'REPORT_ASSIGNED'
+    | 'REPORT_STARTED'
+    | 'REPORT_RESOLVED'
+    | 'CUSTOMER_CONFIRMED'
+    | 'CUSTOMER_STILL_NOT_WORKING'
+    | 'REPORT_CLOSED'
     | 'CREATED'
     | 'ASSIGNED'
     | 'STARTED'

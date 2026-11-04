@@ -8,26 +8,26 @@ import com.vigil.api.comment.repository.CommentRepository;
 import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.repository.IncidentRepository;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.service.UserService;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-
-import java.util.Optional;
+import org.springframework.security.access.AccessDeniedException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 class CommentServiceTest {
@@ -44,6 +44,7 @@ class CommentServiceTest {
     @Mock
     private AuditService auditService;
 
+    @Mock private CustomerReportRepository reports;
     @InjectMocks
     private CommentService commentService;
 

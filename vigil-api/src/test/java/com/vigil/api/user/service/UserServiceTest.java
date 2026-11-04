@@ -1,16 +1,16 @@
 package com.vigil.api.user.service;
 
 import com.vigil.api.exception.UnauthorizedException;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,6 +22,7 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
+    @Mock private CustomerReportRepository reports;
     @InjectMocks
     private UserService userService;
 

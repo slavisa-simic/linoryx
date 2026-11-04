@@ -9,6 +9,7 @@ import com.vigil.api.comment.repository.CommentRepository;
 import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.incident.domain.Incident;
 import com.vigil.api.incident.repository.IncidentRepository;
+import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.service.UserService;
@@ -25,12 +26,14 @@ public class CommentService {
     private final IncidentRepository incidentRepository;
     private final UserService userService;
     private final AuditService auditService;
+    private final CustomerReportRepository reports;
 
-    public CommentService(CommentRepository commentRepository, IncidentRepository incidentRepository, UserService userService, AuditService auditService) {
+    public CommentService(CommentRepository commentRepository, IncidentRepository incidentRepository, UserService userService, AuditService auditService, CustomerReportRepository reports) {
         this.commentRepository = commentRepository;
         this.incidentRepository = incidentRepository;
         this.userService = userService;
         this.auditService = auditService;
+        this.reports = reports;
     }
 
     @Transactional
@@ -111,21 +114,11 @@ public class CommentService {
             return;
         }
 
-        if (currentUser.getRole() == UserRole.USER) {
-
-            if (incident.getCreatedBy()
-                    .getId()
-                    .equals(currentUser.getId())) {
-                return;
-            }
-
-            throw new AccessDeniedException(
-                    "You cannot access comments for this incident"
-            );
-        }
-
         if (currentUser.getRole() == UserRole.TECHNICIAN) {
 
+            if (reports.existsByIncidentIdAndAssignedTechnicianId(incident.getId(), currentUser.getId())) {
+                return;
+            }
             if (incident.getAssignedTo() != null &&
                     incident.getAssignedTo()
                             .getId()

@@ -36,17 +36,7 @@ export async function createIncident(
   session: AuthSession,
   data: CreateIncidentRequest
 ): Promise<Incident> {
-  return apiRequest('/incidents', session.token, 'POST', data)
-}
-
-export async function assignIncident(
-  session: AuthSession,
-  id: number,
-  technicianId: number
-): Promise<Incident> {
-  return apiRequest('/incidents/' + id + '/assign', session.token, 'PATCH', {
-    technicianId: technicianId
-  })
+  return apiRequest('/incidents/from-reports', session.token, 'POST', data)
 }
 
 export async function progressIncident(

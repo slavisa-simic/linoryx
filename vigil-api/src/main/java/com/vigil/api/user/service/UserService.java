@@ -1,31 +1,32 @@
 package com.vigil.api.user.service;
 
-import com.vigil.api.exception.ResourceNotFoundException;
-import com.vigil.api.user.domain.User;
-import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.audit.domain.AuditAction;
 import com.vigil.api.audit.domain.AuditLog;
 import com.vigil.api.audit.repository.AuditLogRepository;
+import com.vigil.api.customerservice.domain.ServiceStatus;
+import com.vigil.api.customerservice.repository.CustomerServiceRepository;
+import com.vigil.api.exception.ResourceNotFoundException;
 import com.vigil.api.exception.UnauthorizedException;
 import com.vigil.api.incident.domain.IncidentStatus;
 import com.vigil.api.incident.repository.IncidentRepository;
-import com.vigil.api.user.dto.UserResponse;
+import com.vigil.api.report.domain.ReportStatus;
+import com.vigil.api.report.repository.CustomerReportRepository;
+import com.vigil.api.user.domain.User;
+import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.dto.TechnicianResponse;
+import com.vigil.api.user.dto.UserResponse;
 import com.vigil.api.user.repository.UserRepository;
-import com.vigil.api.customerservice.repository.CustomerServiceRepository;
-import com.vigil.api.customerservice.domain.ServiceStatus;
-
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
 @Service
 public class UserService {
 
+    private final CustomerReportRepository reports;
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
     private final IncidentRepository incidentRepository;
@@ -35,9 +36,11 @@ public class UserService {
             UserRepository userRepository,
             AuditLogRepository auditLogRepository,
             IncidentRepository incidentRepository,
-            CustomerServiceRepository customerServiceRepository
+            CustomerServiceRepository customerServiceRepository,
+            CustomerReportRepository reports
     ) {
         this.userRepository = userRepository;
+        this.reports = reports;
         this.auditLogRepository = auditLogRepository;
         this.incidentRepository = incidentRepository;
         this.customerServiceRepository = customerServiceRepository;
@@ -112,8 +115,11 @@ public class UserService {
             return toResponse(user);
         }
         ensureAnotherAdmin(user);
-        ensureNoActiveAssignedIncidents(user);
+        ensureNoActiveAssignedWork(user);
 
+        if (user.getRole() == UserRole.USER && reports.existsByCustomerServiceCustomerIdAndStatusNot(user.getId(), ReportStatus.CLOSED)) {
+            throw new IllegalStateException("Close this customer's reports before changing their role.");
+        }
         if (user.getRole() == UserRole.USER && customerServiceRepository.existsByCustomerIdAndStatusNot(
                 user.getId(), ServiceStatus.TERMINATED)) {
             throw new IllegalStateException("Terminate this customer's services before changing their role.");
@@ -146,7 +152,7 @@ public class UserService {
         if (!user.isEnabled()) {
             return toResponse(user);
         }
-        ensureNoActiveAssignedIncidents(user);
+        ensureNoActiveAssignedWork(user);
         user.disable();
 
         User savedUser = userRepository.save(user);
@@ -194,13 +200,13 @@ public class UserService {
         }
     }
 
-    private void ensureNoActiveAssignedIncidents(User user) {
+    private void ensureNoActiveAssignedWork(User user) {
         if (user.getRole() == UserRole.TECHNICIAN) {
-            boolean hasActiveIncidents = incidentRepository.existsByAssignedToIdAndStatusIn(
+            boolean hasActiveIncidents = incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                     user.getId(), List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
             );
-            if (hasActiveIncidents) {
-                throw new IllegalStateException("This technician still has active assigned incidents. Reassign them before changing the role or disabling the account.");
+            if (hasActiveIncidents || reports.existsByAssignedTechnicianIdAndStatusNot(user.getId(), ReportStatus.CLOSED)) {
+                throw new IllegalStateException("This technician still has active assigned work. Reassign reports before changing the role or disabling the account.");
             }
         }
     }

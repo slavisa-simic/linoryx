@@ -175,7 +175,6 @@ export function IncidentsTable({
             <option value="ALL">All statuses</option>
             <option value="OPEN">Open</option>
             <option value="IN_PROGRESS">In progress</option>
-            <option value="RESOLVED">Resolved</option>
             <option value="CLOSED">Closed</option>
           </select>
           <Icon name="chevron-down" size={15} />
@@ -230,17 +229,12 @@ export function IncidentsTable({
               <th scope="col" aria-sort={prioritySort}>
                 Priority
               </th>
-              <th scope="col">Assigned to</th>
+              <th scope="col">Reports</th>
               <th scope="col">Reported</th>
             </tr>
           </thead>
           <tbody>
             {visible.map(function (incident) {
-              let assignee = 'Unassigned'
-              if (incident.assignedToEmail) {
-                assignee = incident.assignedToEmail.split('@')[0]
-              }
-
               return (
                 <tr key={incident.id}>
                   <td>
@@ -283,18 +277,8 @@ export function IncidentsTable({
                     </span>
                   </td>
                   <td>
-                    {incident.assignedToEmail && (
-                      <span
-                        className="table-assignee"
-                        title={incident.assignedToEmail}
-                      >
-                        <Icon name="wrench" size={15} />
-                        <span>{assignee}</span>
-                      </span>
-                    )}
-                    {!incident.assignedToEmail && (
-                      <span className="unassigned-label">Unassigned</span>
-                    )}
+                    <span>{incident.closedReportCount}/{incident.reportCount} closed</span>
+                    {incident.legacy && <div className="incident-muted">Historical</div>}
                   </td>
                   <td className="table-date">
                     {formatDate(incident.createdAt)}

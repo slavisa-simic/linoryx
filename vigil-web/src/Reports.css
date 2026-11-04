@@ -1,0 +1,11 @@
+.report-toolbar { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; padding: 1rem; }
+.report-toolbar label { display: grid; gap: .4rem; font-size: .85rem; }
+.report-toolbar .field-input { width: auto; max-width: 100%; }
+.report-selection { border-top: 1px solid var(--border-color, #e2e8f0); }
+.reports-table td { vertical-align: top; min-width: 150px; }
+.report-description { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 320px; margin: .5rem 0; }
+.report-actions { display: flex; flex-direction: column; gap: .6rem; align-items: flex-start; }
+.report-attention { color: #92520a; font-size: .85rem; }
+.reports-table time { font-size: .8rem; color: #64748b; }
+.incident-detail-modal .reports-table { font-size: .8rem; }
+@media (max-width: 640px) { .report-toolbar { align-items: stretch; flex-direction: column; } }

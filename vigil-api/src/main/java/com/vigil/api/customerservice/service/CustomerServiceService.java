@@ -43,7 +43,7 @@ public class CustomerServiceService {
             if (customerId != null && !customerId.equals(user.getId())) {
                 throw new AccessDeniedException("You can only view your own services.");
             }
-            return repository.findByCustomerId(user.getId(), pageable).map(this::toResponse);
+            return repository.findByCustomerId(user.getId(), pageable).map(this::toCustomerResponse);
         }
         if (user.getRole() != UserRole.ADMIN) {
             throw new AccessDeniedException("Only administrators can view other customers' services.");
@@ -114,6 +114,14 @@ public class CustomerServiceService {
 
     private CustomerService find(Long id) {
         return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Customer service not found."));
+    }
+
+    private CustomerServiceResponse toCustomerResponse(CustomerService item) {
+        ServiceLocation location = item.getServiceLocation();
+        LocationData address = new LocationData(location.getFormattedAddress(), location.getCity(),
+                location.getCountryCode(), location.getLatitude(), location.getLongitude());
+        return new CustomerServiceResponse(item.getId(), item.getCustomer().getId(), item.getServiceType(),
+                location.getId(), address, null, null, null, item.getStatus(), item.getCreatedAt());
     }
 
     private CustomerServiceResponse toResponse(CustomerService item) {
