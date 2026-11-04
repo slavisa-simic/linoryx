@@ -69,6 +69,7 @@ beforeEach(() => {
     if (path.includes('/comments')) return { content: [], totalPages: 1 }
     if (path.startsWith('/incidents?')) return { content: [incident], totalPages: 1 }
     if (path.startsWith('/audit?')) return { content: [], totalPages: 1 }
+    if (path.startsWith('/customer-services?')) return { content: [], totalPages: 1 }
     throw new Error('Unexpected API request: ' + path)
   })
   HTMLDialogElement.prototype.showModal = function () { this.open = true }
@@ -127,10 +128,17 @@ describe('direct navigation and operational access', () => {
     expect(request.mock.calls.some(([path]) => path.startsWith('/audit?'))).toBe(false)
   })
 
-  it.each(['/users', '/dashboard', '/audit', '/incidents'])('anonymous navigation to %s goes to login', async path => {
+  it.each(['/users', '/dashboard', '/audit', '/incidents', '/network', '/services'])('anonymous navigation to %s goes to login', async path => {
     openApp(null, path)
     await waitFor(() => expect(window.location.pathname).toBe('/login'))
     expect(request).not.toHaveBeenCalled()
+  })
+
+  it.each(['DISPATCHER', 'TECHNICIAN', 'USER'] as const)('%s cannot open Network directly', async role => {
+    openApp(role, '/network')
+    await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/incidents' : '/dashboard'))
+    expect(screen.queryByRole('link', { name: 'Network' })).toBeNull()
+    expect(request.mock.calls.some(([path]) => path.startsWith('/network-nodes'))).toBe(false)
   })
 
   it('checks permissions on browser back/forward navigation', async () => {

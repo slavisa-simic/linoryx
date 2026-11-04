@@ -21,3 +21,9 @@ ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS audit_logs_new_role_check;
 ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_new_role_check CHECK (new_role IN (
     'USER', 'TECHNICIAN', 'DISPATCHER', 'ADMIN'
 ));
+
+-- A counter is kept after a node is deleted. This is not a city catalog.
+CREATE TABLE IF NOT EXISTS node_code_counters (
+    prefix VARCHAR(180) PRIMARY KEY,
+    last_number BIGINT NOT NULL CHECK (last_number > 0)
+);

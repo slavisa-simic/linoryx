@@ -42,3 +42,9 @@ security:
 server:
   port: 8080
 
+location:
+  geoapify:
+    api-key: ${GEOAPIFY_API_KEY:}
+    base-url: ${GEOAPIFY_BASE_URL:https://api.geoapify.com}
+    timeout-seconds: 8
+

@@ -15,7 +15,7 @@ import { Icon } from '../components/Icon'
 
 interface IncidentsPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services',
     incidentId?: number
   ): void
 }

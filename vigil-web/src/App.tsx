@@ -6,6 +6,8 @@ import DashboardPage from './pages/DashboardPage'
 import { IncidentsPage } from './pages/IncidentsPage'
 import { UsersPage } from './pages/UsersPage'
 import { AuditPage } from './pages/AuditPage'
+import { NetworkPage } from './pages/NetworkPage'
+import { ServicesPage } from './pages/ServicesPage'
 import type { AuthResponse, AuthSession } from './models/auth'
 import type { AuthApi } from './api/authApi'
 import type { SessionService } from './services/SessionService'
@@ -15,9 +17,11 @@ interface AppProps {
   sessionService: SessionService
 }
 
-type Page = 'login' | 'register' | 'dashboard' | 'incidents' | 'users' | 'audit'
+type Page = 'login' | 'register' | 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'
 
 function getCurrentPage(): Page {
+  if (window.location.pathname === '/network') return 'network'
+  if (window.location.pathname === '/services') return 'services'
   if (window.location.pathname === '/audit') {
     return 'audit'
   }
@@ -40,7 +44,8 @@ function getSessionPage(session: AuthSession | null): Page {
   const page = getCurrentPage()
   if (
     session &&
-    ((page === 'users' && session.role !== 'ADMIN') ||
+    (((page === 'users' || page === 'network') && session.role !== 'ADMIN') ||
+      (page === 'services' && session.role !== 'USER') ||
       (page === 'audit' && session.role !== 'ADMIN' && session.role !== 'DISPATCHER'))
   ) {
     if (session.role === 'USER') {
@@ -59,6 +64,8 @@ function getSessionPage(session: AuthSession | null): Page {
     (page === 'dashboard' ||
       page === 'incidents' ||
       page === 'users' ||
+      page === 'network' ||
+      page === 'services' ||
       page === 'audit')
   ) {
     return 'login'
@@ -100,6 +107,8 @@ function App({ authApi, sessionService }: AppProps) {
       if (page === 'audit') {
         document.title = 'Audit logs · Vigil'
       }
+      if (page === 'network') document.title = 'Network · Vigil'
+      if (page === 'services') document.title = 'My services · Vigil'
     } else if (page === 'register') {
       document.title = 'Create account · Vigil'
     } else {
@@ -171,7 +180,11 @@ function App({ authApi, sessionService }: AppProps) {
 
   let content
 
-  if (session && page === 'audit' && (session.role === 'ADMIN' || session.role === 'DISPATCHER')) {
+  if (session && page === 'network' && session.role === 'ADMIN') {
+    content = <NetworkPage onNavigate={navigate} />
+  } else if (session && page === 'services' && session.role === 'USER') {
+    content = <ServicesPage onNavigate={navigate} />
+  } else if (session && page === 'audit' && (session.role === 'ADMIN' || session.role === 'DISPATCHER')) {
     content = (
       <AuditPage
         onNavigate={navigate}

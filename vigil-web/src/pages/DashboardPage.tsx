@@ -14,7 +14,7 @@ import { DashboardOperations } from '../components/dashboard/DashboardOperations
 
 interface DashboardPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit',
+    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services',
     incidentId?: number
   ): void
 }

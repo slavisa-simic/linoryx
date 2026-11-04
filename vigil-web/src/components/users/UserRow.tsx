@@ -10,6 +10,10 @@ interface UserRowProps {
   busy: boolean
   onRoleChange(user: User, role: UserRole): void
   onAccessChange(user: User): void
+  serviceStatus: string
+  servicesAvailable: boolean
+  onAssignService(user: User): void
+  onViewServices(user: User): void
 }
 
 const roleIcons = {
@@ -24,7 +28,11 @@ export function UserRow({
   currentUserId,
   busy,
   onRoleChange,
-  onAccessChange
+  onAccessChange,
+  serviceStatus,
+  servicesAvailable,
+  onAssignService,
+  onViewServices
 }: UserRowProps) {
   const [role, setRole] = useState(user.role)
   const ownAccount = user.id === currentUserId
@@ -88,6 +96,7 @@ export function UserRow({
           {status}
         </span>
       </td>
+      <td>{user.role === 'USER' ? serviceStatus : '—'}</td>
       <td className="table-date">
         {formatDate(user.createdAt, {
           day: 'numeric',
@@ -106,6 +115,12 @@ export function UserRow({
           {accessLabel}
         </button>
       </td>
+      <td>{user.role === 'USER' && <div className="user-service-actions">
+        <button className="user-save-button" type="button" disabled={busy || !servicesAvailable}
+          onClick={() => onAssignService(user)}>Assign service</button>
+        <button className="user-access-button" type="button" disabled={busy || !servicesAvailable}
+          onClick={() => onViewServices(user)}>View services</button>
+      </div>}</td>
     </tr>
   )
 }

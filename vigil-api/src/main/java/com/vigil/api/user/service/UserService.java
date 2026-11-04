@@ -12,6 +12,8 @@ import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.dto.UserResponse;
 import com.vigil.api.user.dto.TechnicianResponse;
 import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.customerservice.repository.CustomerServiceRepository;
+import com.vigil.api.customerservice.domain.ServiceStatus;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,15 +29,18 @@ public class UserService {
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
     private final IncidentRepository incidentRepository;
+    private final CustomerServiceRepository customerServiceRepository;
 
     public UserService(
             UserRepository userRepository,
             AuditLogRepository auditLogRepository,
-            IncidentRepository incidentRepository
+            IncidentRepository incidentRepository,
+            CustomerServiceRepository customerServiceRepository
     ) {
         this.userRepository = userRepository;
         this.auditLogRepository = auditLogRepository;
         this.incidentRepository = incidentRepository;
+        this.customerServiceRepository = customerServiceRepository;
     }
 
     @Transactional(readOnly = true)
@@ -108,6 +113,11 @@ public class UserService {
         }
         ensureAnotherAdmin(user);
         ensureNoActiveAssignedIncidents(user);
+
+        if (user.getRole() == UserRole.USER && customerServiceRepository.existsByCustomerIdAndStatusNot(
+                user.getId(), ServiceStatus.TERMINATED)) {
+            throw new IllegalStateException("Terminate this customer's services before changing their role.");
+        }
 
         UserRole previousRole = user.getRole();
         user.changeRole(role);

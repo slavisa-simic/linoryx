@@ -1,6 +1,7 @@
 package com.vigil.api.user.service;
 
 import com.vigil.api.audit.domain.AuditAction;
+import com.vigil.api.customerservice.repository.CustomerServiceRepository;
 import com.vigil.api.audit.domain.AuditLog;
 import com.vigil.api.audit.repository.AuditLogRepository;
 import com.vigil.api.exception.ResourceNotFoundException;
@@ -35,6 +36,7 @@ class UserManagementTest {
     @Mock private UserRepository userRepository;
     @Mock private AuditLogRepository auditLogRepository;
     @Mock private IncidentRepository incidentRepository;
+    @Mock private CustomerServiceRepository customerServiceRepository;
     @InjectMocks private UserService userService;
 
     private User user(long id, UserRole role) {

@@ -5,8 +5,8 @@ import { BrandLogo } from '../auth/BrandLogo'
 import { Icon } from '../Icon'
 
 interface WorkspaceNavbarProps {
-  page: 'dashboard' | 'incidents' | 'users' | 'audit'
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit'): void
+  page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'
+  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'): void
 }
 
 const roleLabels = {
@@ -64,7 +64,7 @@ export function WorkspaceNavbar({
 
   function navigate(
     event: MouseEvent<HTMLAnchorElement>,
-    nextPage: 'dashboard' | 'incidents' | 'users' | 'audit'
+    nextPage: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services'
   ) {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
       return
@@ -115,6 +115,20 @@ export function WorkspaceNavbar({
             >
               <Icon name="users" size={17} />
               Users
+            </a>
+          )}
+          {admin && (
+            <a className={page === 'network' ? 'workspace-nav-item is-active' : 'workspace-nav-item'}
+              href="/network" aria-current={page === 'network' ? 'page' : undefined}
+              onClick={(event) => navigate(event, 'network')}>
+              <Icon name="network" size={17} />Network
+            </a>
+          )}
+          {session.role === 'USER' && (
+            <a className={page === 'services' ? 'workspace-nav-item is-active' : 'workspace-nav-item'}
+              href="/services" aria-current={page === 'services' ? 'page' : undefined}
+              onClick={(event) => navigate(event, 'services')}>
+              <Icon name="router" size={17} />My services
             </a>
           )}
           {canViewAudit && (

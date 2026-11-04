@@ -11,6 +11,10 @@ interface UsersTableProps {
   busy: boolean
   onRoleChange(user: User, role: UserRole): void
   onAccessChange(user: User): void
+  serviceSummaries: Record<number, string>
+  servicesAvailable: boolean
+  onAssignService(user: User): void
+  onViewServices(user: User): void
 }
 
 const pageSize = 8
@@ -20,7 +24,11 @@ export function UsersTable({
   currentUserId,
   busy,
   onRoleChange,
-  onAccessChange
+  onAccessChange,
+  serviceSummaries,
+  servicesAvailable,
+  onAssignService,
+  onViewServices
 }: UsersTableProps) {
   const [search, setSearch] = useState('')
   const [role, setRole] = useState('ALL')
@@ -136,9 +144,11 @@ export function UsersTable({
               <th scope="col">Name</th>
               <th scope="col">Email</th>
               <th scope="col">Role</th>
-              <th scope="col">Status</th>
+              <th scope="col">Account status</th>
+              <th scope="col">Service status</th>
               <th scope="col">Joined</th>
               <th scope="col">Access</th>
+              <th scope="col">Services</th>
             </tr>
           </thead>
           <tbody>
@@ -150,6 +160,10 @@ export function UsersTable({
                 busy={busy}
                 onRoleChange={onRoleChange}
                 onAccessChange={onAccessChange}
+                serviceStatus={serviceSummaries[user.id]}
+                servicesAvailable={servicesAvailable}
+                onAssignService={onAssignService}
+                onViewServices={onViewServices}
               />
             ))}
           </tbody>

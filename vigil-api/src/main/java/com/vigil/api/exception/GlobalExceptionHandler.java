@@ -8,9 +8,27 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
+import com.vigil.api.location.provider.GeocodingUnavailableException;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(GeocodingUnavailableException.class)
+    public ResponseEntity<ApiError> handleGeocodingUnavailable(GeocodingUnavailableException exception) {
+        return errorResponse(HttpStatus.SERVICE_UNAVAILABLE, exception.getMessage());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataConflict(DataIntegrityViolationException exception) {
+        return errorResponse(HttpStatus.CONFLICT, "This change conflicts with an existing record. Refresh and try again.");
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiError> handleInvalidBody(HttpMessageNotReadableException exception) {
+        return errorResponse(HttpStatus.BAD_REQUEST, "Check the submitted fields and enum values.");
+    }
 
     @ExceptionHandler(UnauthorizedException.class)
     public ResponseEntity<ApiError> handleUnauthorized(

@@ -31,7 +31,14 @@ import {
   FileDown,
   Play,
   Archive,
-  Send
+  Send,
+  Network,
+  Router,
+  Server,
+  Radio,
+  MapPin,
+  Pencil,
+  Trash2
 } from 'lucide-react'
 
 const icons = {
@@ -67,7 +74,14 @@ const icons = {
   pdf: FileDown,
   play: Play,
   archive: Archive,
-  send: Send
+  send: Send,
+  network: Network,
+  router: Router,
+  server: Server,
+  radio: Radio,
+  'map-pin': MapPin,
+  edit: Pencil,
+  delete: Trash2
 }
 
 export type IconName = keyof typeof icons
