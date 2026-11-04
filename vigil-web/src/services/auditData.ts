@@ -14,6 +14,7 @@ export const auditActionLabels = {
 
 export const auditRoleLabels = {
   ADMIN: 'Administrator',
+  DISPATCHER: 'Dispatcher',
   TECHNICIAN: 'Technician',
   USER: 'User'
 }

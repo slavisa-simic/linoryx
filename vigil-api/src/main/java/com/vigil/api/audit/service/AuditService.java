@@ -99,8 +99,8 @@ public class AuditService {
             Pageable pageable
     ) {
         User currentUser = userService.getActiveUser(currentUserEmail);
-        if (currentUser.getRole() != UserRole.ADMIN) {
-            throw new AccessDeniedException("Only administrators can view all audit logs");
+        if (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.DISPATCHER) {
+            throw new AccessDeniedException("Only administrators and dispatchers can view all audit logs");
         }
 
         return auditLogRepository
@@ -113,7 +113,7 @@ public class AuditService {
             User currentUser
     ) {
 
-        if (currentUser.getRole() == UserRole.ADMIN) {
+        if (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.DISPATCHER) {
             return;
         }
 

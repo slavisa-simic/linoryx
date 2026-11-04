@@ -1,9 +1,9 @@
 import { useUser } from '../context/UserContext'
 import { useEffect, useState } from 'react'
 import type { Incident, IncidentStatus } from '../models/incidents'
-import type { User } from '../models/users'
+import type { Technician } from '../models/users'
 import { getIncident, listIncidents } from '../api/incidentsApi'
-import { getTechnicians } from '../api/usersApi'
+import { getTechnicians } from '../api/techniciansApi'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { MetricCard } from '../components/workspace/MetricCard'
 import { IncidentsTable } from '../components/incidents/IncidentsTable'
@@ -25,7 +25,7 @@ export function IncidentsPage({
 }: IncidentsPageProps) {
   const { session, onSessionExpired } = useUser()
   const [incidents, setIncidents] = useState<Incident[]>([])
-  const [technicians, setTechnicians] = useState<User[]>([])
+  const [technicians, setTechnicians] = useState<Technician[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -42,8 +42,8 @@ export function IncidentsPage({
       setError('')
       try {
         const items = await listIncidents(session)
-        let team: User[] = []
-        if (session.role === 'ADMIN') {
+        let team: Technician[] = []
+        if (session.role === 'ADMIN' || session.role === 'DISPATCHER') {
           team = await getTechnicians(session)
         }
         if (!active) {

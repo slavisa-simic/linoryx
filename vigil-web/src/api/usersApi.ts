@@ -25,11 +25,6 @@ export async function listUsers(session: AuthSession): Promise<User[]> {
   return users
 }
 
-export async function getTechnicians(session: AuthSession): Promise<User[]> {
-  const users = await listUsers(session)
-  return users.filter((user) => user.role === 'TECHNICIAN' && user.enabled)
-}
-
 export async function changeUserRole(
   session: AuthSession,
   id: number,

@@ -40,8 +40,8 @@ public class CommentService {
         String currentUserEmail
     ) {
         User author = userService.getActiveUser(currentUserEmail);
-        if (author.getRole() != UserRole.ADMIN && author.getRole() != UserRole.TECHNICIAN) {
-            throw new AccessDeniedException("Only technicians and administrators can add comments");
+        if (author.getRole() != UserRole.ADMIN && author.getRole() != UserRole.DISPATCHER && author.getRole() != UserRole.TECHNICIAN) {
+            throw new AccessDeniedException("Only technicians, administrators and dispatchers can add comments");
         }
         Incident incident = incidentRepository
                 .findById(incidentId)
@@ -107,7 +107,7 @@ public class CommentService {
             User currentUser
     ) {
 
-        if (currentUser.getRole() == UserRole.ADMIN) {
+        if (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.DISPATCHER) {
             return;
         }
 

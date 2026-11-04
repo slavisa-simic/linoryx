@@ -60,9 +60,10 @@ class AuditServiceTest {
         verifyNoInteractions(auditLogRepository);
     }
 
-    @Test
-    void allAuditLogsIncludeRoleChangesWithoutAnIncident() {
-        User admin = new User("admin@test.com", "hash", "Ana", "Admin", UserRole.ADMIN);
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
+    void allAuditLogsIncludeRoleChangesWithoutAnIncident(UserRole role) {
+        User admin = new User("admin@test.com", "hash", "Ana", "Admin", role);
         User target = new User("user@test.com", "hash", "Marko", "User", UserRole.TECHNICIAN);
         var log = new com.vigil.api.audit.domain.AuditLog(admin, target, UserRole.USER, UserRole.TECHNICIAN);
         Pageable pageable = PageRequest.of(0, 20);
@@ -145,8 +146,9 @@ class AuditServiceTest {
         );
     }
 
-    @Test
-    void getIncidentAudit_whenUserIsAdmin_returnsAuditPage() {
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
+    void getIncidentAudit_whenOperator_returnsAuditPage(UserRole role) {
 
         Long incidentId = 1L;
         String email = "admin@test.com";
@@ -163,7 +165,7 @@ class AuditServiceTest {
                 .thenReturn(Optional.of(incident));
 
         when(admin.getRole())
-                .thenReturn(UserRole.ADMIN);
+                .thenReturn(role);
 
         when(auditLogRepository
                 .findByIncidentIdOrderByCreatedAtAsc(

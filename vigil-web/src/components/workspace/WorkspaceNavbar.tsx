@@ -11,11 +11,13 @@ interface WorkspaceNavbarProps {
 
 const roleLabels = {
   ADMIN: 'Administrator',
+  DISPATCHER: 'Dispatcher',
   TECHNICIAN: 'Technician',
   USER: 'User'
 }
 const roleIcons = {
   ADMIN: 'shield',
+  DISPATCHER: 'headset',
   TECHNICIAN: 'wrench',
   USER: 'user'
 } as const
@@ -30,6 +32,7 @@ export function WorkspaceNavbar({
     name = userName(user)
   }
   const admin = session.role === 'ADMIN'
+  const canViewAudit = admin || session.role === 'DISPATCHER'
   let homePage: 'dashboard' | 'incidents' = 'dashboard'
   if (session.role === 'USER') {
     homePage = 'incidents'
@@ -104,26 +107,26 @@ export function WorkspaceNavbar({
             Incidents
           </a>
           {admin && (
-            <>
-              <a
-                className={usersClass}
-                href="/users"
-                aria-current={usersCurrent}
-                onClick={(event) => navigate(event, 'users')}
-              >
-                <Icon name="users" size={17} />
-                Users
-              </a>
-              <a
-                className={auditClass}
-                href="/audit"
-                aria-current={auditCurrent}
-                onClick={(event) => navigate(event, 'audit')}
-              >
-                <Icon name="history" size={17} />
-                Audit logs
-              </a>
-            </>
+            <a
+              className={usersClass}
+              href="/users"
+              aria-current={usersCurrent}
+              onClick={(event) => navigate(event, 'users')}
+            >
+              <Icon name="users" size={17} />
+              Users
+            </a>
+          )}
+          {canViewAudit && (
+            <a
+              className={auditClass}
+              href="/audit"
+              aria-current={auditCurrent}
+              onClick={(event) => navigate(event, 'audit')}
+            >
+              <Icon name="history" size={17} />
+              Audit logs
+            </a>
           )}
         </nav>
 

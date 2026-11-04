@@ -10,6 +10,7 @@ import com.vigil.api.exception.UnauthorizedException;
 import com.vigil.api.incident.domain.IncidentStatus;
 import com.vigil.api.incident.repository.IncidentRepository;
 import com.vigil.api.user.dto.UserResponse;
+import com.vigil.api.user.dto.TechnicianResponse;
 import com.vigil.api.user.repository.UserRepository;
 
 import org.springframework.data.domain.Page;
@@ -67,6 +68,19 @@ public class UserService {
         return userRepository
                 .findAll(pageable)
                 .map(this::toResponse);
+    }
+
+    @Transactional(readOnly = true)
+    public List<TechnicianResponse> getTechnicians(String currentUserEmail) {
+        User currentUser = getActiveUser(currentUserEmail);
+        if (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.DISPATCHER) {
+            throw new AccessDeniedException("Only administrators and dispatchers can list technicians");
+        }
+
+        return userRepository.findAllByRoleAndEnabledTrue(UserRole.TECHNICIAN)
+                .stream()
+                .map(user -> new TechnicianResponse(user.getId(), user.getFirstName(), user.getLastName()))
+                .toList();
     }
 
     @Transactional

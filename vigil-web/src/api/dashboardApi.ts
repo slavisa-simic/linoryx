@@ -1,24 +1,24 @@
 import type { AuthSession } from '../models/auth'
 import type { DashboardSnapshot } from '../models/dashboard'
-import type { User } from '../models/users'
+import type { Technician } from '../models/users'
 import { listIncidents } from './incidentsApi'
-import { listUsers } from './usersApi'
+import { getTechnicians } from './techniciansApi'
 
 export async function getDashboard(session: AuthSession): Promise<DashboardSnapshot> {
   if (session.role === 'USER') {
-    throw new Error('The incident overview is available to administrators and technicians.')
+    throw new Error('The incident overview is available to administrators, dispatchers and technicians.')
   }
 
   const incidents = await listIncidents(session)
-  let users: User[] = []
+  let technicians: Technician[] = []
 
-  if (session.role === 'ADMIN') {
-    users = await listUsers(session)
+  if (session.role === 'ADMIN' || session.role === 'DISPATCHER') {
+    technicians = await getTechnicians(session)
   }
 
   return {
     incidents: incidents,
-    users: users,
+    technicians: technicians,
     loadedAt: Date.now()
   }
 }

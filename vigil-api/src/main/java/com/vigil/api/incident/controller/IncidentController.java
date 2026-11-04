@@ -37,7 +37,7 @@ public class IncidentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('USER', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'ADMIN', 'DISPATCHER')")
     @ResponseStatus(HttpStatus.CREATED)
     public IncidentResponse createIncident(
             @Valid @RequestBody CreateIncidentRequest request,
@@ -50,7 +50,7 @@ public class IncidentController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('USER', 'TECHNICIAN', 'ADMIN', 'DISPATCHER')")
     public Page<IncidentResponse> getIncidents(
 
             @RequestParam(required = false)
@@ -95,7 +95,7 @@ public class IncidentController {
     }
 
     @PatchMapping("/{id}/assign")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DISPATCHER')")
     public IncidentResponse assignIncident(
             @PathVariable Long id,
             @Valid @RequestBody AssignIncidentRequest request,
@@ -109,7 +109,7 @@ public class IncidentController {
     }
 
     @PatchMapping("/{id}/start")
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN', 'DISPATCHER')")
     public IncidentResponse startProgress(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt
@@ -121,7 +121,7 @@ public class IncidentController {
     }
 
     @PatchMapping("/{id}/resolve")
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN', 'DISPATCHER')")
     public IncidentResponse resolveIncident(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt
@@ -133,7 +133,7 @@ public class IncidentController {
     }
 
     @PatchMapping("/{id}/close")
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN', 'DISPATCHER')")
     public IncidentResponse closeIncident(
             @PathVariable Long id,
             @AuthenticationPrincipal Jwt jwt

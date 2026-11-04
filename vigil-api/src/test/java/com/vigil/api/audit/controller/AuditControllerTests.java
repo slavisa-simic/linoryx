@@ -38,8 +38,9 @@ class AuditControllerTests {
     @MockitoBean private AuditService auditService;
     @MockitoBean private UserService userService;
 
-    @Test
-    void administratorCanReadAuditLogsIncludingRoleChanges() throws Exception {
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
+    void operatorsCanReadAuditLogsIncludingRoleChanges(UserRole role) throws Exception {
         AuditResponse entry = new AuditResponse(
                 12L, null, 1L, "Ana", "Admin", 2L, "Marko", "User",
                 AuditAction.USER_ROLE_CHANGED, LocalDateTime.now(), UserRole.USER, UserRole.TECHNICIAN
@@ -49,7 +50,7 @@ class AuditControllerTests {
 
         mvc.perform(get("/api/audit")
                         .with(jwt().jwt(claims -> claims.subject("admin@test.com"))
-                                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"))))
+                                .authorities(new SimpleGrantedAuthority("ROLE_" + role.name()))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content[0].action").value("USER_ROLE_CHANGED"))
                 .andExpect(jsonPath("$.content[0].actorFirstName").value("Ana"))
@@ -66,6 +67,14 @@ class AuditControllerTests {
                         .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role.name()))))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(auditService);
+    }
+
+    @ParameterizedTest
+    @EnumSource(UserRole.class)
+    void allRolesCanRequestVisibleIncidentHistory(UserRole role) throws Exception {
+        mvc.perform(get("/api/incidents/10/audit")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role.name()))))
+                .andExpect(status().isOk());
     }
 
     @Test

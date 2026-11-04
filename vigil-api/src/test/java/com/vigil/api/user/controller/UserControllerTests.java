@@ -69,10 +69,11 @@ class UserControllerTests {
         verifyNoInteractions(userService);
     }
 
-    @Test
-    void ownProfileAccessDoesNotGrantAccessToOtherUsers() throws Exception {
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"USER", "TECHNICIAN", "DISPATCHER"})
+    void ownProfileAccessDoesNotGrantAccessToOtherUsers(UserRole role) throws Exception {
         mvc.perform(get("/api/users")
-                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_TECHNICIAN"))))
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role.name()))))
                 .andExpect(status().isForbidden());
         verifyNoInteractions(userService);
     }
@@ -109,7 +110,7 @@ class UserControllerTests {
     }
 
     @ParameterizedTest
-    @CsvSource({"USER,role", "TECHNICIAN,role", "USER,disable", "TECHNICIAN,disable", "USER,enable", "TECHNICIAN,enable"})
+    @CsvSource({"USER,role", "TECHNICIAN,role", "USER,disable", "TECHNICIAN,disable", "USER,enable", "TECHNICIAN,enable", "DISPATCHER,role", "DISPATCHER,disable", "DISPATCHER,enable"})
     void otherRolesCannotManageUsers(String role, String action) throws Exception {
         mvc.perform(patch("/api/users/7/" + action)
                         .contentType(MediaType.APPLICATION_JSON).content("{\"role\":\"ADMIN\"}")

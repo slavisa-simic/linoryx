@@ -7,7 +7,7 @@ import type {
   WorkloadCount
 } from '../models/dashboard'
 import type { Incident, IncidentCategory, IncidentStatus, Severity } from '../models/incidents'
-import type { User } from '../models/users'
+import type { Technician, User } from '../models/users'
 
 export const statusLabels = {
   OPEN: 'Open',
@@ -88,7 +88,7 @@ export function formatDuration(hours: number | null): string {
 
 export function buildDashboard(
   incidents: Incident[],
-  users: User[],
+  technicians: Technician[],
   days: number,
   now = new Date()
 ): DashboardStatistics {
@@ -167,10 +167,10 @@ export function buildDashboard(
         let technician = workload.find((item) => item.id === incident.assignedToId)
 
         if (!technician) {
-          const user = users.find((item) => item.id === incident.assignedToId)
+          const user = technicians.find((item) => item.id === incident.assignedToId)
           let name = 'Technician #' + incident.assignedToId
           if (user) {
-            name = userName(user)
+            name = (user.firstName + ' ' + user.lastName).trim()
           } else if (incident.assignedToEmail) {
             name = incident.assignedToEmail.split('@')[0]
           }

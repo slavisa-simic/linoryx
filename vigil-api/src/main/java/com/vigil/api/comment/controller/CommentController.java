@@ -29,7 +29,7 @@ public class CommentController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN')")
+    @PreAuthorize("hasAnyRole('TECHNICIAN', 'ADMIN', 'DISPATCHER')")
     public CommentResponse addComment(
             @PathVariable Long incidentId,
             @Valid @RequestBody CreateCommentRequest request,
@@ -44,7 +44,7 @@ public class CommentController {
 
     @GetMapping
     @PreAuthorize(
-            "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')"
+            "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN', 'DISPATCHER')"
     )
     public Page<CommentResponse> getIncidentComments(
             @PathVariable Long incidentId,

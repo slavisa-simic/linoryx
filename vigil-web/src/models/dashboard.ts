@@ -1,9 +1,9 @@
 import type { Incident, IncidentStatus } from './incidents'
-import type { User } from './users'
+import type { Technician } from './users'
 
 export interface DashboardSnapshot {
   incidents: Incident[]
-  users: User[]
+  technicians: Technician[]
   loadedAt: number
 }
 

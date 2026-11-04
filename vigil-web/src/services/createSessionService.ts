@@ -30,7 +30,12 @@ function readSession(response: AuthResponse, email: string): AuthSession | null 
     if (claims.sub !== email || !Number.isSafeInteger(claims.userId) || claims.userId <= 0) {
       return null
     }
-    if (claims.role !== 'ADMIN' && claims.role !== 'TECHNICIAN' && claims.role !== 'USER') {
+    if (
+      claims.role !== 'ADMIN' &&
+      claims.role !== 'DISPATCHER' &&
+      claims.role !== 'TECHNICIAN' &&
+      claims.role !== 'USER'
+    ) {
       return null
     }
 

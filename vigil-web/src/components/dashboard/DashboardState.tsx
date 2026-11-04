@@ -16,7 +16,7 @@ export function DashboardState({ restricted, error, onRetry }: DashboardStatePro
           </div>
           <h2>Access restricted</h2>
           <p>
-            Available to administrators and technicians.
+            Available to administrators, dispatchers and technicians.
           </p>
         </section>
       )}

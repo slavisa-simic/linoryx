@@ -33,7 +33,7 @@ public class AuditController {
 
     @GetMapping("/incidents/{incidentId}/audit")
     @PreAuthorize(
-            "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN')"
+            "hasAnyRole('USER', 'TECHNICIAN', 'ADMIN', 'DISPATCHER')"
     )
     public Page<AuditResponse> getIncidentAudit(
             @PathVariable Long incidentId,
@@ -56,7 +56,7 @@ public class AuditController {
     }
 
     @GetMapping("/audit")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'DISPATCHER')")
     public Page<AuditResponse> getAllAuditLogs(
             @AuthenticationPrincipal Jwt jwt,
 

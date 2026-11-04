@@ -50,8 +50,8 @@ public class IncidentService {
             String creatorEmail
     ){
         User creator = userService.getActiveUser(creatorEmail);
-        if (creator.getRole() != UserRole.USER && creator.getRole() != UserRole.ADMIN) {
-            throw new AccessDeniedException("Only users and administrators can create incidents");
+        if (creator.getRole() != UserRole.USER && creator.getRole() != UserRole.ADMIN && creator.getRole() != UserRole.DISPATCHER) {
+            throw new AccessDeniedException("Only users, administrators and dispatchers can create incidents");
         }
 
         Incident incident = new Incident(
@@ -133,8 +133,8 @@ public class IncidentService {
             String currentUserEmail
     ){
         User currentUser = userService.getActiveUser(currentUserEmail);
-        if (currentUser.getRole() != UserRole.ADMIN) {
-            throw new AccessDeniedException("Only administrators can assign incidents");
+        if (currentUser.getRole() != UserRole.ADMIN && currentUser.getRole() != UserRole.DISPATCHER) {
+            throw new AccessDeniedException("Only administrators and dispatchers can assign incidents");
         }
 
         User technician = userRepository
@@ -259,7 +259,7 @@ public class IncidentService {
             User currentUser
     ) {
 
-        if (currentUser.getRole() == UserRole.ADMIN) {
+        if (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.DISPATCHER) {
             return;
         }
 
@@ -280,7 +280,7 @@ public class IncidentService {
     }
 
     private void ensureCanReadIncident(Incident incident, User currentUser) {
-        if (currentUser.getRole() == UserRole.ADMIN) {
+        if (currentUser.getRole() == UserRole.ADMIN || currentUser.getRole() == UserRole.DISPATCHER) {
             return;
         }
 

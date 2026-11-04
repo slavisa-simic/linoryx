@@ -42,6 +42,36 @@ class TechnicianManagementIntegrationTest {
     }
 
     @Test
+    void technicianListingExcludesDisabledTechniciansAndOtherRoles() {
+        String prefix = "listing-test-" + UUID.randomUUID();
+        User dispatcher = userRepository.saveAndFlush(new User(
+                prefix + "-dispatcher@example.invalid", "hash", "Test", "Dispatcher", UserRole.DISPATCHER
+        ));
+        User disabled = new User(prefix + "-disabled@example.invalid", "hash", "Disabled", "Technician", UserRole.TECHNICIAN);
+        disabled.disable();
+        userRepository.saveAndFlush(disabled);
+
+        var technicians = userService.getTechnicians(dispatcher.getEmail());
+
+        assertTrue(technicians.stream().anyMatch(item -> item.id().equals(technician.getId())));
+        assertFalse(technicians.stream().anyMatch(item -> item.id().equals(disabled.getId())));
+        assertFalse(technicians.stream().anyMatch(item -> item.id().equals(admin.getId())));
+        assertFalse(technicians.stream().anyMatch(item -> item.id().equals(dispatcher.getId())));
+    }
+
+    @Test
+    void dispatcherRoleCanBeGrantedAndRevokedWithAuditHistory() {
+        Long userId = technician.getId();
+        assertEquals(UserRole.DISPATCHER, userService.changeUserRole(admin.getEmail(), userId, UserRole.DISPATCHER).role());
+        entityManager.flush();
+        entityManager.clear();
+        assertEquals(UserRole.DISPATCHER, userRepository.findById(userId).orElseThrow().getRole());
+
+        assertEquals(UserRole.USER, userService.changeUserRole(admin.getEmail(), userId, UserRole.USER).role());
+        entityManager.flush();
+    }
+
+    @Test
     void activeIncidentBlocksDisablingAndChangingRole() {
         assignedIncident();
         Long technicianId = technician.getId();

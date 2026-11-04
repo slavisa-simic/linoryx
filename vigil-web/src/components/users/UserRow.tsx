@@ -14,6 +14,7 @@ interface UserRowProps {
 
 const roleIcons = {
   ADMIN: 'shield',
+  DISPATCHER: 'headset',
   TECHNICIAN: 'wrench',
   USER: 'user'
 } as const
@@ -68,6 +69,7 @@ export function UserRow({
           >
             <option value="USER">User</option>
             <option value="TECHNICIAN">Technician</option>
+            <option value="DISPATCHER">Dispatcher</option>
             <option value="ADMIN">Administrator</option>
           </select>
           <button

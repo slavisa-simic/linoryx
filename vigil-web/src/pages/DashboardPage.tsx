@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { getDashboard } from '../api/dashboardApi'
 import type { DashboardSnapshot } from '../models/dashboard'
 import type { Incident } from '../models/incidents'
-import type { User } from '../models/users'
+import type { Technician } from '../models/users'
 import { buildDashboard } from '../services/dashboardData'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { DashboardMetrics } from '../components/dashboard/DashboardMetrics'
@@ -65,17 +65,17 @@ export default function DashboardPage({
   )
 
   let incidents: Incident[] = []
-  let users: User[] = []
+  let technicians: Technician[] = []
   let loadedAt = openedAt
 
   if (snapshot) {
     incidents = snapshot.incidents
-    users = snapshot.users
+    technicians = snapshot.technicians
     loadedAt = snapshot.loadedAt
   }
 
-  const data = buildDashboard(incidents, users, days, new Date(loadedAt))
-  const admin = session.role === 'ADMIN'
+  const data = buildDashboard(incidents, technicians, days, new Date(loadedAt))
+  const canManageIncidents = session.role === 'ADMIN' || session.role === 'DISPATCHER'
   const restricted = session.role === 'USER'
 
   function refreshDashboard() {
@@ -118,7 +118,11 @@ export default function DashboardPage({
               onDaysChange={setDays}
             />
 
-            <DashboardOperations data={data} users={users} admin={admin} />
+            <DashboardOperations
+              data={data}
+              technicians={technicians}
+              canManageIncidents={canManageIncidents}
+            />
           </>
         )}
       </main>

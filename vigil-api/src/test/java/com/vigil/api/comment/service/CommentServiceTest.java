@@ -12,11 +12,15 @@ import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.service.UserService;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.Optional;
 
@@ -99,8 +103,22 @@ class CommentServiceTest {
         );
     }
 
-    @Test
-    void addComment_whenAdminAddsComment_returnsCommentResponse() {
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
+    void operatorsCanReadCommentsWithoutOwningOrBeingAssignedTheIncident(UserRole role) {
+        User operator = new User("operator@test.com", "hash", "Test", "Operator", role);
+        Incident incident = mock(Incident.class);
+        var pageable = PageRequest.of(0, 20);
+        when(userService.getActiveUser(operator.getEmail())).thenReturn(operator);
+        when(incidentRepository.findById(1L)).thenReturn(Optional.of(incident));
+        when(commentRepository.findByIncidentIdOrderByCreatedAtAsc(1L, pageable)).thenReturn(Page.empty(pageable));
+
+        assertTrue(commentService.getIncidentComments(1L, operator.getEmail(), pageable).isEmpty());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
+    void addComment_whenOperatorAddsComment_returnsCommentResponse(UserRole role) {
 
         Long incidentId = 1L;
         String email = "admin@test.com";
@@ -116,7 +134,7 @@ class CommentServiceTest {
                 .thenReturn(admin);
 
         when(admin.getRole())
-                .thenReturn(UserRole.ADMIN);
+                .thenReturn(role);
 
         when(incidentRepository.findById(incidentId))
                 .thenReturn(Optional.of(incident));

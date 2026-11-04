@@ -40,8 +40,8 @@ function getSessionPage(session: AuthSession | null): Page {
   const page = getCurrentPage()
   if (
     session &&
-    (page === 'users' || page === 'audit') &&
-    session.role !== 'ADMIN'
+    ((page === 'users' && session.role !== 'ADMIN') ||
+      (page === 'audit' && session.role !== 'ADMIN' && session.role !== 'DISPATCHER'))
   ) {
     if (session.role === 'USER') {
       return 'incidents'
@@ -74,7 +74,11 @@ function App({ authApi, sessionService }: AppProps) {
 
   useEffect(() => {
     function handlePopState() {
-      setPage(getSessionPage(sessionService.getSession()))
+      const nextPage = getSessionPage(sessionService.getSession())
+      if (window.location.pathname !== '/' + nextPage) {
+        window.history.replaceState(null, '', '/' + nextPage)
+      }
+      setPage(nextPage)
       setNotice('')
     }
 
@@ -167,7 +171,7 @@ function App({ authApi, sessionService }: AppProps) {
 
   let content
 
-  if (session && page === 'audit' && session.role === 'ADMIN') {
+  if (session && page === 'audit' && (session.role === 'ADMIN' || session.role === 'DISPATCHER')) {
     content = (
       <AuditPage
         onNavigate={navigate}

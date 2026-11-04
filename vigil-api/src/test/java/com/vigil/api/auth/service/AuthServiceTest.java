@@ -36,6 +36,22 @@ class AuthServiceTest {
     private AuthService authService;
 
     @Test
+    void registrationAlwaysCreatesARegularUser() {
+        RegisterRequest request = mock(RegisterRequest.class);
+        when(request.getEmail()).thenReturn("new@test.com");
+        when(request.getPassword()).thenReturn("Password123!");
+        when(request.getFirstName()).thenReturn("New");
+        when(request.getLastName()).thenReturn("User");
+        when(passwordEncoder.encode("Password123!")).thenReturn("hash");
+
+        authService.register(request);
+
+        var user = org.mockito.ArgumentCaptor.forClass(User.class);
+        org.mockito.Mockito.verify(userRepository).saveAndFlush(user.capture());
+        assertEquals(UserRole.USER, user.getValue().getRole());
+    }
+
+    @Test
     void login_whenPasswordIsInvalid_throwsUnauthorizedException() {
 
         LoginRequest request = mock(LoginRequest.class);

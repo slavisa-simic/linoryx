@@ -75,7 +75,7 @@ class UserManagementTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = UserRole.class, names = {"USER", "ADMIN"})
+    @EnumSource(value = UserRole.class, names = {"USER", "ADMIN", "DISPATCHER"})
     void cannotChangeTechnicianRoleWhileActiveIncidentsAreAssigned(UserRole role) {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
@@ -94,7 +94,7 @@ class UserManagementTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = UserRole.class, names = {"USER", "ADMIN"})
+    @EnumSource(value = UserRole.class, names = {"USER", "ADMIN", "DISPATCHER"})
     void canChangeTechnicianRoleWhenNoActiveIncidentsAreAssigned(UserRole role) {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
@@ -212,7 +212,7 @@ class UserManagementTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = UserRole.class, names = {"USER", "TECHNICIAN"})
+    @EnumSource(value = UserRole.class, names = {"USER", "TECHNICIAN", "DISPATCHER"})
     void nonAdminCannotUseAnyManagementAction(UserRole role) {
         User actor = user(3, role);
         when(userRepository.findByEmail(actor.getEmail())).thenReturn(Optional.of(actor));
@@ -228,6 +228,32 @@ class UserManagementTest {
         User admin = adminSession();
         admin.disable();
         assertThrows(UnauthorizedException.class, () -> userService.changeUserRole(admin.getEmail(), 2L, UserRole.ADMIN));
+        verifyNoInteractions(auditLogRepository);
+    }
+
+    @Test
+    void administratorCanRevokeDispatcherRole() {
+        User admin = adminSession();
+        User dispatcher = user(2, UserRole.DISPATCHER);
+        when(userRepository.findById(2L)).thenReturn(Optional.of(dispatcher));
+        when(userRepository.save(dispatcher)).thenReturn(dispatcher);
+
+        assertEquals(UserRole.USER, userService.changeUserRole(admin.getEmail(), 2L, UserRole.USER).role());
+        ArgumentCaptor<AuditLog> log = ArgumentCaptor.forClass(AuditLog.class);
+        verify(auditLogRepository).save(log.capture());
+        assertEquals(UserRole.DISPATCHER, log.getValue().getPreviousRole());
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"USER", "TECHNICIAN", "DISPATCHER"})
+    void nonAdminCannotGrantOrRevokeDispatcher(UserRole role) {
+        User actor = user(3, role);
+        when(userRepository.findByEmail(actor.getEmail())).thenReturn(Optional.of(actor));
+        assertThrows(AccessDeniedException.class,
+                () -> userService.changeUserRole(actor.getEmail(), 2L, UserRole.DISPATCHER));
+        assertThrows(AccessDeniedException.class,
+                () -> userService.changeUserRole(actor.getEmail(), 2L, UserRole.USER));
+        verify(userRepository, never()).findById(any());
         verifyNoInteractions(auditLogRepository);
     }
 
@@ -250,7 +276,7 @@ class UserManagementTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = UserRole.class, names = {"USER", "TECHNICIAN"})
+    @EnumSource(value = UserRole.class, names = {"USER", "TECHNICIAN", "DISPATCHER"})
     void onlyAdminCanReadUserList(UserRole role) {
         User actor = user(3, role);
         when(userRepository.findByEmail(actor.getEmail())).thenReturn(Optional.of(actor));

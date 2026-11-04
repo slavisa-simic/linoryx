@@ -106,6 +106,7 @@ export function UsersTable({
           >
             <option value="ALL">All roles</option>
             <option value="ADMIN">Administrators</option>
+            <option value="DISPATCHER">Dispatchers</option>
             <option value="TECHNICIAN">Technicians</option>
             <option value="USER">Users</option>
           </select>

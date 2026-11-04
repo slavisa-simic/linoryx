@@ -7,7 +7,7 @@ import type {
   IncidentComment,
   IncidentStatus
 } from '../../models/incidents'
-import type { User } from '../../models/users'
+import type { Technician } from '../../models/users'
 import {
   addComment as postComment,
   assignIncident,
@@ -19,15 +19,14 @@ import {
   categoryLabels,
   formatDate,
   severityLabels,
-  statusLabels,
-  userName
+  statusLabels
 } from '../../services/dashboardData'
 import { FormMessage } from '../auth/FormMessage'
 import { Icon } from '../Icon'
 
 interface IncidentDetailsProps {
   incident: Incident
-  technicians: User[]
+  technicians: Technician[]
   onUpdate(incident: Incident): void
   onClose(): void
 }
@@ -112,9 +111,9 @@ export function IncidentDetails({
     }
   }, [loadError, error, onSessionExpired])
 
-  const admin = session.role === 'ADMIN'
+  const canAssign = session.role === 'ADMIN' || session.role === 'DISPATCHER'
   let canWork = false
-  if (admin) {
+  if (canAssign) {
     canWork = true
   }
   if (session.role === 'TECHNICIAN' && item.assignedToId === session.userId) {
@@ -364,7 +363,7 @@ export function IncidentDetails({
           </p>
         )}
 
-        {admin && active && (
+        {canAssign && active && (
           <section className="detail-section assignment-section">
             <h3>
               <Icon name="assign" size={17} />
@@ -385,7 +384,7 @@ export function IncidentDetails({
                 <option value="">Select a technician</option>
                 {technicians.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {userName(user)}
+                    {user.firstName} {user.lastName}
                   </option>
                 ))}
               </select>

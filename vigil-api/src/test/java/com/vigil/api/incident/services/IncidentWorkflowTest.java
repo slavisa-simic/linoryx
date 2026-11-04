@@ -84,6 +84,24 @@ class IncidentWorkflowTest {
         verifyNoInteractions(incidentRepository);
     }
 
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
+    void operatorsCanCreateAndAssignIncidents(UserRole role) {
+        User operator = user(7L, role);
+        User technician = user(8L, UserRole.TECHNICIAN);
+        when(userService.getActiveUser(operator.getEmail())).thenReturn(operator);
+        when(incidentRepository.save(any(Incident.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var request = new CreateIncidentRequest("Issue", "Details", Severity.LOW, IncidentCategory.OTHER);
+        assertEquals(operator.getId(), service.createIncident(request, operator.getEmail()).createdById());
+
+        Incident incident = incident(user(2L, UserRole.USER));
+        when(incidentRepository.findById(10L)).thenReturn(Optional.of(incident));
+        when(userRepository.findById(8L)).thenReturn(Optional.of(technician));
+        assertEquals(technician.getId(), service.assignIncident(10L, 8L, operator.getEmail()).assignedToId());
+        verify(auditService).log(incident, operator, AuditAction.ASSIGNED, technician);
+    }
+
     @Test
     void assignedTechnicianCanCompleteTheWorkflow() {
         User technician = user(7L, UserRole.TECHNICIAN);
@@ -122,15 +140,19 @@ class IncidentWorkflowTest {
         assertThrows(AccessDeniedException.class, () -> service.getIncident(10L, current.getEmail()));
     }
 
-    @Test
-    void administratorCanWorkOnAnAssignedIncident() {
-        User admin = user(1L, UserRole.ADMIN);
+    @ParameterizedTest
+    @EnumSource(value = UserRole.class, names = {"ADMIN", "DISPATCHER"})
+    void operatorCanWorkOnAnAssignedIncident(UserRole role) {
+        User admin = user(1L, role);
         Incident incident = incident(user(2L, UserRole.USER));
         incident.assignTo(user(8L, UserRole.TECHNICIAN));
         when(userService.getActiveUser(admin.getEmail())).thenReturn(admin);
         when(incidentRepository.findById(10L)).thenReturn(Optional.of(incident));
         when(incidentRepository.save(incident)).thenReturn(incident);
+        assertEquals(10L, service.getIncident(10L, admin.getEmail()).id());
         assertEquals(IncidentStatus.IN_PROGRESS, service.startProgress(10L, admin.getEmail()).status());
+        assertEquals(IncidentStatus.RESOLVED, service.resolveIncident(10L, admin.getEmail()).status());
+        assertEquals(IncidentStatus.CLOSED, service.closeIncident(10L, admin.getEmail()).status());
     }
 
     @Test

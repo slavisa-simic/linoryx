@@ -1,27 +1,22 @@
 import type { DashboardStatistics } from '../../models/dashboard'
-import type { User } from '../../models/users'
+import type { Technician } from '../../models/users'
 import { formatDuration } from '../../services/dashboardData'
 import { Icon } from '../Icon'
 
 interface DashboardOperationsProps {
   data: DashboardStatistics
-  users: User[]
-  admin: boolean
+  technicians: Technician[]
+  canManageIncidents: boolean
 }
 
-export function DashboardOperations({ data, users, admin }: DashboardOperationsProps) {
-  let availableTechnicians = 0
-  for (const user of users) {
-    if (user.enabled && user.role === 'TECHNICIAN') {
-      availableTechnicians = availableTechnicians + 1
-    }
-  }
+export function DashboardOperations({ data, technicians, canManageIncidents }: DashboardOperationsProps) {
+  const availableTechnicians = technicians.length
 
   let teamLabel = 'Your workload'
   let teamCount = data.active
   let teamIcon: 'shield' | 'users' = 'shield'
 
-  if (admin) {
+  if (canManageIncidents) {
     teamLabel = 'Available technicians'
     teamCount = availableTechnicians
     teamIcon = 'users'
