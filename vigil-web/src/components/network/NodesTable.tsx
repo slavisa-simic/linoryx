@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { NetworkNode } from '../../models/network'
 import { nodeStatusLabels, nodeTypeIcons, nodeTypeLabels } from '../../services/networkData'
 import { Icon } from '../Icon'
+import { TablePagination, pageSize } from '../workspace/TablePagination'
 
 interface NodesTableProps {
   nodes: NetworkNode[]
@@ -9,8 +10,6 @@ interface NodesTableProps {
   onEdit(node: NetworkNode): void
   onDelete(node: NetworkNode): void
 }
-
-const pageSize = 8
 
 export function NodesTable({ nodes, busy, onEdit, onDelete }: NodesTableProps) {
   const [page, setPage] = useState(0)
@@ -44,13 +43,7 @@ export function NodesTable({ nodes, busy, onEdit, onDelete }: NodesTableProps) {
       </div>
       {nodes.length === 0 && <div className="table-empty"><Icon name="network" size={28} />
         <strong>No matching nodes</strong><p>Add a node or adjust the filters.</p></div>}
-      <footer className="table-pagination"><span>{nodes.length} nodes</span><div>
-        <button className="icon-button" type="button" aria-label="Previous page of nodes" disabled={currentPage === 0}
-          onClick={() => setPage(currentPage - 1)}><Icon name="chevron-left" size={17} /></button>
-        <span>{nodes.length === 0 ? 0 : currentPage + 1} / {pages}</span>
-        <button className="icon-button" type="button" aria-label="Next page of nodes" disabled={currentPage >= pages - 1}
-          onClick={() => setPage(currentPage + 1)}><Icon name="chevron-right" size={17} /></button>
-      </div></footer>
+      <TablePagination page={currentPage} total={nodes.length} label="nodes" onPageChange={setPage} />
     </section>
   )
 }

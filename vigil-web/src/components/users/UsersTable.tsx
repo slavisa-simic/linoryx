@@ -4,6 +4,7 @@ import type { User } from '../../models/users'
 import { userName } from '../../services/dashboardData'
 import { Icon } from '../Icon'
 import { UserRow } from './UserRow'
+import { TablePagination, pageSize } from '../workspace/TablePagination'
 
 interface UsersTableProps {
   users: User[]
@@ -16,8 +17,6 @@ interface UsersTableProps {
   onAssignService(user: User): void
   onViewServices(user: User): void
 }
-
-const pageSize = 8
 
 export function UsersTable({
   users,
@@ -57,19 +56,6 @@ export function UsersTable({
   }
   const start = currentPage * pageSize
   const visible = filtered.slice(start, start + pageSize)
-  let pageLabel = '0 users'
-  let displayedPage = 0
-  if (filtered.length > 0) {
-    pageLabel =
-      start +
-      1 +
-      '–' +
-      Math.min(start + pageSize, filtered.length) +
-      ' of ' +
-      filtered.length +
-      ' users'
-    displayedPage = currentPage + 1
-  }
 
   function clearFilters() {
     setSearch('')
@@ -182,32 +168,7 @@ export function UsersTable({
           )}
         </div>
       )}
-      <footer className="table-pagination">
-        <span aria-live="polite">{pageLabel}</span>
-        <div>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={currentPage === 0}
-            aria-label="Previous page of users"
-            onClick={() => setPage(currentPage - 1)}
-          >
-            <Icon name="chevron-left" size={17} />
-          </button>
-          <span>
-            {displayedPage} / {pages}
-          </span>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={currentPage >= pages - 1}
-            aria-label="Next page of users"
-            onClick={() => setPage(currentPage + 1)}
-          >
-            <Icon name="chevron-right" size={17} />
-          </button>
-        </div>
-      </footer>
+      <TablePagination page={currentPage} total={filtered.length} label="users" onPageChange={setPage} />
     </section>
   )
 }

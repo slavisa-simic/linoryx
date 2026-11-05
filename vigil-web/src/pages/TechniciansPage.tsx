@@ -9,6 +9,7 @@ import { hasCoordinates } from '../services/technicianData'
 import { FormMessage } from '../components/auth/FormMessage'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { RefreshButton } from '../components/workspace/RefreshButton'
+import { TablePagination, pageSize } from '../components/workspace/TablePagination'
 import { OperationalMap } from '../components/network/OperationalMap'
 import '../Technicians.css'
 
@@ -21,6 +22,7 @@ export function TechniciansPage({ onNavigate }: { onNavigate(page: WorkspacePage
   const [availability, setAvailability] = useState('ALL')
   const [specialization, setSpecialization] = useState('ALL')
   const [refresh, setRefresh] = useState(0)
+  const [page, setPage] = useState(0)
   useEffect(() => {
     let active = true
     async function load() {
@@ -42,14 +44,17 @@ export function TechniciansPage({ onNavigate }: { onNavigate(page: WorkspacePage
     if (error === 'SESSION_EXPIRED') onSessionExpired()
   }, [error, onSessionExpired])
 
-  const visible = technicians.filter(technician => {
+  const filtered = technicians.filter(technician => {
     if (!technician.name.toLowerCase().includes(search.trim().toLowerCase())) return false
     if (availability === 'UNCONFIGURED' && technician.availability !== null) return false
     if (availability !== 'ALL' && availability !== 'UNCONFIGURED' && technician.availability !== availability) return false
     if (specialization === 'UNCONFIGURED') return technician.specializations.length === 0
     return specialization === 'ALL' || technician.specializations.some(skill => skill === specialization)
   })
-  const markers = visible.filter(technician => hasCoordinates(technician.latitude, technician.longitude)).map(technician => ({
+  const pages = Math.ceil(filtered.length / pageSize)
+  const currentPage = Math.min(page, Math.max(0, pages - 1))
+  const visible = filtered.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
+  const markers = filtered.filter(technician => hasCoordinates(technician.latitude, technician.longitude)).map(technician => ({
     id: technician.userId, latitude: technician.latitude!, longitude: technician.longitude!, title: technician.name,
     content: <><strong>{technician.name}</strong><p>{technician.availability ? availabilityLabels[technician.availability] : 'Availability not configured'}</p>
       <p>{technician.specializations.join(', ') || 'No specializations configured'}</p><p>{technician.activeReportCount} active reports</p>
@@ -66,12 +71,12 @@ export function TechniciansPage({ onNavigate }: { onNavigate(page: WorkspacePage
       {loading && <p role="status">Loading technicians…</p>}
       {!loading && <>
         <div className="dashboard-panel network-filters technician-filters">
-          <label>Technician name<input className="field-input" type="search" value={search} onChange={event => setSearch(event.target.value)} /></label>
-          <label>Availability<select className="field-input" value={availability} onChange={event => setAvailability(event.target.value)}>
+          <label>Technician name<input className="field-input" type="search" value={search} onChange={event => { setSearch(event.target.value); setPage(0) }} /></label>
+          <label>Availability<select className="field-input" value={availability} onChange={event => { setAvailability(event.target.value); setPage(0) }}>
             <option value="ALL">All availability</option><option value="UNCONFIGURED">Not configured</option>
             {Object.entries(availabilityLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
           </select></label>
-          <label>Specialization<select className="field-input" value={specialization} onChange={event => setSpecialization(event.target.value)}>
+          <label>Specialization<select className="field-input" value={specialization} onChange={event => { setSpecialization(event.target.value); setPage(0) }}>
             <option value="ALL">All specializations</option><option value="UNCONFIGURED">Not configured</option>
             {specializations.map(skill => <option key={skill}>{skill}</option>)}
           </select></label>
@@ -88,7 +93,9 @@ export function TechniciansPage({ onNavigate }: { onNavigate(page: WorkspacePage
             <td>{technician.locationUpdatedAt ? formatDate(technician.locationUpdatedAt, { dateStyle: 'medium', timeStyle: 'short' }) : 'Not set'}</td>
             <td>{technician.activeReportCount}</td>
           </tr>)}</tbody>
-        </table></div>{visible.length === 0 && <p className="table-empty">No matching technicians.</p>}</section>
+        </table></div>{visible.length === 0 && <p className="table-empty">No matching technicians.</p>}
+          <TablePagination page={currentPage} total={filtered.length} label="technicians" onPageChange={setPage} />
+        </section>
       </>}
     </main>
   </div>

@@ -8,6 +8,7 @@ import {
   statusLabels
 } from '../../services/dashboardData'
 import { Icon } from '../Icon'
+import { TablePagination, pageSize } from '../workspace/TablePagination'
 
 interface IncidentsTableProps {
   incidents: Incident[]
@@ -17,7 +18,6 @@ interface IncidentsTableProps {
 }
 
 const priorityOrder = { CRITICAL: 4, HIGH: 3, MEDIUM: 2, LOW: 1 }
-const pageSize = 6
 
 export function IncidentsTable({
   incidents,
@@ -86,22 +86,9 @@ export function IncidentsTable({
 
   const start = currentPage * pageSize
   const visible = filtered.slice(start, start + pageSize)
-  let pageLabel = '0 incidents'
-  let displayedPage = 0
   let emptyTitle = 'No incidents yet'
   let emptyMessage = 'Reported incidents will appear here.'
 
-  if (filtered.length > 0) {
-    pageLabel =
-      start +
-      1 +
-      '–' +
-      Math.min(start + pageSize, filtered.length) +
-      ' of ' +
-      filtered.length +
-      ' incidents'
-    displayedPage = currentPage + 1
-  }
   if (incidents.length > 0) {
     emptyTitle = 'No matching incidents'
     emptyMessage = 'Try a different search or status filter.'
@@ -222,6 +209,7 @@ export function IncidentsTable({
               <th scope="col" aria-sort={prioritySort}>
                 Priority
               </th>
+              <th scope="col" className="table-category">Category</th>
               <th scope="col">Reports</th>
               <th scope="col">Reported</th>
             </tr>
@@ -239,8 +227,6 @@ export function IncidentsTable({
                     >
                       <span className="incident-reference">
                         INC-{incident.id}
-                        <span>·</span>
-                        {categoryLabels[incident.category]}
                       </span>
                       <span className="incident-title-row">
                         <span className="incident-title">{incident.title}</span>
@@ -269,6 +255,7 @@ export function IncidentsTable({
                       {severityLabels[incident.severity]}
                     </span>
                   </td>
+                  <td className="table-category">{categoryLabels[incident.category]}</td>
                   <td>
                     <span>{incident.closedReportCount}/{incident.reportCount} closed</span>
                     {incident.legacy && <div className="incident-muted">Historical</div>}
@@ -303,32 +290,7 @@ export function IncidentsTable({
         </div>
       )}
 
-      <footer className="table-pagination">
-        <span aria-live="polite">{pageLabel}</span>
-        <div>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={currentPage === 0}
-            aria-label="Previous page of incidents"
-            onClick={() => setPage(currentPage - 1)}
-          >
-            <Icon name="chevron-left" size={17} />
-          </button>
-          <span>
-            {displayedPage} / {pages}
-          </span>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={currentPage >= pages - 1}
-            aria-label="Next page of incidents"
-            onClick={() => setPage(currentPage + 1)}
-          >
-            <Icon name="chevron-right" size={17} />
-          </button>
-        </div>
-      </footer>
+      <TablePagination page={currentPage} total={filtered.length} label="incidents" onPageChange={setPage} />
     </section>
   )
 }

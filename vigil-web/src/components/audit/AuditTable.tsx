@@ -8,6 +8,7 @@ import {
 } from '../../services/auditData'
 import { formatDate } from '../../services/dashboardData'
 import { Icon } from '../Icon'
+import { TablePagination, pageSize } from '../workspace/TablePagination'
 
 interface AuditTableProps {
   entries: AuditEntry[]
@@ -16,8 +17,6 @@ interface AuditTableProps {
     incidentId?: number
   ): void
 }
-
-const pageSize = 8
 
 export function AuditTable({ entries, onNavigate }: AuditTableProps) {
   const [search, setSearch] = useState('')
@@ -65,21 +64,8 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
   }
   const start = currentPage * pageSize
   const visible = filtered.slice(start, start + pageSize)
-  let pageLabel = '0 events'
-  let displayedPage = 0
   let emptyTitle = 'No audit logs yet'
   let emptyMessage = 'Incident updates and user changes will appear here.'
-  if (filtered.length > 0) {
-    pageLabel =
-      start +
-      1 +
-      '–' +
-      Math.min(start + pageSize, filtered.length) +
-      ' of ' +
-      filtered.length +
-      ' events'
-    displayedPage = currentPage + 1
-  }
   if (entries.length > 0) {
     emptyTitle = 'No matching events'
     emptyMessage = 'Try a different search or filter.'
@@ -271,32 +257,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
           )}
         </div>
       )}
-      <footer className="table-pagination">
-        <span aria-live="polite">{pageLabel}</span>
-        <div>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={currentPage === 0}
-            aria-label="Previous page of audit logs"
-            onClick={() => setPage(currentPage - 1)}
-          >
-            <Icon name="chevron-left" size={16} />
-          </button>
-          <span>
-            {displayedPage} / {pages}
-          </span>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={currentPage >= pages - 1}
-            aria-label="Next page of audit logs"
-            onClick={() => setPage(currentPage + 1)}
-          >
-            <Icon name="chevron-right" size={16} />
-          </button>
-        </div>
-      </footer>
+      <TablePagination page={currentPage} total={filtered.length} label="events" onPageChange={setPage} />
     </section>
   )
 }

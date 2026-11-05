@@ -229,3 +229,102 @@ it('customers use their private queue and cannot see internal report metadata', 
   expect(screen.queryByText('Ana Technician')).toBeNull()
   expect(screen.queryByText('INC-10')).toBeNull()
 })
+
+it.each(['USER', 'TECHNICIAN', 'DISPATCHER'] as const)('paginates the %s report queue and resets the page when filtering', async role => {
+  const reports: CustomerReport[] = []
+  for (let id = 1; id <= 10; id++) reports.push({ ...report, id, status: 'OPEN', incidentId: undefined })
+  request.mockImplementation(async path => {
+    if (path.startsWith('/incidents?')) return { content: [incident], totalPages: 1 }
+    return { content: reports, totalPages: 1 }
+  })
+  render(<Provider role={role}><ReportsPage onNavigate={vi.fn()} /></Provider>)
+  await screen.findByText('1-8 of 10 reports')
+  expect(within(screen.getByRole('table')).getAllByRole('row')).toHaveLength(9)
+  expect(screen.queryByText('REP-9')).toBeNull()
+  expect((screen.getByRole('button', { name: 'Previous page of reports' }) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.click(screen.getByRole('button', { name: 'Next page of reports' }))
+  expect(screen.getByText('9-10 of 10 reports')).toBeTruthy()
+  expect(screen.getByText('REP-9')).toBeTruthy()
+  expect((screen.getByRole('button', { name: 'Next page of reports' }) as HTMLButtonElement).disabled).toBe(true)
+  fireEvent.change(screen.getByRole('textbox', { name: 'Search' }), { target: { value: 'REP-1' } })
+  expect(screen.getByText('1-2 of 2 reports')).toBeTruthy()
+  fireEvent.change(screen.getByRole('combobox', { name: 'Status' }), { target: { value: 'CLOSED' } })
+  expect(screen.getByText('0-0 of 0 reports')).toBeTruthy()
+  expect(screen.getByText('No reports found.')).toBeTruthy()
+  expect((screen.getByRole('button', { name: 'Previous page of reports' }) as HTMLButtonElement).disabled).toBe(true)
+  expect((screen.getByRole('button', { name: 'Next page of reports' }) as HTMLButtonElement).disabled).toBe(true)
+})
+
+it('keeps selections across pages, retries failed attachment, and clears selection after success', async () => {
+  const reports: CustomerReport[] = []
+  for (let id = 1; id <= 9; id++) reports.push({ ...report, id, status: 'OPEN', incidentId: undefined })
+  let attempts = 0
+  request.mockImplementation(async path => {
+    if (path === '/incidents/10/reports') {
+      attempts++
+      if (attempts === 1) throw new Error('Attachment failed. Try again.')
+      return null
+    }
+    if (path.startsWith('/incidents?')) return { content: [incident], totalPages: 1 }
+    return { content: reports, totalPages: 1 }
+  })
+  render(<Provider role="DISPATCHER"><ReportsPage onNavigate={vi.fn()} /></Provider>)
+  await screen.findByText('1-8 of 9 reports')
+  expect(screen.queryByRole('group', { name: 'Selected report actions' })).toBeNull()
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Select REP-1' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Next page of reports' }))
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Select REP-9' }))
+  expect(screen.getByText('2 selected')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Attach to incident' }))
+  let dialog = screen.getByRole('dialog', { name: 'Attach to incident' })
+  expect(within(dialog).getByText('REP-1, REP-9')).toBeTruthy()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(screen.getByText('2 selected')).toBeTruthy()
+  fireEvent.click(screen.getByRole('button', { name: 'Attach to incident' }))
+  dialog = screen.getByRole('dialog', { name: 'Attach to incident' })
+  fireEvent.change(within(dialog).getByRole('combobox', { name: 'Existing incident' }), { target: { value: '10' } })
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Attach reports' }))
+  expect(await within(dialog).findByText('Attachment failed. Try again.')).toBeTruthy()
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Attach reports' }))
+  await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+  expect(request).toHaveBeenCalledWith('/incidents/10/reports', 'token', 'POST', { reportIds: [1, 9] })
+  expect(screen.queryByRole('group', { name: 'Selected report actions' })).toBeNull()
+  expect(await screen.findByText('Reports attached to INC-10.')).toBeTruthy()
+})
+
+it('clears report selections when filters change', async () => {
+  request.mockImplementation(async path => {
+    if (path.startsWith('/incidents?')) return { content: [incident], totalPages: 1 }
+    return { content: [{ ...report, status: 'OPEN', incidentId: undefined }], totalPages: 1 }
+  })
+  render(<Provider role="DISPATCHER"><ReportsPage onNavigate={vi.fn()} /></Provider>)
+  fireEvent.click(await screen.findByRole('checkbox', { name: 'Select REP-101' }))
+  expect(screen.getByText('1 selected')).toBeTruthy()
+  fireEvent.change(screen.getByRole('combobox', { name: 'Status' }), { target: { value: 'CLOSED' } })
+  expect(screen.queryByRole('group', { name: 'Selected report actions' })).toBeNull()
+  fireEvent.change(screen.getByRole('combobox', { name: 'Status' }), { target: { value: 'ALL' } })
+  expect((screen.getByRole('checkbox', { name: 'Select REP-101' }) as HTMLInputElement).checked).toBe(false)
+})
+
+it('opens the full report in the existing dialog and keeps the queue selection on close', async () => {
+  const unlinkedReport = { ...report, status: 'OPEN', incidentId: undefined }
+  request.mockImplementation(async path => {
+    if (path.startsWith('/incidents?')) return { content: [], totalPages: 1 }
+    return { content: [unlinkedReport], totalPages: 1 }
+  })
+  render(<Provider role="DISPATCHER"><ReportsPage onNavigate={vi.fn()} /></Provider>)
+  fireEvent.click(await screen.findByRole('checkbox', { name: 'Select REP-101' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Open report REP-101' }))
+
+  const dialog = screen.getByRole('dialog', { name: 'REP-101' })
+  expect(within(dialog).getByText(report.description)).toBeTruthy()
+  expect(within(dialog).queryByRole('button', { name: 'Open report REP-101' })).toBeNull()
+  expect(window.location.search).toBe('?report=101')
+
+  fireEvent.click(within(dialog).getByRole('button', { name: 'Close rep-101' }))
+  expect(screen.queryByRole('dialog')).toBeNull()
+  expect(window.location.pathname).toBe('/reports')
+  expect(window.location.search).toBe('')
+  expect((screen.getByRole('checkbox', { name: 'Select REP-101' }) as HTMLInputElement).checked).toBe(true)
+})
