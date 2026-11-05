@@ -12,6 +12,7 @@ import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.User;
 import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.technician.repository.TechnicianProfileRepository;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserManagementTest {
+    @Mock private TechnicianProfileRepository profiles;
     @Mock private UserRepository userRepository;
     @Mock private AuditLogRepository auditLogRepository;
     @Mock private IncidentRepository incidentRepository;
@@ -61,7 +63,7 @@ class UserManagementTest {
             target.changeRole(UserRole.TECHNICIAN);
         }
         UserRole previousRole = target.getRole();
-        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(target));
         when(userRepository.save(target)).thenReturn(target);
 
         var result = userService.changeUserRole(admin.getEmail(), 2L, role);
@@ -82,7 +84,7 @@ class UserManagementTest {
     void cannotChangeTechnicianRoleWhileActiveIncidentsAreAssigned(UserRole role) {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(technician));
         when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(true);
@@ -101,7 +103,7 @@ class UserManagementTest {
     void canChangeTechnicianRoleWhenNoActiveIncidentsAreAssigned(UserRole role) {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(technician));
         when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(false);
@@ -115,7 +117,7 @@ class UserManagementTest {
     void cannotDisableTechnicianWhileActiveIncidentsAreAssigned() {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(technician));
         when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(true);
@@ -133,7 +135,7 @@ class UserManagementTest {
     void canDisableTechnicianWhenNoActiveIncidentsAreAssigned() {
         User admin = adminSession();
         User technician = user(2, UserRole.TECHNICIAN);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(technician));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(technician));
         when(incidentRepository.existsByAssignedToIdAndLegacyFalseAndStatusIn(
                 2L, List.of(IncidentStatus.OPEN, IncidentStatus.IN_PROGRESS)
         )).thenReturn(false);
@@ -146,7 +148,7 @@ class UserManagementTest {
     @Test
     void cannotChangeOwnRole() {
         User admin = adminSession();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
+        when(userRepository.findForUpdate(1L)).thenReturn(Optional.of(admin));
         assertThrows(IllegalStateException.class,
                 () -> userService.changeUserRole(admin.getEmail(), 1L, UserRole.USER));
         assertEquals(UserRole.ADMIN, admin.getRole());
@@ -157,7 +159,7 @@ class UserManagementTest {
     @Test
     void cannotDisableLastActiveAdmin() {
         User admin = adminSession();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
+        when(userRepository.findForUpdate(1L)).thenReturn(Optional.of(admin));
         when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN)).thenReturn(List.of(admin));
         var exception = assertThrows(IllegalStateException.class,
                 () -> userService.disableUser(admin.getEmail(), 1L));
@@ -169,7 +171,7 @@ class UserManagementTest {
     @Test
     void cannotDisableOwnAccountEvenWhenAnotherAdminExists() {
         User admin = adminSession();
-        when(userRepository.findById(1L)).thenReturn(Optional.of(admin));
+        when(userRepository.findForUpdate(1L)).thenReturn(Optional.of(admin));
         when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN)).thenReturn(List.of(admin, user(2, UserRole.ADMIN)));
         assertThrows(IllegalStateException.class, () -> userService.disableUser(admin.getEmail(), 1L));
         assertTrue(admin.isEnabled());
@@ -180,7 +182,7 @@ class UserManagementTest {
     void canDemoteAnotherAdminWhenActiveAdminRemains() {
         User admin = adminSession();
         User target = user(2, UserRole.ADMIN);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(target));
         when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN)).thenReturn(List.of(admin, target));
         when(userRepository.save(target)).thenReturn(target);
         assertEquals(UserRole.USER, userService.changeUserRole(admin.getEmail(), 2L, UserRole.USER).role());
@@ -191,7 +193,7 @@ class UserManagementTest {
     void canDisableAnotherAdminWhenActiveAdminRemains() {
         User admin = adminSession();
         User target = user(2, UserRole.ADMIN);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(target));
         when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN)).thenReturn(List.of(admin, target));
         when(userRepository.save(target)).thenReturn(target);
         assertFalse(userService.disableUser(admin.getEmail(), 2L).enabled());
@@ -204,7 +206,7 @@ class UserManagementTest {
         User admin = adminSession();
         User target = user(2, UserRole.USER);
         target.disable();
-        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(target));
         when(userRepository.save(target)).thenReturn(target);
         assertTrue(userService.enableUser(admin.getEmail(), 2L).enabled());
         ArgumentCaptor<AuditLog> log = ArgumentCaptor.forClass(AuditLog.class);
@@ -238,7 +240,7 @@ class UserManagementTest {
     void administratorCanRevokeDispatcherRole() {
         User admin = adminSession();
         User dispatcher = user(2, UserRole.DISPATCHER);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(dispatcher));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(dispatcher));
         when(userRepository.save(dispatcher)).thenReturn(dispatcher);
 
         assertEquals(UserRole.USER, userService.changeUserRole(admin.getEmail(), 2L, UserRole.USER).role());
@@ -263,7 +265,7 @@ class UserManagementTest {
     @Test
     void missingTargetReturnsNotFound() {
         User admin = adminSession();
-        when(userRepository.findById(99L)).thenReturn(Optional.empty());
+        when(userRepository.findForUpdate(99L)).thenReturn(Optional.empty());
         assertThrows(ResourceNotFoundException.class, () -> userService.changeUserRole(admin.getEmail(), 99L, UserRole.ADMIN));
         verifyNoInteractions(auditLogRepository);
     }
@@ -272,7 +274,7 @@ class UserManagementTest {
     void unchangedRoleDoesNotCreateAuditEntry() {
         User admin = adminSession();
         User target = user(2, UserRole.USER);
-        when(userRepository.findById(2L)).thenReturn(Optional.of(target));
+        when(userRepository.findForUpdate(2L)).thenReturn(Optional.of(target));
         assertEquals(UserRole.USER, userService.changeUserRole(admin.getEmail(), 2L, UserRole.USER).role());
         verify(userRepository, never()).save(any());
         verifyNoInteractions(auditLogRepository);

@@ -2,12 +2,40 @@ package com.vigil.api.report.repository;
 
 import com.vigil.api.report.domain.*;
 import com.vigil.api.report.dto.IncidentReportCount;
+import com.vigil.api.technician.dto.AssignmentLocationRow;
+import com.vigil.api.technician.dto.TechnicianWorkload;
 import jakarta.persistence.LockModeType;
 import java.util.*;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 
 public interface CustomerReportRepository extends JpaRepository<CustomerReport, Long> {
+    @EntityGraph(attributePaths = {"customerService.serviceLocation"})
+    @Query("select report from CustomerReport report where report.id = :id")
+    Optional<CustomerReport> findForRecommendation(Long id);
+
+    @Query("""
+            select new com.vigil.api.technician.dto.TechnicianWorkload(report.assignedTechnician.id, count(report))
+            from CustomerReport report
+            where report.assignedTechnician.role = com.vigil.api.user.domain.UserRole.TECHNICIAN
+              and report.assignedTechnician.enabled = true
+              and report.status in (com.vigil.api.report.domain.ReportStatus.OPEN,
+                com.vigil.api.report.domain.ReportStatus.IN_PROGRESS, com.vigil.api.report.domain.ReportStatus.RESOLVED)
+            group by report.assignedTechnician.id
+            """)
+    List<TechnicianWorkload> countTechnicianWorkloads();
+
+    @Query("""
+            select new com.vigil.api.technician.dto.AssignmentLocationRow(location.id, location.formattedAddress,
+                location.latitude, location.longitude, report.id, service.serviceType, report.category, report.status)
+            from CustomerReport report join report.customerService service join service.serviceLocation location
+            where report.assignedTechnician.id = :technicianId
+              and report.status in (com.vigil.api.report.domain.ReportStatus.OPEN,
+                com.vigil.api.report.domain.ReportStatus.IN_PROGRESS, com.vigil.api.report.domain.ReportStatus.RESOLVED)
+            order by location.id, report.id
+            """)
+    List<AssignmentLocationRow> findAssignmentLocations(Long technicianId);
+
     @EntityGraph(attributePaths = {"customerService.customer", "customerService.serviceLocation",
             "customerService.networkNode", "assignedTechnician", "incident"})
     @Query("""
@@ -30,6 +58,7 @@ public interface CustomerReportRepository extends JpaRepository<CustomerReport, 
 
     boolean existsByIncidentIdAndAssignedTechnicianId(Long incidentId, Long technicianId);
     boolean existsByAssignedTechnicianIdAndStatusNot(Long technicianId, ReportStatus status);
+    long countByAssignedTechnicianIdAndStatusNot(Long technicianId, ReportStatus status);
     boolean existsByCustomerServiceCustomerIdAndStatusNot(Long customerId, ReportStatus status);
     boolean existsByIncidentId(Long incidentId);
     boolean existsByIncidentIdAndStatusNot(Long incidentId, ReportStatus status);

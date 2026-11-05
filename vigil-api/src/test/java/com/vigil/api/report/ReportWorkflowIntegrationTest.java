@@ -21,6 +21,9 @@ import com.vigil.api.report.service.CustomerReportService;
 import com.vigil.api.user.domain.*;
 import com.vigil.api.user.repository.UserRepository;
 import com.vigil.api.user.service.UserService;
+import com.vigil.api.technician.domain.TechnicianAvailability;
+import com.vigil.api.technician.domain.TechnicianProfile;
+import com.vigil.api.technician.repository.TechnicianProfileRepository;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -41,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Transactional
 class ReportWorkflowIntegrationTest {
+    @Autowired TechnicianProfileRepository profiles;
     @Autowired UserRepository users;
     @Autowired UserService userService;
     @Autowired CustomerServiceRepository services;
@@ -73,6 +77,11 @@ class ReportWorkflowIntegrationTest {
         otherDispatcher = user(UserRole.DISPATCHER);
         technician = user(UserRole.TECHNICIAN);
         otherTechnician = user(UserRole.TECHNICIAN);
+        for (User technician : List.of(technician, otherTechnician)) {
+            TechnicianProfile profile = new TechnicianProfile(technician);
+            profile.update(null, null, TechnicianAvailability.AVAILABLE, Set.of());
+            profiles.save(profile);
+        }
         admin = user(UserRole.ADMIN);
         LocationData address = new LocationData("Main Street 42", "Novi Sad", "RS", new BigDecimal("45.25"), new BigDecimal("19.84"));
         ServiceLocation location = locations.save(new ServiceLocation(address));

@@ -16,6 +16,8 @@ import com.vigil.api.user.domain.UserRole;
 import com.vigil.api.user.dto.TechnicianResponse;
 import com.vigil.api.user.dto.UserResponse;
 import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.technician.domain.TechnicianProfile;
+import com.vigil.api.technician.repository.TechnicianProfileRepository;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,19 +33,22 @@ public class UserService {
     private final AuditLogRepository auditLogRepository;
     private final IncidentRepository incidentRepository;
     private final CustomerServiceRepository customerServiceRepository;
+    private final TechnicianProfileRepository profiles;
 
     public UserService(
             UserRepository userRepository,
             AuditLogRepository auditLogRepository,
             IncidentRepository incidentRepository,
             CustomerServiceRepository customerServiceRepository,
-            CustomerReportRepository reports
+            CustomerReportRepository reports,
+            TechnicianProfileRepository profiles
     ) {
         this.userRepository = userRepository;
         this.reports = reports;
         this.auditLogRepository = auditLogRepository;
         this.incidentRepository = incidentRepository;
         this.customerServiceRepository = customerServiceRepository;
+        this.profiles = profiles;
     }
 
     @Transactional(readOnly = true)
@@ -98,7 +103,7 @@ public class UserService {
             UserRole role
     ) {
         User currentUser = getAdminForUpdate(currentUserEmail);
-        User user = userRepository.findById(userId)
+        User user = userRepository.findForUpdate(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found!"
@@ -112,6 +117,7 @@ public class UserService {
             throw new IllegalArgumentException("Choose a role.");
         }
         if (user.getRole() == role) {
+            if (role == UserRole.TECHNICIAN) createProfileIfMissing(user);
             return toResponse(user);
         }
         ensureAnotherAdmin(user);
@@ -129,6 +135,12 @@ public class UserService {
         user.changeRole(role);
 
         User savedUser = userRepository.save(user);
+        if (previousRole == UserRole.TECHNICIAN) {
+            profiles.findByUserId(userId).ifPresent(profiles::delete);
+            // Flush deletion before a later role grant can insert a fresh profile.
+            profiles.flush();
+        }
+        if (role == UserRole.TECHNICIAN) createProfileIfMissing(savedUser);
         auditLogRepository.save(new AuditLog(currentUser, savedUser, previousRole, role));
 
         return toResponse(savedUser);
@@ -138,7 +150,7 @@ public class UserService {
     public UserResponse disableUser(String currentUserEmail, Long userId){
         User currentUser = getAdminForUpdate(currentUserEmail);
         User user = userRepository
-                .findById(userId)
+                .findForUpdate(userId)
                 .orElseThrow(
                         () -> new ResourceNotFoundException(
                                 "User not found!"
@@ -164,7 +176,7 @@ public class UserService {
     @Transactional
     public UserResponse enableUser(String currentUserEmail, Long userId) {
         User currentUser = getAdminForUpdate(currentUserEmail);
-        User user = userRepository.findById(userId)
+        User user = userRepository.findForUpdate(userId)
                 .orElseThrow(() ->
                         new ResourceNotFoundException(
                                 "User not found!"
@@ -189,6 +201,12 @@ public class UserService {
             throw new AccessDeniedException("Only administrators can manage users.");
         }
         return currentUser;
+    }
+
+    private void createProfileIfMissing(User user) {
+        if (profiles.findByUserId(user.getId()).isEmpty()) {
+            profiles.save(new TechnicianProfile(user));
+        }
     }
 
     private void ensureAnotherAdmin(User user) {

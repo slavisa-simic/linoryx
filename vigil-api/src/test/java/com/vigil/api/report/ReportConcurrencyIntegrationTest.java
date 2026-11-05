@@ -18,6 +18,9 @@ import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.report.service.CustomerReportService;
 import com.vigil.api.user.domain.*;
 import com.vigil.api.user.repository.UserRepository;
+import com.vigil.api.technician.domain.TechnicianAvailability;
+import com.vigil.api.technician.domain.TechnicianProfile;
+import com.vigil.api.technician.repository.TechnicianProfileRepository;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.*;
@@ -35,6 +38,7 @@ import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class ReportConcurrencyIntegrationTest {
+    @Autowired TechnicianProfileRepository profiles;
     @Autowired UserRepository users;
     @Autowired CustomerServiceRepository services;
     @Autowired ServiceLocationRepository locations;
@@ -65,6 +69,9 @@ class ReportConcurrencyIntegrationTest {
             dispatcher = user(UserRole.DISPATCHER);
             customer = user(UserRole.USER);
             technician = user(UserRole.TECHNICIAN);
+            TechnicianProfile profile = new TechnicianProfile(technician);
+            profile.update(null, null, TechnicianAvailability.AVAILABLE, Set.of());
+            profiles.save(profile);
             LocationData address = new LocationData("Concurrency Street 1", "Novi Sad", "RS", BigDecimal.ONE, BigDecimal.ONE);
             ServiceLocation location = locations.save(new ServiceLocation(address));
             NetworkNode node = nodes.save(new NetworkNode("TEST-" + UUID.randomUUID(), "Test", NodeType.ROUTER, address, NodeStatus.ACTIVE));
@@ -100,6 +107,7 @@ class ReportConcurrencyIntegrationTest {
         jdbc.update("DELETE FROM customer_services WHERE id = ?", serviceId);
         jdbc.update("DELETE FROM network_nodes WHERE id = ?", nodeId);
         jdbc.update("DELETE FROM service_locations WHERE id = ?", locationId);
+        jdbc.update("DELETE FROM technician_profiles WHERE user_id = ?", technician.getId());
         jdbc.update("DELETE FROM users WHERE id IN (?, ?, ?)", dispatcher.getId(), customer.getId(), technician.getId());
     }
 

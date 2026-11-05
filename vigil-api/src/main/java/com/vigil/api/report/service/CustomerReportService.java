@@ -13,7 +13,11 @@ import com.vigil.api.report.repository.CustomerReportRepository;
 import com.vigil.api.user.domain.*;
 import com.vigil.api.user.repository.UserRepository;
 import com.vigil.api.user.service.UserService;
+import com.vigil.api.technician.domain.TechnicianAvailability;
+import com.vigil.api.technician.domain.TechnicianProfile;
+import com.vigil.api.technician.repository.TechnicianProfileRepository;
 import java.util.Objects;
+import java.util.Optional;
 import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -27,16 +31,18 @@ public class CustomerReportService {
     private final UserRepository userRepository;
     private final UserService users;
     private final AuditService audit;
+    private final TechnicianProfileRepository profiles;
 
     public CustomerReportService(CustomerReportRepository reports, CustomerServiceRepository services,
                                  IncidentRepository incidents, UserRepository userRepository,
-                                 UserService users, AuditService audit) {
+                                 UserService users, AuditService audit, TechnicianProfileRepository profiles) {
         this.reports = reports;
         this.services = services;
         this.incidents = incidents;
         this.userRepository = userRepository;
         this.users = users;
         this.audit = audit;
+        this.profiles = profiles;
     }
 
     @Transactional
@@ -81,10 +87,14 @@ public class CustomerReportService {
         userRepository.findByRoleOrderByIdAsc(UserRole.ADMIN);
         User actor = users.getActiveUser(email);
         requireOperator(actor);
-        User technician = userRepository.findById(technicianId)
+        User technician = userRepository.findForUpdate(technicianId)
                 .orElseThrow(() -> new ResourceNotFoundException("Technician not found."));
         if (technician.getRole() != UserRole.TECHNICIAN || !technician.isEnabled()) {
             throw new IllegalArgumentException("Choose an active TECHNICIAN account.");
+        }
+        Optional<TechnicianProfile> profile = profiles.findByUserId(technicianId);
+        if (profile.isEmpty() || profile.get().getAvailability() != TechnicianAvailability.AVAILABLE) {
+            throw new IllegalStateException("Choose a technician whose availability is AVAILABLE. BUSY, OFF_DUTY and unconfigured technicians cannot be assigned.");
         }
         CustomerReport report = lockReport(id);
         report.assignTo(technician);

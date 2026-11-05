@@ -16,7 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/technicians")
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Technicians", description = "Technicians available for incident assignment")
+@Tag(name = "Technicians", description = "Enabled technician accounts")
 public class TechnicianController {
     private final UserService userService;
 
