@@ -49,7 +49,6 @@ export function NetworkMap(props: NetworkMapProps) {
         <span><Icon name="router" size={16} /> Router</span>
         <span><Icon name="network" size={16} /> Switch</span>
         <span><Icon name="radio" size={16} /> Wireless base station</span>
-        <span>Shared positions open a list of nodes.</span>
     </>}>
       <NodeMarkers {...props} />
     </MapFrame>

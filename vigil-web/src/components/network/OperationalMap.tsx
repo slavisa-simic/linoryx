@@ -13,7 +13,7 @@ export interface OperationalMarker {
   content: ReactNode
 }
 
-export function OperationalMap({ markers, label, legend }: { markers: OperationalMarker[]; label: string; legend: string }) {
+export function OperationalMap({ markers, label }: { markers: OperationalMarker[]; label: string }) {
   const groups: OperationalMarker[][] = []
   for (const marker of markers) {
     const group = groups.find(items => items[0].latitude === marker.latitude && items[0].longitude === marker.longitude)
@@ -22,7 +22,7 @@ export function OperationalMap({ markers, label, legend }: { markers: Operationa
   }
   const icon = divIcon({ className: 'network-marker', html: renderToStaticMarkup(<Icon name="map-pin" size={21} />),
     iconSize: [38, 38], iconAnchor: [19, 19] })
-  return <MapFrame label={label} points={markers.map(marker => [marker.latitude, marker.longitude])} legend={<span>{legend}</span>}>
+  return <MapFrame label={label} points={markers.map(marker => [marker.latitude, marker.longitude])}>
     {groups.map(group => <Marker key={group[0].id} position={[group[0].latitude, group[0].longitude]} icon={icon}
       title={group.map(marker => marker.title).join('; ')}>
       <Popup minWidth={250} maxHeight={300}>{group.map(marker => <div className="network-popup" key={marker.id}>{marker.content}</div>)}</Popup>

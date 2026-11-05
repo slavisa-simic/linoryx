@@ -4,6 +4,7 @@ import { renderToStaticMarkup } from 'react-dom/server'
 import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import type { LocationData } from '../../models/locations'
 import { Icon } from '../Icon'
+import { mapAttribution } from '../../services/locationData'
 
 const pin = divIcon({
   className: 'location-marker',
@@ -48,7 +49,7 @@ export function LocationMap(props: LocationMapProps) {
     <div className="location-map" aria-label="Location map">
       <MapContainer center={[44.8, 20.45]} zoom={6} scrollWheelZoom={false}>
         <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
+          attribution={mapAttribution} />
         <MapPosition {...props} />
       </MapContainer>
     </div>

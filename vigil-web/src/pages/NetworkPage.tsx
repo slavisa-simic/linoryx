@@ -124,9 +124,8 @@ export function NetworkPage({ onNavigate }: NetworkPageProps) {
           <RefreshButton label="Try again" disabled={loading || busy} onClick={() => setRefresh(refresh + 1)} /></div>}
         {loading && <p className="incident-muted" role="status">{technician ? 'Loading your assigned locations…' : 'Loading network nodes…'}</p>}
         {technician && !loading && !error && <>
-          <p className="incident-muted">Service installation locations for your Open, In progress and Resolved assigned reports.</p>
           {assignments.length === 0 ? <p className="table-empty">No active assigned reports. Assigned service locations will appear here.</p>
-            : <OperationalMap markers={markers} label="My assigned service locations" legend="Locations are grouped by service installation. Open a report from its marker." />}
+            : <OperationalMap markers={markers} label="My assigned service locations" />}
         </>}
         {!technician && !loading && (!error || nodes.length > 0) && <>
           <div className="dashboard-panel network-filters">
@@ -146,9 +145,6 @@ export function NetworkPage({ onNavigate }: NetworkPageProps) {
           </div>
           <NetworkMap nodes={filtered} onEdit={edit} />
           <NodesTable nodes={filtered} busy={busy} onEdit={edit} onDelete={remove} />
-          <p className="incident-muted">Node statuses are managed manually.</p>
-          <p className="location-attribution">Addresses by <a href="https://www.geoapify.com/">Geoapify</a>
-            {' · '}<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a></p>
         </>}
       </main>
       {dialogOpen && <NodeDialog node={editing} onSaved={saved} onClose={() => setDialogOpen(false)} />}

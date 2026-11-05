@@ -33,6 +33,8 @@ On an edit, an unchanged saved location can be kept without another provider req
 
 Address and map displays retain Geoapify and OpenStreetMap attribution. Geoapify permits storing geocoding results with the required source attribution; see the [geocoding storage FAQ](https://www.geoapify.com/geocoding-api/) and [attribution terms](https://www.geoapify.com/terms-and-conditions/). Keep attribution visible when reusing or exporting this data.
 
+Maps share the attribution text from `locationData.ts` inside the map control. The Network page and location picker omit separate attribution paragraphs. Service lists retain their source notice because they display addresses without a map.
+
 ## Codes and database rules
 
 Codes are assigned once, using the verified city's uppercase ASCII name, the type abbreviation and a number: `NOVISAD-OLT-001`. Abbreviations are OLT, RTR, SW and WBS.

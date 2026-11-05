@@ -76,7 +76,7 @@ export function TechniciansPage({ onNavigate }: { onNavigate(page: WorkspacePage
             {specializations.map(skill => <option key={skill}>{skill}</option>)}
           </select></label>
         </div>
-        <OperationalMap markers={markers} label="Technician locations" legend="Last manually entered locations. Technicians without coordinates remain in the table." />
+        <OperationalMap markers={markers} label="Technician locations" />
         <section className="dashboard-panel table-panel"><div className="incident-table-scroll"><table className="incident-table">
           <caption className="sr-only">Active technician accounts and operational information</caption>
           <thead><tr><th scope="col">Technician</th><th scope="col">Availability</th><th scope="col">Specializations</th>
