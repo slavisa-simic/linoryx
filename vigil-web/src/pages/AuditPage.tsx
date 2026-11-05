@@ -1,3 +1,4 @@
+import type { WorkspacePage } from '../models/navigation'
 import { useUser } from '../context/UserContext'
 import { useEffect, useState } from 'react'
 import type { AuditEntry } from '../models/audit'
@@ -9,7 +10,7 @@ import { Icon } from '../components/Icon'
 
 interface AuditPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports',
+    page: WorkspacePage,
     incidentId?: number
   ): void
 }

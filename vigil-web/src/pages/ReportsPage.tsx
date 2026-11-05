@@ -1,27 +1,27 @@
+import type { WorkspacePage } from '../models/navigation'
 import { useEffect, useState } from 'react'
 import { useUser } from '../context/UserContext'
 import { listReports, attachReports } from '../api/reportsApi'
 import { listIncidents } from '../api/incidentsApi'
-import { getTechnicians } from '../api/techniciansApi'
 import type { CustomerReport } from '../models/reports'
 import { reportCategoryLabels, reportStatusLabels } from '../models/reports'
 import type { Incident } from '../models/incidents'
-import type { Technician } from '../models/users'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { ReportsTable } from '../components/reports/ReportsTable'
 import { CreateIncidentDialog } from '../components/incidents/CreateIncidentDialog'
 import { FormMessage } from '../components/auth/FormMessage'
+import { FormDialog } from '../components/workspace/FormDialog'
 import '../Reports.css'
 
 interface Props {
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports', incidentId?: number): void
+  onNavigate(page: WorkspacePage, incidentId?: number): void
 }
 
 export function ReportsPage({ onNavigate }: Props) {
   const { session, onSessionExpired } = useUser()
   const [reports, setReports] = useState<CustomerReport[]>([])
   const [incidents, setIncidents] = useState<Incident[]>([])
-  const [technicians, setTechnicians] = useState<Technician[]>([])
+  const [detailId, setDetailId] = useState(() => Number(new URLSearchParams(window.location.search).get('report')))
   const [selected, setSelected] = useState<number[]>([])
   const [incidentId, setIncidentId] = useState('')
   const [creating, setCreating] = useState(false)
@@ -37,21 +37,26 @@ export function ReportsPage({ onNavigate }: Props) {
   const operator = session.role === 'ADMIN' || session.role === 'DISPATCHER'
 
   useEffect(() => {
+    function readReportLink() {
+      setDetailId(Number(new URLSearchParams(window.location.search).get('report')))
+    }
+    window.addEventListener('popstate', readReportLink)
+    return () => window.removeEventListener('popstate', readReportLink)
+  }, [])
+
+  useEffect(() => {
     let active = true
     async function load() {
       setLoading(true)
       setError('')
       try {
         const items = await listReports(session)
-        let team: Technician[] = []
         let incidents: Incident[] = []
         if (operator) {
-          team = await getTechnicians(session)
           incidents = await listIncidents(session)
         }
         if (active) {
           setReports(items)
-          setTechnicians(team)
           setIncidents(incidents.filter(incident => !incident.legacy && incident.status !== 'CLOSED'))
           setSelected([])
         }
@@ -134,11 +139,17 @@ export function ReportsPage({ onNavigate }: Props) {
           <button className="dashboard-button button-neutral" disabled={loading || saving || !incidentId || selected.length === 0} onClick={attach}>Attach reports</button>
         </div>}
         {loading && <p role="status" className="table-empty">Loading reports…</p>}
-        {!loading && <ReportsTable reports={visible} technicians={technicians} selected={selected}
+        {!loading && <ReportsTable reports={visible} selected={selected}
           onSelect={operator ? toggle : undefined} onUpdated={update} onIncident={id => onNavigate('incidents', id)} />}
       </section>
     </main>
     {creating && <CreateIncidentDialog reports={reports.filter(report => selected.includes(report.id))}
       onClose={() => setCreating(false)} onCreated={incident => { setCreating(false); onNavigate('incidents', incident.id) }} />}
+    {!loading && detailId > 0 && <FormDialog wide id="report-details" title={'REP-' + detailId} busy={false} onClose={() => {
+      setDetailId(0)
+      window.history.replaceState(null, '', '/reports')
+    }}>
+      <ReportsTable reports={reports.filter(report => report.id === detailId)} onUpdated={update} onIncident={id => onNavigate('incidents', id)} />
+    </FormDialog>}
   </div>
 }

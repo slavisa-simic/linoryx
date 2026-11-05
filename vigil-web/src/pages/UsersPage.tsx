@@ -1,3 +1,4 @@
+import type { WorkspacePage } from '../models/navigation'
 import { useUser } from '../context/UserContext'
 import { useEffect, useState } from 'react'
 import type { UserRole } from '../models/users'
@@ -15,7 +16,7 @@ import { ServiceDialog } from '../components/customerServices/ServiceDialog'
 import { CustomerServicesDialog } from '../components/customerServices/CustomerServicesDialog'
 
 interface UsersPageProps {
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'): void
+  onNavigate(page: WorkspacePage): void
 }
 
 export function UsersPage({

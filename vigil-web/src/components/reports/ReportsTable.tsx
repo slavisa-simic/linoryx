@@ -2,39 +2,33 @@ import { useState } from 'react'
 import { useUser } from '../../context/UserContext'
 import type { CustomerReport, ReportAction } from '../../models/reports'
 import { reportCategoryLabels, reportStatusLabels } from '../../models/reports'
-import type { Technician } from '../../models/users'
-import { assignReport, reportAction } from '../../api/reportsApi'
+import { reportAction } from '../../api/reportsApi'
 import { formatDate } from '../../services/dashboardData'
 import { serviceTypeLabels } from '../../services/customerServiceData'
 import { FormMessage } from '../auth/FormMessage'
+import { AssignTechnicianDialog } from './AssignTechnicianDialog'
 
 interface Props {
   reports: CustomerReport[]
-  technicians?: Technician[]
   selected?: number[]
   onSelect?(id: number): void
   onUpdated(report: CustomerReport): void
   onIncident?(id: number): void
 }
 
-export function ReportsTable({ reports, technicians = [], selected = [], onSelect, onUpdated, onIncident }: Props) {
+export function ReportsTable({ reports, selected = [], onSelect, onUpdated, onIncident }: Props) {
   const { session, onSessionExpired } = useUser()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [assigning, setAssigning] = useState<CustomerReport | null>(null)
   const operator = session.role === 'ADMIN' || session.role === 'DISPATCHER'
 
-  async function act(report: CustomerReport, action: ReportAction | 'assign', technicianId?: number) {
+  async function act(report: CustomerReport, action: ReportAction) {
     if (busy) return
     setBusy(true)
     setError('')
     try {
-      let updated: CustomerReport
-      if (action === 'assign') {
-        if (!technicianId) return
-        updated = await assignReport(session, report.id, technicianId)
-      } else {
-        updated = await reportAction(session, report.id, action)
-      }
+      const updated = await reportAction(session, report.id, action)
       onUpdated(updated)
     } catch (error) {
       if (error instanceof Error && error.message === 'SESSION_EXPIRED') onSessionExpired()
@@ -68,10 +62,8 @@ export function ReportsTable({ reports, technicians = [], selected = [], onSelec
             disabled={!onIncident}>INC-{report.incidentId}</button> : <strong className="report-attention">Unlinked</strong>}</div></td>}
         <td><div className="report-actions">
           {operator && report.incidentId && report.status !== 'CLOSED' &&
-            <select className="field-input" aria-label={'Technician for REP-' + report.id} value={report.assignedTechnicianId || ''} disabled={busy}
-              onChange={event => { if (event.target.value) act(report, 'assign', Number(event.target.value)) }}>
-              <option value="">Assign technician</option>{technicians.map(technician => <option key={technician.id} value={technician.id}>{technician.firstName} {technician.lastName}</option>)}
-            </select>}
+            <button className="user-save-button" disabled={busy} onClick={() => setAssigning(report)}>
+              {report.assignedTechnicianId ? 'Reassign technician' : 'Assign technician'}</button>}
           {session.role === 'TECHNICIAN' && report.assignedTechnicianId === session.userId && report.status === 'OPEN' &&
             <button className="user-save-button" disabled={busy || report.incidentStatus !== 'IN_PROGRESS'} title={report.incidentStatus !== 'IN_PROGRESS' ? 'The dispatcher must start the incident first.' : undefined} onClick={() => act(report, 'start')}>Start work</button>}
           {session.role === 'TECHNICIAN' && report.assignedTechnicianId === session.userId && report.status === 'IN_PROGRESS' &&
@@ -89,5 +81,6 @@ export function ReportsTable({ reports, technicians = [], selected = [], onSelec
       </tr>)}</tbody>
     </table></div>
     {reports.length === 0 && <p className="table-empty">No reports found.</p>}
+    {assigning && <AssignTechnicianDialog report={assigning} onAssigned={onUpdated} onClose={() => setAssigning(null)} />}
   </>
 }

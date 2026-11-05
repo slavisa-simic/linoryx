@@ -201,7 +201,7 @@ export function buildDashboard(
   }
 
   for (const report of reports) {
-    if (report.status === 'CLOSED' || report.status === 'RESOLVED') continue
+    if (report.status === 'CLOSED') continue
     if (!report.assignedTechnicianId) {
       unassignedCount += 1
       continue

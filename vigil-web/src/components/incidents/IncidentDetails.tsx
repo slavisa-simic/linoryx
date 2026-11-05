@@ -19,7 +19,7 @@ interface Props {
   onClose(): void
 }
 
-export function IncidentDetails({ incident, technicians, onUpdate, onClose }: Props) {
+export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
   const { session, onSessionExpired } = useUser()
   const [item, setItem] = useState(incident)
   const [reports, setReports] = useState<CustomerReport[]>([])
@@ -151,7 +151,7 @@ export function IncidentDetails({ incident, technicians, onUpdate, onClose }: Pr
     </div>}
     <section className="detail-section"><h3>Associated reports</h3>
       {session.role === 'TECHNICIAN' && <p className="incident-muted">Only your assigned reports are shown.</p>}
-      {!loading && <ReportsTable reports={reports} technicians={technicians} onUpdated={updateReport} />}
+      {!loading && <ReportsTable reports={reports} onUpdated={updateReport} />}
     </section>
     <section className="detail-section comments-section"><h3>Internal comments</h3>
       <ul className="incident-comments">{comments.map(entry => <li key={entry.id}>

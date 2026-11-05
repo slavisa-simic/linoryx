@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
-import { divIcon, latLngBounds } from 'leaflet'
+import { divIcon } from 'leaflet'
 import { renderToStaticMarkup } from 'react-dom/server'
-import { MapContainer, Marker, Popup, TileLayer, useMap } from 'react-leaflet'
+import { Marker, Popup } from 'react-leaflet'
+import { MapFrame } from './MapFrame'
 import type { NetworkNode } from '../../models/network'
 import { groupNodes, nodeStatusLabels, nodeTypeIcons, nodeTypeLabels } from '../../services/networkData'
 import { Icon } from '../Icon'
@@ -12,14 +12,6 @@ interface NetworkMapProps {
 }
 
 function NodeMarkers({ nodes, onEdit }: NetworkMapProps) {
-  const map = useMap()
-  useEffect(() => {
-    if (nodes.length > 0) {
-      const bounds = latLngBounds(nodes.map((node) => [node.latitude, node.longitude]))
-      map.fitBounds(bounds, { padding: [36, 36], maxZoom: 16, animate: false })
-    }
-  }, [map, nodes])
-
   return groupNodes(nodes).map(function (group) {
     const first = group[0]
     let iconName = nodeTypeIcons[first.nodeType]
@@ -52,19 +44,14 @@ function NodeMarkers({ nodes, onEdit }: NetworkMapProps) {
 
 export function NetworkMap(props: NetworkMapProps) {
   return (
-    <section className="dashboard-panel network-map-panel" aria-label="Registered network nodes map">
-      <MapContainer center={[44.8, 20.45]} zoom={6} scrollWheelZoom={false}>
-        <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' />
-        <NodeMarkers {...props} />
-      </MapContainer>
-      <div className="network-map-legend">
+    <MapFrame label="Registered network nodes map" points={props.nodes.map(node => [node.latitude, node.longitude])} legend={<>
         <span><Icon name="server" size={16} /> GPON OLT</span>
         <span><Icon name="router" size={16} /> Router</span>
         <span><Icon name="network" size={16} /> Switch</span>
         <span><Icon name="radio" size={16} /> Wireless base station</span>
         <span>Shared positions open a list of nodes.</span>
-      </div>
-    </section>
+    </>}>
+      <NodeMarkers {...props} />
+    </MapFrame>
   )
 }

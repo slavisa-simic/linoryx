@@ -1,3 +1,4 @@
+import type { WorkspacePage } from '../models/navigation'
 import type { CustomerReport } from '../models/reports'
 import { ReportProblemDialog } from '../components/reports/ReportProblemDialog'
 import { ReportsTable } from '../components/reports/ReportsTable'
@@ -11,7 +12,7 @@ import { FormMessage } from '../components/auth/FormMessage'
 import { Icon } from '../components/Icon'
 
 interface ServicesPageProps {
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'): void
+  onNavigate(page: WorkspacePage): void
 }
 
 export function ServicesPage({ onNavigate }: ServicesPageProps) {

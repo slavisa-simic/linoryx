@@ -10,15 +10,16 @@ interface DashboardOperationsProps {
 }
 
 export function DashboardOperations({ data, technicians, canManageIncidents }: DashboardOperationsProps) {
-  const availableTechnicians = technicians.length
-
   let teamLabel = 'Your workload'
-  let teamCount = data.active
+  let teamCount = 0
+  for (const workload of data.workload) {
+    teamCount += workload.value
+  }
   let teamIcon: 'shield' | 'users' = 'shield'
 
   if (canManageIncidents) {
-    teamLabel = 'Available technicians'
-    teamCount = availableTechnicians
+    teamLabel = 'Enabled technicians'
+    teamCount = technicians.length
     teamIcon = 'users'
   }
 

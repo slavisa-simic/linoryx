@@ -9,6 +9,9 @@ import { AuditPage } from './pages/AuditPage'
 import { NetworkPage } from './pages/NetworkPage'
 import { ReportsPage } from './pages/ReportsPage'
 import { ServicesPage } from './pages/ServicesPage'
+import { TechnicianProfilePage } from './pages/TechnicianProfilePage'
+import { TechniciansPage } from './pages/TechniciansPage'
+import type { WorkspacePage } from './models/navigation'
 import type { AuthResponse, AuthSession } from './models/auth'
 import type { AuthApi } from './api/authApi'
 import type { SessionService } from './services/SessionService'
@@ -18,9 +21,11 @@ interface AppProps {
   sessionService: SessionService
 }
 
-type Page = 'login' | 'register' | 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'
+type Page = 'login' | 'register' | WorkspacePage
 
 function getCurrentPage(): Page {
+  if (window.location.pathname === '/profile') return 'profile'
+  if (window.location.pathname === '/technicians') return 'technicians'
   if (window.location.pathname === '/reports') return 'reports'
   if (window.location.pathname === '/network') return 'network'
   if (window.location.pathname === '/services') return 'services'
@@ -46,7 +51,10 @@ function getSessionPage(session: AuthSession | null): Page {
   const page = getCurrentPage()
   if (
     session &&
-    (((page === 'users' || page === 'network') && session.role !== 'ADMIN') ||
+    ((page === 'users' && session.role !== 'ADMIN') ||
+      (page === 'network' && session.role !== 'ADMIN' && session.role !== 'TECHNICIAN') ||
+      (page === 'profile' && session.role !== 'TECHNICIAN') ||
+      (page === 'technicians' && session.role !== 'ADMIN' && session.role !== 'DISPATCHER') ||
       (page === 'services' && session.role !== 'USER') ||
       (page === 'incidents' && session.role === 'USER') ||
       (page === 'audit' && session.role !== 'ADMIN' && session.role !== 'DISPATCHER'))
@@ -69,6 +77,8 @@ function getSessionPage(session: AuthSession | null): Page {
       page === 'users' ||
       page === 'network' ||
       page === 'reports' ||
+      page === 'profile' ||
+      page === 'technicians' ||
       page === 'services' ||
       page === 'audit')
   ) {
@@ -114,6 +124,8 @@ function App({ authApi, sessionService }: AppProps) {
       if (page === 'network') document.title = 'Network · Vigil'
       if (page === 'reports') document.title = 'Reports · Vigil'
       if (page === 'services') document.title = 'My services · Vigil'
+      if (page === 'profile') document.title = 'My Profile · Vigil'
+      if (page === 'technicians') document.title = 'Technician Overview · Vigil'
     } else if (page === 'register') {
       document.title = 'Create account · Vigil'
     } else {
@@ -144,10 +156,11 @@ function App({ authApi, sessionService }: AppProps) {
     }
   }, [session, sessionService])
 
-  function navigate(nextPage: Page, incidentId?: number) {
+  function navigate(nextPage: Page, itemId?: number) {
     let url = '/' + nextPage
-    if (incidentId) {
-      url = url + '?incident=' + incidentId
+    if (itemId) {
+      const parameter = nextPage === 'reports' ? 'report' : 'incident'
+      url = url + '?' + parameter + '=' + itemId
     }
     window.history.pushState(null, '', url)
     setPage(nextPage)
@@ -187,7 +200,11 @@ function App({ authApi, sessionService }: AppProps) {
 
   if (session && page === 'reports') {
     content = <ReportsPage onNavigate={navigate} />
-  } else if (session && page === 'network' && session.role === 'ADMIN') {
+  } else if (session && page === 'profile' && session.role === 'TECHNICIAN') {
+    content = <TechnicianProfilePage onNavigate={navigate} />
+  } else if (session && page === 'technicians' && (session.role === 'ADMIN' || session.role === 'DISPATCHER')) {
+    content = <TechniciansPage onNavigate={navigate} />
+  } else if (session && page === 'network' && (session.role === 'ADMIN' || session.role === 'TECHNICIAN')) {
     content = <NetworkPage onNavigate={navigate} />
   } else if (session && page === 'services' && session.role === 'USER') {
     content = <ServicesPage onNavigate={navigate} />

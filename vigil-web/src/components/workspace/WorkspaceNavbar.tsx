@@ -1,3 +1,4 @@
+import type { WorkspacePage } from '../../models/navigation'
 import { useUser } from '../../context/UserContext'
 import { userName } from '../../services/dashboardData'
 import type { MouseEvent } from 'react'
@@ -5,8 +6,8 @@ import { BrandLogo } from '../auth/BrandLogo'
 import { Icon } from '../Icon'
 
 interface WorkspaceNavbarProps {
-  page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'): void
+  page: WorkspacePage
+  onNavigate(page: WorkspacePage): void
 }
 
 const roleLabels = {
@@ -67,7 +68,7 @@ export function WorkspaceNavbar({
 
   function navigate(
     event: MouseEvent<HTMLAnchorElement>,
-    nextPage: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'
+    nextPage: WorkspacePage
   ) {
     if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) {
       return
@@ -124,13 +125,19 @@ export function WorkspaceNavbar({
               Users
             </a>
           )}
-          {admin && (
+          {(admin || session.role === 'TECHNICIAN') && (
             <a className={page === 'network' ? 'workspace-nav-item is-active' : 'workspace-nav-item'}
               href="/network" aria-current={page === 'network' ? 'page' : undefined}
               onClick={(event) => navigate(event, 'network')}>
               <Icon name="network" size={17} />Network
             </a>
           )}
+          {session.role === 'TECHNICIAN' && <a className={page === 'profile' ? 'workspace-nav-item is-active' : 'workspace-nav-item'}
+            href="/profile" aria-current={page === 'profile' ? 'page' : undefined} onClick={event => navigate(event, 'profile')}>
+            <Icon name="user" size={17} />My Profile</a>}
+          {canViewAudit && <a className={page === 'technicians' ? 'workspace-nav-item is-active' : 'workspace-nav-item'}
+            href="/technicians" aria-current={page === 'technicians' ? 'page' : undefined} onClick={event => navigate(event, 'technicians')}>
+            <Icon name="wrench" size={17} />Technicians</a>}
           {session.role === 'USER' && (
             <a className={page === 'services' ? 'workspace-nav-item is-active' : 'workspace-nav-item'}
               href="/services" aria-current={page === 'services' ? 'page' : undefined}

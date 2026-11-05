@@ -1,3 +1,4 @@
+import type { WorkspacePage } from '../models/navigation'
 import { useEffect, useState } from 'react'
 import { deleteNetworkNode, listNetworkNodes } from '../api/networkApi'
 import { useUser } from '../context/UserContext'
@@ -8,14 +9,22 @@ import { NodesTable } from '../components/network/NodesTable'
 import { NodeDialog } from '../components/network/NodeDialog'
 import { FormMessage } from '../components/auth/FormMessage'
 import { Icon } from '../components/Icon'
+import { getMyAssignmentLocations } from '../api/techniciansApi'
+import type { AssignmentLocation } from '../models/technicians'
+import { OperationalMap } from '../components/network/OperationalMap'
+import { reportCategoryLabels, reportStatusLabels } from '../models/reports'
+import { serviceTypeLabels } from '../services/customerServiceData'
+import { hasCoordinates } from '../services/technicianData'
 
 interface NetworkPageProps {
-  onNavigate(page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports'): void
+  onNavigate(page: WorkspacePage, reportId?: number): void
 }
 
 export function NetworkPage({ onNavigate }: NetworkPageProps) {
   const { session, onSessionExpired } = useUser()
   const [nodes, setNodes] = useState<NetworkNode[]>([])
+  const [assignments, setAssignments] = useState<AssignmentLocation[]>([])
+  const technician = session.role === 'TECHNICIAN'
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -33,8 +42,13 @@ export function NetworkPage({ onNavigate }: NetworkPageProps) {
       setLoading(true)
       setError('')
       try {
-        const results = await listNetworkNodes(session)
-        if (active) setNodes(results)
+        if (technician) {
+          const results = await getMyAssignmentLocations(session)
+          if (active) setAssignments(results)
+        } else {
+          const results = await listNetworkNodes(session)
+          if (active) setNodes(results)
+        }
       } catch (error) {
         if (active) setError(error instanceof Error ? error.message : 'Network nodes could not be loaded.')
       } finally {
@@ -43,7 +57,7 @@ export function NetworkPage({ onNavigate }: NetworkPageProps) {
     }
     load()
     return () => { active = false }
-  }, [session, refresh])
+  }, [session, refresh, technician])
 
   useEffect(() => {
     if (error === 'SESSION_EXPIRED') onSessionExpired()
@@ -81,25 +95,40 @@ export function NetworkPage({ onNavigate }: NetworkPageProps) {
     if (status !== 'ALL' && node.status !== status) return false
     return (node.name + ' ' + node.code).toLowerCase().includes(search.trim().toLowerCase())
   })
+  const markers = assignments.filter(location => hasCoordinates(location.latitude, location.longitude)).map(location => ({
+    id: location.locationId, latitude: location.latitude, longitude: location.longitude, title: location.address,
+    content: <><strong>{location.address}</strong><p>Assigned reports</p><ul>{location.reports.map(report => <li key={report.id}>
+      <a href={'/reports?report=' + report.id} onClick={event => {
+        if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return
+        event.preventDefault()
+        onNavigate('reports', report.id)
+      }}>REP-{report.id}</a> · {serviceTypeLabels[report.serviceType]} · {reportCategoryLabels[report.category]} · {reportStatusLabels[report.status]}
+    </li>)}</ul></>
+  }))
 
   return (
     <div className="workspace">
       <a className="skip-link" href="#network-main">Skip to network</a>
       <WorkspaceNavbar page="network" onNavigate={onNavigate} />
       <main className="dashboard-main" id="network-main">
-        <div className="page-heading"><h1>Network<span className="heading-period">.</span></h1>
+        <div className="page-heading"><h1>{technician ? 'Network — My Assignments' : 'Network'}<span className="heading-period">.</span></h1>
           <div className="incidents-page-actions">
             <button className="dashboard-button button-neutral" type="button" disabled={loading || busy}
               onClick={() => setRefresh(refresh + 1)}><Icon name="refresh" size={16} />Refresh</button>
-            <button className="dashboard-button" type="button" onClick={() => { setEditing(null); setDialogOpen(true) }}>
-              <Icon name="plus" size={16} />Add node</button>
+            {!technician && <button className="dashboard-button" type="button" onClick={() => { setEditing(null); setDialogOpen(true) }}>
+              <Icon name="plus" size={16} />Add node</button>}
           </div>
         </div>
         {notice && <div className="page-message"><FormMessage message={notice} type="success" /></div>}
         {error && error !== 'SESSION_EXPIRED' && <div className="page-message"><FormMessage message={error} />
           <button className="export-button" type="button" onClick={() => setRefresh(refresh + 1)}>Try again</button></div>}
-        {loading && <p className="incident-muted" role="status">Loading network nodes…</p>}
-        {!loading && (!error || nodes.length > 0) && <>
+        {loading && <p className="incident-muted" role="status">{technician ? 'Loading your assigned locations…' : 'Loading network nodes…'}</p>}
+        {technician && !loading && !error && <>
+          <p className="incident-muted">Service installation locations for your Open, In progress and Resolved assigned reports.</p>
+          {assignments.length === 0 ? <p className="table-empty">No active assigned reports. Assigned service locations will appear here.</p>
+            : <OperationalMap markers={markers} label="My assigned service locations" legend="Locations are grouped by service installation. Open a report from its marker." />}
+        </>}
+        {!technician && !loading && (!error || nodes.length > 0) && <>
           <div className="dashboard-panel network-filters">
             <label className="incident-search"><Icon name="search" size={17} /><span className="sr-only">Search nodes</span>
               <input type="search" value={search} placeholder="Search by node name or code…"

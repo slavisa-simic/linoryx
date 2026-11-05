@@ -1,3 +1,4 @@
+import type { WorkspacePage } from '../models/navigation'
 import { useUser } from '../context/UserContext'
 import { useEffect, useState } from 'react'
 import { getDashboard } from '../api/dashboardApi'
@@ -14,7 +15,7 @@ import { DashboardOperations } from '../components/dashboard/DashboardOperations
 
 interface DashboardPageProps {
   onNavigate(
-    page: 'dashboard' | 'incidents' | 'users' | 'audit' | 'network' | 'services' | 'reports',
+    page: WorkspacePage,
     incidentId?: number
   ): void
 }

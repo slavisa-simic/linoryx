@@ -53,6 +53,7 @@ beforeEach(() => {
       return { id: 7, firstName: 'Test', lastName: 'Operator', email: 'operator@test.com' }
     }
     if (path === '/technicians') return [technician]
+    if (path === '/technicians/me/assignment-locations') return []
     if (path === '/incidents/10') return incident
     if (path === '/incidents/10/assign') {
       return { ...incident, assignedToId: 8, assignedToEmail: 'tech@test.com' }
@@ -85,7 +86,7 @@ afterEach(() => {
 describe('direct navigation and operational access', () => {
   it.each(['ADMIN', 'DISPATCHER'] as const)('%s loads the dashboard using the technician endpoint', async role => {
     openApp(role, '/dashboard')
-    expect(await screen.findByText('Available technicians')).toBeTruthy()
+    expect(await screen.findByText('Enabled technicians')).toBeTruthy()
     expect(request).toHaveBeenCalledWith('/technicians', 'test-token')
     expect(request.mock.calls.some(([path]) => path.startsWith('/users?'))).toBe(false)
     expect(screen.getByRole('link', { name: 'Audit logs' })).toBeTruthy()
@@ -135,16 +136,26 @@ describe('direct navigation and operational access', () => {
     expect(request).not.toHaveBeenCalled()
   })
 
-  it.each(['DISPATCHER', 'TECHNICIAN', 'USER'] as const)('%s cannot open Network directly', async role => {
+  it.each(['DISPATCHER', 'USER'] as const)('%s cannot open Network directly', async role => {
     openApp(role, '/network')
     await waitFor(() => expect(window.location.pathname).toBe(role === 'USER' ? '/services' : '/dashboard'))
     expect(screen.queryByRole('link', { name: 'Network' })).toBeNull()
     expect(request.mock.calls.some(([path]) => path.startsWith('/network-nodes'))).toBe(false)
   })
 
+  it('technicians open their assignment map without loading infrastructure or team profiles', async () => {
+    openApp('TECHNICIAN', '/network')
+    expect(await screen.findByText('No active assigned reports. Assigned service locations will appear here.')).toBeTruthy()
+    expect(screen.getByRole('heading', { name: 'Network — My Assignments.' })).toBeTruthy()
+    expect(request).toHaveBeenCalledWith('/technicians/me/assignment-locations', 'test-token')
+    expect(request.mock.calls.some(([path]) => path.startsWith('/network-nodes') || path.startsWith('/customer-services') || path === '/technicians/overview')).toBe(false)
+    expect(screen.queryByRole('button', { name: 'Add node' })).toBeNull()
+    expect(screen.getByRole('link', { name: 'My Profile' })).toBeTruthy()
+  })
+
   it('checks permissions on browser back/forward navigation', async () => {
     openApp('DISPATCHER', '/dashboard')
-    await screen.findByText('Available technicians')
+    await screen.findByText('Enabled technicians')
     window.history.pushState(null, '', '/users')
     fireEvent.popState(window)
     await waitFor(() => expect(window.location.pathname).toBe('/dashboard'))
