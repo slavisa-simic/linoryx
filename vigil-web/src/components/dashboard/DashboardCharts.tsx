@@ -24,11 +24,6 @@ interface ChartPanelProps {
   children: ReactNode
 }
 
-interface DataTableProps {
-  headers: string[]
-  rows: (string | number)[][]
-}
-
 interface DashboardChartsProps {
   data: DashboardStatistics
   days: number
@@ -45,37 +40,6 @@ function ChartPanel({ title, className = '', children }: ChartPanelProps) {
       </header>
       {children}
     </section>
-  )
-}
-
-function DataTable({ headers, rows }: DataTableProps) {
-  return (
-    <details className="chart-data-disclosure">
-      <summary>View chart data</summary>
-      <div className="chart-data-scroll">
-        <table>
-          <caption className="sr-only">Chart values</caption>
-          <thead>
-            <tr>
-              {headers.map((header) => (
-                <th key={header} scope="col">
-                  {header}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, index) => (
-              <tr key={index}>
-                {row.map((cell, cellIndex) => (
-                  <td key={cellIndex}>{cell}</td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </details>
   )
 }
 
@@ -120,18 +84,11 @@ export function DashboardCharts({
   const [showReported, setShowReported] = useState(true)
   const [showClosed, setShowClosed] = useState(true)
 
-  const trendRows: (string | number)[][] = []
-  const severityRows: (string | number)[][] = []
-  const categoryRows: (string | number)[][] = []
-  const workloadRows: (string | number)[][] = []
   const pieData: StatusCount[] = []
   const statusDescriptions: string[] = []
   const severityDescriptions: string[] = []
   const workloadDescriptions: string[] = []
 
-  for (const day of data.trend) {
-    trendRows.push([day.name, day.reported, day.resolved])
-  }
   for (const status of data.status) {
     statusDescriptions.push(status.value + ' ' + status.name.toLowerCase())
     if (status.value > 0) {
@@ -139,14 +96,9 @@ export function DashboardCharts({
     }
   }
   for (const severity of data.severity) {
-    severityRows.push([severity.name, severity.value])
     severityDescriptions.push(severity.value + ' ' + severity.name.toLowerCase())
   }
-  for (const category of data.categories) {
-    categoryRows.push([category.name, category.active, category.completed])
-  }
   for (const technician of data.workload) {
-    workloadRows.push([technician.name, technician.value])
     workloadDescriptions.push(technician.name + ': ' + technician.value + ' active')
   }
 
@@ -212,7 +164,7 @@ export function DashboardCharts({
         <div
           className="trend-chart"
           role="img"
-          aria-label={`${data.reportedInWindow} incidents reported and ${data.resolvedInWindow} closed over ${days} days. Chart data is available below.`}
+          aria-label={`${data.reportedInWindow} incidents reported and ${data.resolvedInWindow} closed over ${days} days.`}
         >
           <ResponsiveContainer width="100%" height="100%" minWidth={0}>
             <AreaChart
@@ -274,7 +226,6 @@ export function DashboardCharts({
             </AreaChart>
           </ResponsiveContainer>
         </div>
-        <DataTable headers={['Date', 'Reported', 'Closed']} rows={trendRows} />
       </section>
 
       <ChartPanel
@@ -375,12 +326,10 @@ export function DashboardCharts({
             <ChartEmpty message="No active incidents" />
           )}
         </div>
-        <DataTable headers={['Priority', 'Active incidents']} rows={severityRows} />
       </ChartPanel>
 
       <ChartPanel title="Incidents by category" className="category-panel">
         <CategoryRadar categories={data.categories} total={data.total} />
-        <DataTable headers={['Category', 'Active', 'Completed']} rows={categoryRows} />
       </ChartPanel>
 
       <ChartPanel
@@ -439,7 +388,6 @@ export function DashboardCharts({
             <ChartEmpty message="No active assignments" />
           )}
         </div>
-        <DataTable headers={['Technician', 'Active assignments']} rows={workloadRows} />
       </ChartPanel>
     </div>
   )

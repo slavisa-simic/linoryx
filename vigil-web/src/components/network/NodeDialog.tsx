@@ -53,12 +53,16 @@ export function NodeDialog({ node, onSaved, onClose }: NodeDialogProps) {
   }
 
   return (
-    <FormDialog id="node-dialog" title={node ? 'Edit node' : 'Add node'} busy={saving} onClose={onClose}>
-      {node && <p className="incident-muted">{node.code} · The code stays unchanged.</p>}
-      <form className="incident-form" onSubmit={submit} aria-busy={saving}>
+    <FormDialog id="node-dialog" title={node ? 'Edit node' : 'Add node'} busy={saving} onClose={onClose}
+      footer={<div className="dialog-actions">
+        <button className="dashboard-button button-neutral" type="button" disabled={saving} onClick={onClose}>Cancel</button>
+        <button className="dashboard-button" type="submit" form="node-form" disabled={saving}>{saving ? 'Saving…' : 'Save node'}</button>
+      </div>}>
+      {node && <p className="incident-muted">{node.code}</p>}
+      <form id="node-form" className="incident-form" onSubmit={submit} aria-busy={saving}>
         <div className="incident-form-field">
           <label htmlFor="node-name">Node name</label>
-          <input id="node-name" className="field-input" value={name} maxLength={150} required autoFocus
+          <input id="node-name" className="field-input" value={name} maxLength={150} required data-autofocus
             disabled={saving} onChange={(event) => setName(event.target.value)} />
         </div>
         <div className="incident-form-row">
@@ -80,12 +84,6 @@ export function NodeDialog({ node, onSaved, onClose }: NodeDialogProps) {
         <LocationPicker value={location} initialLocation={initialLocation} disabled={saving}
           onChange={(value) => { setLocation(value); setLocationChanged(true) }} />
         <FormMessage message={error} />
-        <div className="incident-form-actions">
-          <button className="dashboard-button button-neutral" type="button" disabled={saving} onClick={onClose}>Cancel</button>
-          <button className="dashboard-button" type="submit" disabled={saving}>
-            {saving ? 'Saving…' : 'Save node'}
-          </button>
-        </div>
       </form>
     </FormDialog>
   )

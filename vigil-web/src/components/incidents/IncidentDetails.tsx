@@ -9,8 +9,10 @@ import { addComment, changeIncidentCategory, getComments, getIncident, progressI
 import { listReports } from '../../api/reportsApi'
 import { categoryLabels, formatDate, severityLabels, statusLabels } from '../../services/dashboardData'
 import { FormDialog } from '../workspace/FormDialog'
+import { RefreshButton } from '../workspace/RefreshButton'
 import { FormMessage } from '../auth/FormMessage'
 import { ReportsTable } from '../reports/ReportsTable'
+import { Icon } from '../Icon'
 import '../../Reports.css'
 
 interface Props {
@@ -115,7 +117,9 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
   }
 
   async function exportPdf() {
+    if (loading || saving) return
     setSaving(true)
+    setError('')
     try {
       const pdf = await import('../../services/exportIncidentPdf')
       await pdf.downloadIncidentPdf(item, comments)
@@ -142,19 +146,31 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
 
   const canClose = item.status === 'IN_PROGRESS' && item.reportCount > 0 && item.reportCount === item.closedReportCount
   const disabled = loading || saving
+  const showWorkflow = operator && !item.legacy && item.status !== 'CLOSED'
 
-  return <FormDialog wide id="incident-details" title={'INC-' + item.id + ' · ' + item.title} busy={saving} onClose={onClose}>
+  return <FormDialog wide id="incident-details" reference={'INC-' + item.id} title={item.title} busy={saving} onClose={onClose}
+    footer={<>
+      {showWorkflow && <p className="dialog-footer-note">{item.status === 'OPEN' ? 'Start the incident to begin work on its reports.' :
+        canClose ? 'All associated reports are closed. This incident is ready to close.' : 'Close every associated report before closing the incident.'}</p>}
+      <div className="dialog-actions">
+        <button className="dashboard-button button-neutral" disabled={disabled} onClick={exportPdf}><Icon name="pdf" size={18} />Export PDF</button>
+        {showWorkflow && <button className="dashboard-button" disabled={disabled || (item.status === 'IN_PROGRESS' && !canClose)}
+          onClick={() => progress(item.status === 'OPEN' ? 'start' : 'close')}>
+          <Icon name={item.status === 'OPEN' ? 'play' : 'check-circle'} size={18} />
+          {item.status === 'OPEN' ? 'Start incident' : 'Close incident'}</button>}
+      </div>
+    </>}>
     <div className="detail-status-row">
-      <span className={'status-badge status-' + item.status.toLowerCase()}>{statusLabels[item.status]}</span>
-      <span className={'severity-badge severity-' + item.severity.toLowerCase()}>{severityLabels[item.severity]} priority</span>
-      <button className="export-button" disabled={disabled} onClick={exportPdf}>Export PDF</button>
+      <span className={'status-badge status-' + item.status.toLowerCase()}><span className="status-dot" />{statusLabels[item.status]}</span>
+      <span className={'severity-badge severity-' + item.severity.toLowerCase()}><span className="severity-mark" />{severityLabels[item.severity]} priority</span>
+      <RefreshButton disabled={disabled} onClick={() => setRefresh(refresh + 1)} ariaLabel="Refresh details" />
     </div>
     <p className="detail-description">{item.description}</p>
-    <dl className="incident-facts detail-facts">
+    <dl className="detail-facts">
       <div><dt>Created by</dt><dd>{item.createdByEmail}</dd></div>
       <div><dt>Category</dt><dd>{categoryLabels[item.category]}</dd></div>
       <div><dt>Created</dt><dd>{formatDate(item.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>
-      <div><dt>Reports closed</dt><dd>{item.closedReportCount}/{item.reportCount}</dd></div>
+      <div><dt>Reports closed</dt><dd><strong>{item.closedReportCount}</strong> / {item.reportCount}</dd></div>
       {item.closedAt && <div><dt>Closed</dt><dd>{formatDate(item.closedAt, { dateStyle: 'medium', timeStyle: 'short' })}</dd></div>}
     </dl>
     {item.legacy && <p className="incident-muted">Historical incident · read-only. Original status: {item.legacyStatus || item.status}.
@@ -162,16 +178,8 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
       {' '}Customer reports were not created for historical records.</p>}
     <FormMessage message={error} />
     {notice && <FormMessage message={notice} type="success" />}
-    <button className="export-button" disabled={disabled} onClick={() => setRefresh(refresh + 1)}>Refresh details</button>
     {loading && <p role="status">Loading incident details…</p>}
-    {operator && !item.legacy && item.status !== 'CLOSED' && <div className="incident-workflow-actions">
-      {item.status === 'OPEN' && <button className="dashboard-button" disabled={disabled} onClick={() => progress('start')}>Start incident</button>}
-      {item.status === 'IN_PROGRESS' && <>
-        <button className="dashboard-button" disabled={disabled || !canClose} onClick={() => progress('close')}>Close incident</button>
-        {!canClose && <p className="incident-muted">Close every associated report before closing the incident.</p>}
-      </>}
-    </div>}
-    {operator && !item.legacy && <section className="detail-section"><h3>Incident cause</h3>
+    {operator && !item.legacy && <section className="dialog-section"><h3>Incident cause</h3>
       <form className="incident-form" onSubmit={saveCategory} aria-busy={saving}>
         <div className="incident-form-field">
           <label htmlFor="incident-category">Category</label>
@@ -181,18 +189,22 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
           </select>
         </div>
         <p className="incident-muted">Choose the cause after diagnosis. Customer report categories describe symptoms.</p>
-        <div className="incident-workflow-actions">
+        <div className="dialog-actions">
           <button className="dashboard-button button-neutral" type="submit" disabled={disabled || category === item.category}>Save category</button>
         </div>
       </form>
     </section>}
-    <section className="detail-section"><h3>Associated reports</h3>
+    <section className="dialog-section"><h3>Associated reports</h3>
       {session.role === 'TECHNICIAN' && <p className="incident-muted">Only your assigned reports are shown.</p>}
       {!loading && <ReportsTable reports={reports} onUpdated={updateReport} />}
     </section>
-    <section className="detail-section comments-section"><h3>Internal comments</h3>
+    <section className="dialog-section comments-section"><h3>Internal comments <span className="count-badge">{comments.length}</span></h3>
+      {!loading && comments.length === 0 && <p className="comments-empty">No comments yet</p>}
       <ul className="incident-comments">{comments.map(entry => <li key={entry.id}>
-        <div className="comment-heading"><strong>{entry.authorFirstName} {entry.authorLastName}</strong><time dateTime={entry.createdAt}>{formatDate(entry.createdAt)}</time></div>
+        <header className="comment-heading">
+          <strong>{entry.authorFirstName} {entry.authorLastName}</strong>
+          <time dateTime={entry.createdAt}>{formatDate(entry.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}</time>
+        </header>
         <p>{entry.content}</p>
       </li>)}</ul>
       <form className="incident-comment-form" onSubmit={postComment}>

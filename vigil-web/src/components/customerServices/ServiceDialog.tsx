@@ -12,6 +12,7 @@ import { locationRequest } from '../../services/locationData'
 import { LocationPicker } from '../locations/LocationPicker'
 import { FormMessage } from '../auth/FormMessage'
 import { FormDialog } from '../workspace/FormDialog'
+import { RefreshButton } from '../workspace/RefreshButton'
 
 interface ServiceDialogProps {
   customer: User
@@ -80,8 +81,13 @@ export function ServiceDialog({ customer, service, onSaved, onClose }: ServiceDi
   }
 
   return (
-    <FormDialog id="service-dialog" title={service ? 'Edit service' : 'Assign service'} busy={saving} onClose={onClose}>
-      <form className="incident-form" onSubmit={submit} aria-busy={saving}>
+    <FormDialog id="service-dialog" title={service ? 'Edit service' : 'Assign service'} busy={saving} onClose={onClose}
+      footer={<div className="dialog-actions">
+        <button className="dashboard-button button-neutral" type="button" disabled={saving} onClick={onClose}>Cancel</button>
+        <button className="dashboard-button" type="submit" form="service-form" disabled={saving || loading || Boolean(loadError) || !nodeId}>
+          {saving ? 'Saving…' : 'Save service'}</button>
+      </div>}>
+      <form id="service-form" className="incident-form" onSubmit={submit} aria-busy={saving}>
         <label htmlFor="service-customer">Customer
           <input id="service-customer" className="field-input" value={userName(customer) + ' · ' + customer.email} readOnly />
         </label>
@@ -109,16 +115,11 @@ export function ServiceDialog({ customer, service, onSaved, onClose }: ServiceDi
         </label>
         {loading && <p className="incident-muted" role="status">Loading network nodes…</p>}
         {!loading && !loadError && nodes.length === 0 && <p className="field-hint">Add a node on the Network page before assigning a service.</p>}
-        {loadError && <><FormMessage message={loadError} /><button className="export-button" type="button"
-          onClick={() => setRefresh(refresh + 1)}>Try again</button></>}
+        {loadError && <><FormMessage message={loadError} /><RefreshButton label="Try again" disabled={saving || loading}
+          onClick={() => setRefresh(refresh + 1)} /></>}
         <LocationPicker value={location} initialLocation={service?.serviceLocation} disabled={saving}
           onChange={(value) => { setLocation(value); setLocationChanged(true) }} />
         <FormMessage message={error} />
-        <div className="incident-form-actions">
-          <button className="dashboard-button button-neutral" type="button" disabled={saving} onClick={onClose}>Cancel</button>
-          <button className="dashboard-button" type="submit" disabled={saving || loading || Boolean(loadError) || !nodeId}>
-            {saving ? 'Saving…' : 'Save service'}</button>
-        </div>
       </form>
     </FormDialog>
   )

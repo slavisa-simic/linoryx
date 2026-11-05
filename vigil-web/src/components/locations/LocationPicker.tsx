@@ -3,6 +3,7 @@ import { searchLocations } from '../../api/locationsApi'
 import { useUser } from '../../context/UserContext'
 import type { LocationData, LocationSelection, LocationSuggestion } from '../../models/locations'
 import { FormMessage } from '../auth/FormMessage'
+import { RefreshButton } from '../workspace/RefreshButton'
 import { LocationMap } from './LocationMap'
 
 interface LocationPickerProps {
@@ -151,8 +152,8 @@ export function LocationPicker({ value, initialLocation, disabled, onChange }: L
       {error && error !== 'SESSION_EXPIRED' && (
         <div className="location-error">
           <FormMessage message={error} />
-          {searchRequested && <button className="export-button" type="button"
-            disabled={disabled || loading} onClick={() => setAttempt(attempt + 1)}>Try again</button>}
+          {searchRequested && <RefreshButton label="Try again"
+            disabled={disabled || loading} onClick={() => setAttempt(attempt + 1)} />}
         </div>
       )}
       <LocationMap location={location} editable={Boolean(value) && !disabled} onMove={move} />

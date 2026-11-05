@@ -8,6 +8,7 @@ import { formatDate } from '../services/dashboardData'
 import { hasCoordinates } from '../services/technicianData'
 import { FormMessage } from '../components/auth/FormMessage'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 import { OperationalMap } from '../components/network/OperationalMap'
 import '../Technicians.css'
 
@@ -60,7 +61,7 @@ export function TechniciansPage({ onNavigate }: { onNavigate(page: WorkspacePage
     <WorkspaceNavbar page="technicians" onNavigate={onNavigate} />
     <main className="dashboard-main" id="technicians-main">
       <div className="page-heading"><h1>Technician Overview<span className="heading-period">.</span></h1>
-        <button className="dashboard-button button-neutral" disabled={loading} onClick={() => setRefresh(refresh + 1)}>Refresh</button></div>
+        <RefreshButton disabled={loading} onClick={() => setRefresh(refresh + 1)} /></div>
       <FormMessage message={error} />
       {loading && <p role="status">Loading technicians…</p>}
       {!loading && <>
@@ -88,7 +89,6 @@ export function TechniciansPage({ onNavigate }: { onNavigate(page: WorkspacePage
             <td>{technician.activeReportCount}</td>
           </tr>)}</tbody>
         </table></div>{visible.length === 0 && <p className="table-empty">No matching technicians.</p>}</section>
-        <p className="incident-muted">Active workload includes Open, In progress and Resolved reports awaiting closure.</p>
       </>}
     </main>
   </div>

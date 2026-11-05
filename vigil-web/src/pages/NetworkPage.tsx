@@ -4,6 +4,7 @@ import { deleteNetworkNode, listNetworkNodes } from '../api/networkApi'
 import { useUser } from '../context/UserContext'
 import type { NetworkNode } from '../models/network'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 import { NetworkMap } from '../components/network/NetworkMap'
 import { NodesTable } from '../components/network/NodesTable'
 import { NodeDialog } from '../components/network/NodeDialog'
@@ -113,15 +114,14 @@ export function NetworkPage({ onNavigate }: NetworkPageProps) {
       <main className="dashboard-main" id="network-main">
         <div className="page-heading"><h1>{technician ? 'Network — My Assignments' : 'Network'}<span className="heading-period">.</span></h1>
           <div className="incidents-page-actions">
-            <button className="dashboard-button button-neutral" type="button" disabled={loading || busy}
-              onClick={() => setRefresh(refresh + 1)}><Icon name="refresh" size={16} />Refresh</button>
+            <RefreshButton disabled={loading || busy} onClick={() => setRefresh(refresh + 1)} />
             {!technician && <button className="dashboard-button" type="button" onClick={() => { setEditing(null); setDialogOpen(true) }}>
               <Icon name="plus" size={16} />Add node</button>}
           </div>
         </div>
         {notice && <div className="page-message"><FormMessage message={notice} type="success" /></div>}
         {error && error !== 'SESSION_EXPIRED' && <div className="page-message"><FormMessage message={error} />
-          <button className="export-button" type="button" onClick={() => setRefresh(refresh + 1)}>Try again</button></div>}
+          <RefreshButton label="Try again" disabled={loading || busy} onClick={() => setRefresh(refresh + 1)} /></div>}
         {loading && <p className="incident-muted" role="status">{technician ? 'Loading your assigned locations…' : 'Loading network nodes…'}</p>}
         {technician && !loading && !error && <>
           <p className="incident-muted">Service installation locations for your Open, In progress and Resolved assigned reports.</p>

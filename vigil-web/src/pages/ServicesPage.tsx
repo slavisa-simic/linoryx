@@ -9,7 +9,7 @@ import type { CustomerService } from '../models/customerServices'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { ServicesTable } from '../components/customerServices/ServicesTable'
 import { FormMessage } from '../components/auth/FormMessage'
-import { Icon } from '../components/Icon'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 
 interface ServicesPageProps {
   onNavigate(page: WorkspacePage): void
@@ -49,8 +49,7 @@ export function ServicesPage({ onNavigate }: ServicesPageProps) {
       <WorkspaceNavbar page="services" onNavigate={onNavigate} />
       <main id="services-main" className="dashboard-main">
         <div className="page-heading"><h1>My services<span className="heading-period">.</span></h1>
-          <button className="dashboard-button button-neutral" type="button" disabled={loading}
-            onClick={() => setRefresh(refresh + 1)}><Icon name="refresh" size={16} />Refresh</button></div>
+          <RefreshButton disabled={loading} onClick={() => setRefresh(refresh + 1)} /></div>
         {created && <div role="status" className="page-message"><FormMessage type="success" message={'Report REP-' + created.id + ' submitted: ' + created.description} /><button className="export-button" onClick={() => onNavigate('reports')}>View my reports</button></div>}
         {created && <section className="dashboard-panel table-panel"><header className="panel-heading"><h2>Submitted report</h2></header>
           <ReportsTable reports={[created]} onUpdated={setCreated} /></section>}

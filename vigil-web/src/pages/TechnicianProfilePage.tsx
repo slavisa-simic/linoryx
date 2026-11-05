@@ -8,6 +8,7 @@ import { availabilityLabels, specializations } from '../models/technicians'
 import { coordinateError } from '../services/technicianData'
 import { formatDate } from '../services/dashboardData'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 import { FormMessage } from '../components/auth/FormMessage'
 import '../Technicians.css'
 
@@ -86,11 +87,10 @@ export function TechnicianProfilePage({ onNavigate }: { onNavigate(page: Workspa
     <WorkspaceNavbar page="profile" onNavigate={onNavigate} />
     <main className="dashboard-main" id="profile-main">
       <div className="page-heading"><h1>My Profile<span className="heading-period">.</span></h1></div>
-      <p className="incident-muted">Maintain your location, availability and self-declared skills manually.</p>
       <FormMessage message={error} />
       <FormMessage message={notice} type="success" />
       {loading && <p role="status">Loading your profile…</p>}
-      {!loading && !profile && <button className="dashboard-button" onClick={() => setRefresh(refresh + 1)}>Try again</button>}
+      {!loading && !profile && <RefreshButton label="Try again" onClick={() => setRefresh(refresh + 1)} />}
       {!loading && profile && <form className="dashboard-panel technician-profile-form" onSubmit={save}>
         <fieldset disabled={saving}>
           <legend>Operational information</legend>

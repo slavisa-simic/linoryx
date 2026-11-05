@@ -98,10 +98,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
       aria-labelledby="audit-title"
     >
       <header className="panel-heading">
-        <div className="heading-with-count">
-          <h2 id="audit-title">Activity history</h2>
-          <span className="count-badge">{entries.length}</span>
-        </div>
+        <h2 id="audit-title">Activity history</h2>
       </header>
       <div className="table-toolbar">
         <label className="incident-search">

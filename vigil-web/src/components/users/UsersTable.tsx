@@ -84,10 +84,7 @@ export function UsersTable({
       aria-labelledby="users-title"
     >
       <header className="panel-heading">
-        <div className="heading-with-count">
-          <h2 id="users-title">All users</h2>
-          <span className="count-badge">{users.length}</span>
-        </div>
+        <h2 id="users-title">All users</h2>
       </header>
       <div className="table-toolbar">
         <label className="incident-search">
@@ -211,9 +208,6 @@ export function UsersTable({
           </button>
         </div>
       </footer>
-      <p className="users-table-note">
-        Role changes require a new sign-in.
-      </p>
     </section>
   )
 }

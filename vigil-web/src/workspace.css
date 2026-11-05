@@ -149,7 +149,6 @@
 }
 .page-heading { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 48px; margin-bottom: 32px; }
 .page-heading h1 { margin: 0; font-size: 32px; font-weight: 500; line-height: 1.25; letter-spacing: -0.8px; }
-.page-description { margin: 8px 0 0; color: var(--color-text-muted); font-size: 14px; line-height: 20px; }
 .page-message { margin-bottom: 20px; }
 .heading-period { color: var(--color-placeholder); }
 .dashboard-button {
@@ -184,7 +183,6 @@
 .panel-heading h2 { margin: 0; font-size: 16px; font-weight: 500; line-height: 24px; }
 .table-panel > .panel-heading { padding: 24px 24px 16px; }
 .incidents-panel { scroll-margin-top: 24px; overflow: hidden; }
-.heading-with-count { display: flex; align-items: center; gap: 8px; }
 .count-badge { color: var(--color-text-muted); font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
 .sort-control, .status-filter { position: relative; display: inline-flex; align-items: center; }
 .sort-control > svg, .status-filter > svg { position: absolute; right: 12px; width: 16px; height: 16px; color: var(--color-text-muted); pointer-events: none; }
@@ -238,13 +236,8 @@
 .table-empty p { margin: 0 0 8px; font-size: 14px; }
 .export-button { display: flex; align-items: center; gap: 8px; min-height: var(--control-small-height); padding: 0 4px; border: 0; background: transparent; color: var(--color-text-muted); font-size: 12px; }
 .export-button:hover { color: var(--color-primary); }
-.incident-dialog { width: min(560px, calc(100% - 32px)); max-height: calc(100dvh - 48px); padding: 0; overflow: auto; border: 1px solid var(--dashboard-border); border-radius: 16px; background: var(--color-white); color: var(--color-text); box-shadow: 0 24px 64px rgb(32 38 49 / 16%); }
-.incident-dialog::backdrop { background: rgb(32 38 49 / 40%); }
-.incident-dialog-content { padding: 32px; }
-.incident-dialog h2 { margin: 8px 0 24px; font-size: 26px; font-weight: 500; line-height: 1.3; overflow-wrap: anywhere; }
-.incident-facts { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 0; padding: 24px 0; border-top: 1px solid var(--dashboard-border); }
-.incident-facts dt { margin-bottom: 8px; color: var(--color-text-muted); font-size: 12px; }
-.incident-facts dd { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.export-button:disabled { opacity: 0.5; cursor: default; }
+.incident-muted { margin: 12px 0; color: var(--color-text-muted); font-size: 12px; }
 
 @media (max-width: 1200px) {
   .workspace { --workspace-gutter: 24px; }
@@ -289,7 +282,6 @@
   .workspace-nav-item > svg { width: 16px; height: 16px; }
   .dashboard-main { padding-top: 24px; }
   .page-heading h1 { font-size: 28px; }
-  .page-description { font-size: 13px; }
   .metric-grid { gap: 12px; }
   .metric-card { padding: 16px; }
   .metric-top { font-size: 12px; }
@@ -300,9 +292,6 @@
   .incident-search input, .status-filter select { font-size: 16px; }
   .incident-search input::placeholder { font-size: 13px; }
   .table-pagination { flex-wrap: wrap; padding: 12px 16px; }
-  .incident-dialog-content { padding: 20px; }
-  .incident-dialog h2 { font-size: 24px; }
-  .incident-facts { gap: 16px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .workspace *, .workspace *::before, .workspace *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

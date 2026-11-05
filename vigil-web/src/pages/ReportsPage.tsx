@@ -11,6 +11,7 @@ import { ReportsTable } from '../components/reports/ReportsTable'
 import { CreateIncidentDialog } from '../components/incidents/CreateIncidentDialog'
 import { FormMessage } from '../components/auth/FormMessage'
 import { FormDialog } from '../components/workspace/FormDialog'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 import '../Reports.css'
 
 interface Props {
@@ -116,7 +117,7 @@ export function ReportsPage({ onNavigate }: Props) {
     <WorkspaceNavbar page="reports" onNavigate={onNavigate} />
     <main className="dashboard-main" id="reports-main">
       <div className="page-heading"><h1>{title}<span className="heading-period">.</span></h1>
-        <div className="report-toolbar"><button className="dashboard-button button-neutral" disabled={loading || saving} onClick={() => setRefresh(refresh + 1)}>Refresh</button>
+        <div className="report-toolbar"><RefreshButton disabled={loading || saving} onClick={() => setRefresh(refresh + 1)} />
           {session.role === 'USER' && <button className="dashboard-button" onClick={() => onNavigate('services')}>Report a problem</button>}</div></div>
       {notice && <FormMessage message={notice} type="success" />}
       <FormMessage message={error} />

@@ -6,6 +6,7 @@ import type { Technician } from '../models/users'
 import { getIncident, listIncidents } from '../api/incidentsApi'
 import { getTechnicians } from '../api/techniciansApi'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 import { MetricCard } from '../components/workspace/MetricCard'
 import { IncidentsTable } from '../components/incidents/IncidentsTable'
 import { ExportIncidentsButton } from '../components/incidents/ExportIncidentsButton'
@@ -124,19 +125,9 @@ export function IncidentsPage({
             <h1>
               Incidents<span className="heading-period">.</span>
             </h1>
-            <p className="page-description">Track incidents from reported problems to closure</p>
           </div>
           <div className="incidents-page-actions">
-            <button
-              className="dashboard-button button-neutral"
-              type="button"
-              disabled={loading}
-              onClick={() => setRefresh(refresh + 1)}
-              aria-label="Refresh incidents"
-            >
-              <Icon name="refresh" size={16} />
-              <span>Refresh</span>
-            </button>
+            <RefreshButton disabled={loading} onClick={() => setRefresh(refresh + 1)} ariaLabel="Refresh incidents" />
             {session.role !== 'TECHNICIAN' && (
               <button
                 className="dashboard-button"
@@ -152,13 +143,7 @@ export function IncidentsPage({
         {error && error !== 'SESSION_EXPIRED' && (
           <div className="page-message">
             <FormMessage message={error} />
-            <button
-              className="export-button"
-              type="button"
-              onClick={() => setRefresh(refresh + 1)}
-            >
-              Try again
-            </button>
+            <RefreshButton label="Try again" disabled={loading} onClick={() => setRefresh(refresh + 1)} />
           </div>
         )}
         {!loading && !error && (

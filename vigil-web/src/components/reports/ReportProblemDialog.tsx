@@ -37,10 +37,14 @@ export function ReportProblemDialog({ service, onCreated, onClose }: Props) {
     }
   }
 
-  return <FormDialog id="report-problem" title="Report a problem" busy={saving} onClose={onClose}>
+  return <FormDialog id="report-problem" title="Report a problem" busy={saving} onClose={onClose}
+    footer={<div className="dialog-actions">
+      <button className="dashboard-button button-neutral" type="button" disabled={saving} onClick={onClose}>Cancel</button>
+      <button className="dashboard-button" type="submit" form="report-problem-form" disabled={saving || !description.trim()}>Submit report</button>
+    </div>}>
     <p>{serviceTypeLabels[service.serviceType]} · Service #{service.id}</p>
     <p>{service.serviceLocation.formattedAddress}</p>
-    <form className="incident-form" onSubmit={submit} aria-busy={saving}>
+    <form id="report-problem-form" className="incident-form" onSubmit={submit} aria-busy={saving}>
       <div className="incident-form-field"><label htmlFor="report-category">Problem category</label>
         <select id="report-category" className="field-input" value={category} disabled={saving}
           onChange={event => setCategory(event.target.value as ReportCategory)}>
@@ -51,8 +55,6 @@ export function ReportProblemDialog({ service, onCreated, onClose }: Props) {
           value={description} onChange={event => setDescription(event.target.value)} disabled={saving} />
         <span className="incident-muted">{description.length}/500</span></div>
       <FormMessage message={error} />
-      <div className="incident-form-actions"><button className="dashboard-button button-neutral" type="button" disabled={saving} onClick={onClose}>Cancel</button>
-        <button className="dashboard-button" type="submit" disabled={saving || !description.trim()}>Submit report</button></div>
     </form>
   </FormDialog>
 }

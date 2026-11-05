@@ -1,4 +1,5 @@
 import { Icon } from '../Icon'
+import { RefreshButton } from '../workspace/RefreshButton'
 
 interface DashboardStateProps {
   restricted: boolean
@@ -24,13 +25,7 @@ export function DashboardState({ restricted, error, onRetry }: DashboardStatePro
         <div className="dashboard-error" role="alert">
           <Icon name="alert" size={19} />
           <p>{error}</p>
-          <button
-            className="dashboard-button button-neutral"
-            type="button"
-            onClick={onRetry}
-          >
-            Try again
-          </button>
+          <RefreshButton onClick={onRetry} label="Try again" />
         </div>
       )}
     </>

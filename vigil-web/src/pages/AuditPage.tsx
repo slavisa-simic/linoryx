@@ -6,7 +6,7 @@ import { listAuditLogs } from '../api/auditApi'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { AuditTable } from '../components/audit/AuditTable'
 import { FormMessage } from '../components/auth/FormMessage'
-import { Icon } from '../components/Icon'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 
 interface AuditPageProps {
   onNavigate(
@@ -79,25 +79,12 @@ export function AuditPage({
               Audit logs<span className="heading-period">.</span>
             </h1>
           </div>
-          <button
-            className="dashboard-button button-neutral"
-            type="button"
-            disabled={loading}
-            onClick={() => setRefresh(refresh + 1)}
-          >
-            <Icon name="refresh" size={15} /> Refresh
-          </button>
+          <RefreshButton disabled={loading} onClick={() => setRefresh(refresh + 1)} />
         </div>
         {error && error !== 'SESSION_EXPIRED' && (
           <div className="page-message">
             <FormMessage message={error} />
-            <button
-              className="export-button"
-              type="button"
-              onClick={() => setRefresh(refresh + 1)}
-            >
-              Try again
-            </button>
+            <RefreshButton label="Try again" disabled={loading} onClick={() => setRefresh(refresh + 1)} />
           </div>
         )}
         {!loading && !error && (

@@ -14,10 +14,8 @@
 .user-status { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; }
 .user-active { color: var(--color-success); }
 .user-disabled { color: var(--color-text-muted); }
-.users-table-note { margin: 0; padding: 16px 24px; border-top: 1px solid var(--dashboard-border); color: var(--color-text-muted); font-size: 12px; line-height: 1.6; }
 
 @media (max-width: 480px) {
   .users-page-heading { align-items: flex-start; }
-  .users-table-note { padding: 16px; }
   .user-role-form select { font-size: 16px; }
 }

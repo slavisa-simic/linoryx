@@ -51,3 +51,15 @@ Changes stay in the existing CSS files and simple presentation markup. No new co
 - Eleven role/page combinations fit within 1440, 1024, 768, 390 and 320px viewports; wide tables retain their own horizontal scrolling
 - Original and updated auth card styles were compared for colors, dimensions, typography, transforms and animation
 - Visual checks use temporary API fixtures outside the repository because a local backend was not running; no fixture data is included in the application
+
+## Modal refinement — 5 November 2026
+
+The shared `FormDialog` now owns every modal's header, scrollable body and optional action footer. Its layout and shared form styles live in `vigil-web/src/dialogs.css`; obsolete modal rules were removed from the page styles. Creating an incident uses the same component. The requested hidden scrollbars are defined globally in `index.css`, with scrolling retained.
+
+Incident details separate the reference, title, status and metadata. PDF export is an outlined footer action beside the incident workflow. Technician choices align skills, availability, workload and distance; other profiles expand on demand, and the selected technician and confirmation stay visible in the footer.
+
+References: [Carbon modal layout and actions](https://v10.carbondesignsystem.com/components/modal/usage/) and [Linear issue assignment](https://linear.app/docs/assigning-issues). The existing Outfit font, blue accent and Lucide icons are retained. No dependencies were added.
+
+All refresh and retry actions use the simple shared `RefreshButton`, which reuses the existing neutral button styles and Lucide icon. Table headings omit entity counts; existing table footers retain their totals. Network table types reuse the same `nodeTypeIcons` mapping as map markers.
+
+Browser checks use the running local API and existing demo records, including INC-183 and REP-1116. They cover 1440px and 375px layouts, keyboard scrolling, selection, nested modal dismissal, restored page scrolling and a successful PDF download. Frontend validation includes the existing workflow tests and a regression check that cancelling an assignment keeps its parent incident open.

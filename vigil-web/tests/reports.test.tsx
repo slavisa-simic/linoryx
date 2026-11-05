@@ -36,6 +36,7 @@ beforeEach(() => {
   request.mockImplementation(async path => {
     if (path === '/technicians') return [{ id: 7, firstName: 'Ana', lastName: 'Technician' }]
     if (path.startsWith('/incidents?')) return { content: [incident], totalPages: 1 }
+    if (path.endsWith('/technician-recommendations')) return []
     if (path.startsWith('/reports')) return { content: [report], totalPages: 1 }
     if (path === '/incidents/10') return incident
     if (path.includes('/comments')) return { content: [], totalPages: 1 }
@@ -206,6 +207,18 @@ it.each([
   await waitFor(() => expect(screen.queryByText('Loading incident details…')).toBeNull())
   expect(screen.queryByRole('combobox', { name: 'Category' })).toBeNull()
   expect(screen.queryByRole('button', { name: 'Save category' })).toBeNull()
+})
+
+it('cancelling technician assignment keeps its parent incident open', async () => {
+  const closeIncident = vi.fn()
+  render(<Provider role="DISPATCHER"><IncidentDetails incident={incident} technicians={[]} onUpdate={vi.fn()} onClose={closeIncident} /></Provider>)
+  fireEvent.click(await screen.findByRole('button', { name: 'Reassign technician' }))
+  const assignment = screen.getByRole('dialog', { name: 'REP-101 Assign technician' })
+  await waitFor(() => expect(screen.queryByText('Loading recommendations…')).toBeNull())
+  fireEvent(assignment, new Event('cancel', { bubbles: true, cancelable: true }))
+  expect(screen.queryByRole('dialog', { name: 'REP-101 Assign technician' })).toBeNull()
+  expect(screen.getByRole('dialog', { name: 'INC-10 Outage' })).toBeTruthy()
+  expect(closeIncident).not.toHaveBeenCalled()
 })
 
 it('customers use their private queue and cannot see internal report metadata', async () => {

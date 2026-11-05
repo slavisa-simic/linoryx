@@ -137,10 +137,7 @@ export function IncidentsTable({
       aria-labelledby="incidents-title"
     >
       <header className="panel-heading">
-        <div className="heading-with-count">
-          <h2 id="incidents-title">Incident overview</h2>
-          <span className="count-badge">{incidents.length}</span>
-        </div>
+        <h2 id="incidents-title">Incident overview</h2>
         <label className="sort-control">
           <span className="sr-only">Sort incidents</span>
           <select

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { NetworkNode } from '../../models/network'
-import { nodeStatusLabels, nodeTypeLabels } from '../../services/networkData'
+import { nodeStatusLabels, nodeTypeIcons, nodeTypeLabels } from '../../services/networkData'
 import { Icon } from '../Icon'
 
 interface NodesTableProps {
@@ -19,9 +19,7 @@ export function NodesTable({ nodes, busy, onEdit, onDelete }: NodesTableProps) {
   const visible = nodes.slice(currentPage * pageSize, (currentPage + 1) * pageSize)
   return (
     <section className="dashboard-panel table-panel" aria-labelledby="nodes-title">
-      <header className="panel-heading"><div className="heading-with-count">
-        <h2 id="nodes-title">Network nodes</h2><span className="count-badge">{nodes.length}</span>
-      </div></header>
+      <header className="panel-heading"><h2 id="nodes-title">Network nodes</h2></header>
       <div className="incident-table-scroll">
         <table className="incident-table network-table">
           <caption className="sr-only">Registered network nodes and assigned service counts</caption>
@@ -29,7 +27,8 @@ export function NodesTable({ nodes, busy, onEdit, onDelete }: NodesTableProps) {
             <th scope="col">Location</th><th scope="col">Status</th><th scope="col">Services</th><th scope="col">Actions</th></tr></thead>
           <tbody>{visible.map((node) => (
             <tr key={node.id}>
-              <td>{node.code}</td><td><strong>{node.name}</strong></td><td>{nodeTypeLabels[node.nodeType]}</td>
+              <td>{node.code}</td><td><strong>{node.name}</strong></td>
+              <td><span className="node-type"><Icon name={nodeTypeIcons[node.nodeType]} /><span>{nodeTypeLabels[node.nodeType]}</span></span></td>
               <td className="location-cell">{node.location}</td>
               <td><span className={'service-status service-status-' + node.status.toLowerCase()}>{nodeStatusLabels[node.status]}</span></td>
               <td>{node.customerServiceCount}</td>

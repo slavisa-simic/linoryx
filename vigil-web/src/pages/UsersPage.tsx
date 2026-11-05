@@ -8,7 +8,7 @@ import { userName } from '../services/dashboardData'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { UsersTable } from '../components/users/UsersTable'
 import { FormMessage } from '../components/auth/FormMessage'
-import { Icon } from '../components/Icon'
+import { RefreshButton } from '../components/workspace/RefreshButton'
 import type { CustomerService } from '../models/customerServices'
 import { listCustomerServices, terminateCustomerService } from '../api/customerServicesApi'
 import { serviceSummary } from '../services/customerServiceData'
@@ -221,16 +221,8 @@ export function UsersPage({
             <h1>
               Users<span className="heading-period">.</span>
             </h1>
-            <p className="page-description">Manage account access, roles and customer services</p>
           </div>
-          <button
-            className="dashboard-button button-neutral"
-            type="button"
-            disabled={loading || busy}
-            onClick={() => setRefresh(refresh + 1)}
-          >
-            <Icon name="refresh" size={16} /> Refresh
-          </button>
+          <RefreshButton disabled={loading || busy} onClick={() => setRefresh(refresh + 1)} />
         </div>
 
         {notice && (
@@ -242,19 +234,13 @@ export function UsersPage({
           <div className="page-message">
             <FormMessage message={error} />
             {users.length === 0 && (
-              <button
-                className="export-button"
-                type="button"
-                onClick={() => setRefresh(refresh + 1)}
-              >
-                Try again
-              </button>
+              <RefreshButton label="Try again" disabled={loading || busy} onClick={() => setRefresh(refresh + 1)} />
             )}
           </div>
         )}
         {servicesError && servicesError !== 'SESSION_EXPIRED' && <div className="page-message">
           <FormMessage message={servicesError} />
-          <button className="export-button" type="button" onClick={() => setRefresh(refresh + 1)}>Retry loading services</button>
+          <RefreshButton label="Retry loading services" disabled={servicesLoading || busy} onClick={() => setRefresh(refresh + 1)} />
         </div>}
         {loading && <p className="incident-muted" role="status">Loading users…</p>}
         {!loading && (!error || users.length > 0) && (

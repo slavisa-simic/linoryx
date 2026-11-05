@@ -1,5 +1,6 @@
 import { formatDate } from '../../services/dashboardData'
 import { Icon } from '../Icon'
+import { RefreshButton } from '../workspace/RefreshButton'
 
 interface DashboardHeaderProps {
   loadedAt: number
@@ -15,7 +16,6 @@ export function DashboardHeader({ loadedAt, restricted, loading, onRefresh }: Da
         <h1>
           Dashboard<span className="heading-period">.</span>
         </h1>
-        <p className="page-description">Incident activity, priorities and team workload</p>
       </div>
       <div className="dashboard-heading-actions">
         <div className="dashboard-date">
@@ -25,16 +25,7 @@ export function DashboardHeader({ loadedAt, restricted, loading, onRefresh }: Da
           </span>
         </div>
         {!restricted && (
-          <button
-            className="dashboard-button button-neutral refresh-button"
-            type="button"
-            onClick={onRefresh}
-            disabled={loading}
-            aria-label="Refresh dashboard"
-          >
-            <Icon name="refresh" size={16} />
-            <span>Refresh</span>
-          </button>
+          <RefreshButton onClick={onRefresh} disabled={loading} ariaLabel="Refresh dashboard" />
         )}
       </div>
     </div>

@@ -5,7 +5,8 @@
 .location-map .leaflet-container { height: 260px; }
 .leaflet-container { z-index: 0; font-family: var(--font-sans); }
 .network-map-legend { display: flex; flex-wrap: wrap; gap: 12px 20px; padding: 16px 20px; color: var(--color-text-muted); font-size: 12px; }
-.network-map-legend > span { display: inline-flex; align-items: center; gap: 8px; }
+.network-map-legend > span, .node-type { display: inline-flex; align-items: center; gap: 8px; }
+.node-type > svg { flex-shrink: 0; color: var(--color-text-muted); }
 .network-marker, .location-marker { display: flex; align-items: center; justify-content: center; border: 2px solid var(--color-white); border-radius: 50%; background: var(--color-primary); color: var(--color-white); box-shadow: var(--dashboard-shadow); }
 .location-marker { border-radius: 50% 50% 50% 0; }
 .network-marker-router { background: var(--color-primary-hover); }
@@ -21,7 +22,6 @@
 .service-row-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .service-row-actions .icon-button { min-width: 36px; min-height: 36px; }
 .danger-action { color: var(--color-danger); }
-.service-form-dialog { width: min(880px, calc(100% - 32px)); }
 .location-picker { min-width: 0; }
 .location-suggestions { max-height: 220px; margin: 8px 0; padding: 0; overflow-y: auto; border: 1px solid var(--dashboard-border); border-radius: 8px; list-style: none; }
 .location-suggestions li + li { border-top: 1px solid var(--dashboard-border); }
@@ -40,7 +40,6 @@
 .service-status-active { background: var(--color-success-light); color: var(--color-success); }
 .service-status-pending_activation, .service-status-suspended, .service-status-maintenance { background: var(--color-warning-light); color: var(--color-warning); }
 .user-service-actions { display: flex; gap: 8px; }
-.service-form-dialog .field-input[readonly] { background: var(--color-surface); color: var(--color-text-muted); }
 @media (max-width: 760px) {
   .network-map-panel .leaflet-container { height: 300px; }
   .network-filters .incident-search { flex-basis: 100%; }

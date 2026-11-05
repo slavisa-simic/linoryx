@@ -37,8 +37,7 @@ export function ServicesTable({ services, busy = false, onEdit, onTerminate, onR
           ))}</tbody>
         </table>
       </div>
-      {services.length === 0 && <div className="table-empty"><strong>No services assigned</strong>
-        <p>Account access and internet service status are managed separately.</p></div>}
+      {services.length === 0 && <div className="table-empty"><strong>No services assigned</strong></div>}
       {services.length > 0 && <p className="location-attribution">Addresses by <a href="https://www.geoapify.com/">Geoapify</a>
         {' · '}<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a></p>}
     </div>

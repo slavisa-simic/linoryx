@@ -18,13 +18,13 @@ interface CustomerServicesDialogProps {
 
 export function CustomerServicesDialog(props: CustomerServicesDialogProps) {
   return (
-    <FormDialog id="customer-services-dialog" title="Customer services" busy={props.busy} onClose={props.onClose}>
+    <FormDialog wide id="customer-services-dialog" title="Customer services" busy={props.busy} onClose={props.onClose}
+      footer={<div className="dialog-actions">
+        <button className="dashboard-button" type="button" disabled={props.busy} onClick={props.onAssign}>Assign service</button>
+      </div>}>
       <p className="incident-muted">{userName(props.customer)} · {props.customer.email}</p>
       <FormMessage message={props.error} />
       <ServicesTable services={props.services} busy={props.busy} onEdit={props.onEdit} onTerminate={props.onTerminate} />
-      <div className="incident-form-actions">
-        <button className="dashboard-button" type="button" disabled={props.busy} onClick={props.onAssign}>Assign service</button>
-      </div>
     </FormDialog>
   )
 }

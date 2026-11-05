@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
 import { Icon } from '../Icon'
+import '../../dialogs.css'
 
 interface FormDialogProps {
   id: string
@@ -9,9 +10,12 @@ interface FormDialogProps {
   onClose(): void
   children: ReactNode
   wide?: boolean
+  reference?: string
+  description?: ReactNode
+  footer?: ReactNode
 }
 
-export function FormDialog({ id, title, busy, onClose, children, wide = false }: FormDialogProps) {
+export function FormDialog({ id, title, busy, onClose, children, wide = false, reference, description, footer }: FormDialogProps) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => {
     const dialog = ref.current
@@ -19,31 +23,36 @@ export function FormDialog({ id, title, busy, onClose, children, wide = false }:
       return
     }
     dialog.showModal()
-    const previousOverflow = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
+    dialog.querySelector<HTMLElement>('[data-autofocus]')?.focus()
     return () => {
       dialog.close()
-      document.body.style.overflow = previousOverflow
     }
   }, [])
 
   return (
-    <dialog ref={ref} id={id} className={wide ? 'incident-dialog incident-detail-modal' : 'incident-dialog service-form-dialog'}
-      aria-labelledby={id + '-title'}
+    <dialog ref={ref} id={id} className={'form-dialog' + (wide ? ' form-dialog-wide' : '')}
+      aria-labelledby={(reference ? id + '-reference ' : '') + id + '-title'}
+      aria-describedby={description ? id + '-description' : undefined}
       onCancel={(event) => {
         event.preventDefault()
+        event.stopPropagation()
         if (!busy) onClose()
       }}
       onClick={(event) => {
         if (event.target === event.currentTarget && !busy) onClose()
       }}>
-      <div className="incident-dialog-content">
-        <div className="incident-modal-heading">
-          <h2 id={id + '-title'}>{title}</h2>
+      <div className="dialog-layout">
+        <header className="dialog-header">
+          <div className="dialog-heading">
+            {reference && <span id={id + '-reference'} className="dialog-reference">{reference}</span>}
+            <h2 id={id + '-title'}>{title}</h2>
+            {description && <p id={id + '-description'} className="dialog-description">{description}</p>}
+          </div>
           <button className="icon-button" type="button" onClick={onClose} disabled={busy}
             aria-label={'Close ' + title.toLowerCase()}><Icon name="close" size={20} /></button>
-        </div>
-        {children}
+        </header>
+        <div className="dialog-body" tabIndex={0} role="region" aria-label={title + ' content'}>{children}</div>
+        {footer && <footer className="dialog-footer">{footer}</footer>}
       </div>
     </dialog>
   )

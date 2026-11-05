@@ -1,6 +1,6 @@
 import type { CustomerReport } from '../../models/reports'
 import { useUser } from '../../context/UserContext'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import type { SubmitEvent } from 'react'
 import type { Incident, IncidentCategory, Severity } from '../../models/incidents'
 import { incidentCategories } from '../../models/incidents'
@@ -8,6 +8,7 @@ import { categoryLabels } from '../../services/dashboardData'
 import { createIncident } from '../../api/incidentsApi'
 import { FormMessage } from '../auth/FormMessage'
 import { Icon } from '../Icon'
+import { FormDialog } from '../workspace/FormDialog'
 
 interface CreateIncidentDialogProps {
   reports: CustomerReport[]
@@ -27,22 +28,6 @@ export function CreateIncidentDialog({
   const [severity, setSeverity] = useState<Severity>('MEDIUM')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-
-  useEffect(() => {
-    const dialog = document.getElementById(
-      'create-incident-dialog'
-    ) as HTMLDialogElement
-    dialog.showModal()
-    const titleInput = document.getElementById(
-      'new-incident-title'
-    ) as HTMLInputElement
-    titleInput.focus()
-    document.body.style.overflow = 'hidden'
-    return () => {
-      dialog.close()
-      document.body.style.overflow = ''
-    }
-  }, [])
 
   async function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -80,39 +65,20 @@ export function CreateIncidentDialog({
   }
 
   return (
-    <dialog
+    <FormDialog
       id="create-incident-dialog"
-      className="incident-dialog incident-create-modal"
-      aria-labelledby="create-incident-title"
-      onCancel={(event) => {
-        event.preventDefault()
-        if (!saving) {
-          onClose()
-        }
-      }}
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !saving) {
-          onClose()
-        }
-      }}
+      title="New incident"
+      busy={saving}
+      onClose={onClose}
+      description={'Selected reports: ' + reports.map(report => 'REP-' + report.id).join(', ')}
+      footer={<div className="dialog-actions">
+        <button className="dashboard-button button-neutral" type="button" onClick={onClose} disabled={saving}>Cancel</button>
+        <button className="dashboard-button" type="submit" form="create-incident-form" disabled={saving}>
+          <Icon name="plus" size={16} />{saving ? 'Creating…' : 'Create incident'}
+        </button>
+      </div>}
     >
-      <div className="incident-dialog-content">
-        <div className="incident-modal-heading">
-          <div>
-            <h2 id="create-incident-title">New incident</h2>
-          </div>
-          <button
-            className="icon-button"
-            type="button"
-            disabled={saving}
-            onClick={onClose}
-            aria-label="Close new incident"
-          >
-            <Icon name="close" size={20} />
-          </button>
-        </div>
-        <p>Selected reports: {reports.map(report => 'REP-' + report.id).join(', ')}</p>
-        <form className="incident-form" onSubmit={submit} aria-busy={saving}>
+      <form id="create-incident-form" className="incident-form" onSubmit={submit} aria-busy={saving}>
           <div className="incident-form-field">
             <label htmlFor="new-incident-title">Title</label>
             <input
@@ -124,7 +90,7 @@ export function CreateIncidentDialog({
               required
               maxLength={150}
               disabled={saving}
-              autoFocus
+              data-autofocus
             />
           </div>
           <div className="incident-form-field">
@@ -182,26 +148,7 @@ export function CreateIncidentDialog({
             </p>
           )}
           <FormMessage message={error} />
-          <div className="incident-form-actions">
-            <button
-              className="dashboard-button button-neutral"
-              type="button"
-              onClick={onClose}
-              disabled={saving}
-            >
-              Cancel
-            </button>
-            <button
-              className="dashboard-button"
-              type="submit"
-              disabled={saving}
-            >
-              <Icon name="plus" size={16} />
-              Create incident
-            </button>
-          </div>
-        </form>
-      </div>
-    </dialog>
+      </form>
+    </FormDialog>
   )
 }
