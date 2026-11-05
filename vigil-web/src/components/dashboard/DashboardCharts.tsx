@@ -95,9 +95,9 @@ const tooltipStyle = {
   boxShadow: 'var(--dashboard-shadow)',
   background: 'var(--color-white)',
   color: 'var(--color-text)',
-  padding: '10px 14px'
+  padding: '12px 16px'
 }
-const axisStyle = { fill: 'var(--color-text-muted)', fontSize: 12, fontFamily: 'var(--font-sans)' }
+const axisStyle = { fill: 'var(--color-text-muted)', fontSize: 11, fontFamily: 'var(--font-mono)' }
 function percentage(value: number, total: number): number {
   if (total === 0) {
     return 0

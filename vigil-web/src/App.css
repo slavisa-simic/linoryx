@@ -13,7 +13,7 @@
   flex-direction: column;
   width: 50%;
   min-width: 0;
-  padding: 38px 56px 26px;
+  padding: 40px 56px 24px;
   background: var(--color-white);
 }
 
@@ -32,7 +32,7 @@
 
 .auth-content {
   width: 100%;
-  max-width: 368px;
+  max-width: 384px;
 }
 
 .page-title {
@@ -40,7 +40,7 @@
   font-size: 36px;
   font-weight: 500;
   line-height: 1.2;
-  letter-spacing: -1.4px;
+  letter-spacing: -0.8px;
 }
 
 .page-title:focus {
@@ -50,8 +50,8 @@
 .auth-form {
   display: flex;
   flex-direction: column;
-  gap: 21px;
-  margin-top: 34px;
+  gap: 24px;
+  margin-top: 32px;
 }
 
 .form-row {
@@ -66,15 +66,15 @@
   gap: 12px;
   width: 100%;
   min-height: var(--field-height);
-  padding: 9px 14px;
+  padding: 12px 16px;
   border: 1px solid var(--color-primary);
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--color-primary);
   color: var(--color-white);
   font-size: 14px;
   font-weight: 500;
-  transition: background 150ms, border-color 150ms;
-  margin-top: 3px;
+  transition: background-color 160ms var(--motion-ease), border-color 160ms var(--motion-ease);
+  margin-top: 4px;
 }
 
 .primary-button:hover {
@@ -91,7 +91,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 5px;
+  gap: 4px;
   min-height: var(--control-height);
   margin: 20px 0 0;
   color: var(--color-text-muted);
@@ -114,6 +114,12 @@
 }
 
 .card-panel {
+  /* Auth kartice zadrzavaju originalne boje, dimenzije i animaciju. */
+  --color-dark: #172033;
+  --color-text: #172033;
+  --color-primary: #2563eb;
+  --color-text-muted: #526176;
+  --color-surface: #edf2fa;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,6 +128,8 @@
   padding: 72px 40px;
   overflow: hidden;
   background: var(--color-dark);
+  color: var(--color-text);
+  font-size: 16px;
 }
 
 .card-float {
@@ -310,7 +318,7 @@
 }
 
 @media (max-width: 350px) {
-  .form-row { flex-direction: column; gap: 21px; }
+  .form-row { flex-direction: column; gap: 24px; }
   .card-float { width: 228px; height: 330px; }
   .access-card-main { padding: 20px 14px; }
   .card-initials { margin-top: 22px; font-size: 42px; }

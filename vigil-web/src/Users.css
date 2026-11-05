@@ -1,23 +1,23 @@
 .users-table { min-width: 900px; }
-.user-table-name { display: flex; align-items: center; gap: 10px; }
+.user-table-name { display: flex; align-items: center; gap: 12px; }
 .user-table-name > svg { flex-shrink: 0; color: var(--color-text-muted); }
-.user-table-name strong { display: block; font-size: 13px; font-weight: 500; }
-.user-table-name div > span { display: block; margin-top: 4px; color: var(--color-text-muted); font-size: 11px; }
+.user-table-name strong { display: block; font-size: 14px; font-weight: 500; }
+.user-table-name div > span { display: block; margin-top: 4px; color: var(--color-text-muted); font-size: 12px; }
 .user-table-email { color: var(--color-text-muted); }
 .user-role-form { display: flex; align-items: center; gap: 8px; }
-.user-role-form select { width: 140px; min-height: var(--control-small-height); padding: 4px 8px; border: 1px solid var(--dashboard-border); border-radius: 6px; background: var(--color-white); color: var(--color-text); font: inherit; cursor: pointer; }
-.user-save-button, .user-access-button { min-height: var(--control-small-height); padding: 4px 10px; border: 1px solid var(--color-primary-border); border-radius: 6px; background: var(--color-primary-light); color: var(--color-primary); font-size: 12px; }
+.user-role-form select { width: 140px; min-height: var(--control-small-height); padding: 4px 8px; border: 1px solid var(--dashboard-border); border-radius: 8px; background: var(--color-white); color: var(--color-text); font: inherit; cursor: pointer; }
+.user-save-button, .user-access-button { min-height: var(--control-small-height); padding: 4px 12px; border: 1px solid var(--color-primary-border); border-radius: 8px; background: var(--color-primary-light); color: var(--color-primary); font-size: 12px; }
 .user-save-button:hover { border-color: var(--color-primary); }
 .user-access-button { min-width: 68px; border-color: var(--dashboard-border); background: var(--color-white); color: var(--color-text-muted); }
 .user-access-button:hover { background: var(--color-surface); color: var(--color-text); }
 .user-role-form select:disabled, .user-save-button:disabled, .user-access-button:disabled { opacity: 0.5; cursor: default; }
-.user-status { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
+.user-status { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; }
 .user-active { color: var(--color-success); }
 .user-disabled { color: var(--color-text-muted); }
-.users-table-note { margin: 0; padding: 14px 22px; border-top: 1px solid var(--dashboard-border); color: var(--color-text-muted); font-size: 12px; line-height: 1.6; }
+.users-table-note { margin: 0; padding: 16px 24px; border-top: 1px solid var(--dashboard-border); color: var(--color-text-muted); font-size: 12px; line-height: 1.6; }
 
 @media (max-width: 480px) {
   .users-page-heading { align-items: flex-start; }
-  .users-table-note { padding: 14px 16px; }
+  .users-table-note { padding: 16px; }
   .user-role-form select { font-size: 16px; }
 }

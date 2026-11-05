@@ -122,12 +122,12 @@ export function ReportsPage({ onNavigate }: Props) {
       <FormMessage message={error} />
       <section className="dashboard-panel table-panel">
         <div className="report-toolbar">
-          <label>Search<input className="field-input" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search reports" /></label>
+          <label className="report-search">Search<input className="field-input" value={search} onChange={event => setSearch(event.target.value)} placeholder="Search reports" /></label>
           <label>Status<select className="field-input" value={status} onChange={event => setStatus(event.target.value)}><option value="ALL">All statuses</option>
             {Object.entries(reportStatusLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
           <label>Category<select className="field-input" value={category} onChange={event => setCategory(event.target.value)}><option value="ALL">All categories</option>
             {Object.entries(reportCategoryLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
-          {operator && <label><input type="checkbox" checked={unlinked} onChange={event => setUnlinked(event.target.checked)} /> Unlinked only</label>}
+          {operator && <label className="report-toggle"><input type="checkbox" checked={unlinked} onChange={event => setUnlinked(event.target.checked)} /> Unlinked only</label>}
         </div>
         {operator && <div className="report-toolbar report-selection" aria-label="Selected report actions">
           <span>{selected.length} selected</span>

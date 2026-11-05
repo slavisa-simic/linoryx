@@ -15,6 +15,7 @@ export function DashboardHeader({ loadedAt, restricted, loading, onRefresh }: Da
         <h1>
           Dashboard<span className="heading-period">.</span>
         </h1>
+        <p className="page-description">Incident activity, priorities and team workload</p>
       </div>
       <div className="dashboard-heading-actions">
         <div className="dashboard-date">

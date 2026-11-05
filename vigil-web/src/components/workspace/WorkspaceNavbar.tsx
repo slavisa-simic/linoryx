@@ -90,6 +90,7 @@ export function WorkspaceNavbar({
         </a>
 
         <nav className="workspace-navigation" aria-label="Main navigation">
+          <span className="workspace-nav-label">Workspace</span>
           {session.role !== 'USER' && (
             <a
               className={dashboardClass}

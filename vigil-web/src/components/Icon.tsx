@@ -98,7 +98,7 @@ export function Icon({ name, size = 18, className }: IconProps) {
     <SelectedIcon
       size={size}
       className={className}
-      strokeWidth={1.7}
+      strokeWidth={1.5}
       aria-hidden="true"
     />
   )

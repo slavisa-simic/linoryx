@@ -221,6 +221,7 @@ export function UsersPage({
             <h1>
               Users<span className="heading-period">.</span>
             </h1>
+            <p className="page-description">Manage account access, roles and customer services</p>
           </div>
           <button
             className="dashboard-button button-neutral"

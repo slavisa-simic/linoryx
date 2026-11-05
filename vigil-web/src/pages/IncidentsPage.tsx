@@ -124,6 +124,7 @@ export function IncidentsPage({
             <h1>
               Incidents<span className="heading-period">.</span>
             </h1>
+            <p className="page-description">Track incidents from reported problems to closure</p>
           </div>
           <div className="incidents-page-actions">
             <button

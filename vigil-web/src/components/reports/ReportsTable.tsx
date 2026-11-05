@@ -47,7 +47,7 @@ export function ReportsTable({ reports, selected = [], onSelect, onUpdated, onIn
         <th scope="col">Status</th>{session.role !== 'USER' && <th scope="col">Assignment / incident</th>}
         <th scope="col">Actions</th></tr></thead>
       <tbody>{reports.map(report => <tr key={report.id}>
-        {onSelect && <td><input type="checkbox" aria-label={'Select REP-' + report.id} checked={selected.includes(report.id)}
+        {onSelect && <td className="report-select-cell"><input type="checkbox" aria-label={'Select REP-' + report.id} checked={selected.includes(report.id)}
           disabled={busy || !!report.incidentId || report.status === 'CLOSED'} onChange={() => onSelect(report.id)} /></td>}
         <td><strong>REP-{report.id}</strong><div>{reportCategoryLabels[report.category]}</div>
           <p className="report-description">{report.description}</p><time dateTime={report.createdAt}>{formatDate(report.createdAt, { dateStyle: 'medium', timeStyle: 'short' })}</time></td>
