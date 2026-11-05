@@ -63,7 +63,7 @@ class CriticalIncidentNotificationTest {
         when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN)).thenReturn(List.of(admin, secondAdmin));
 
         var result = incidentService.createIncident(new CreateIncidentRequest(
-                "Critical network outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.NETWORK, List.of(1L)
+                "Critical network outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.FIBER_FAILURE, List.of(1L)
         ), creator.getEmail());
 
         ArgumentCaptor<SimpleMailMessage> mail = ArgumentCaptor.forClass(SimpleMailMessage.class);
@@ -87,7 +87,7 @@ class CriticalIncidentNotificationTest {
         doThrow(new MailSendException("SMTP unavailable")).doNothing().when(mailSender).send(any(SimpleMailMessage.class));
 
         var result = incidentService.createIncident(new CreateIncidentRequest(
-                "Critical outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.NETWORK, List.of(1L)
+                "Critical outage", "All workstations are offline", Severity.CRITICAL, IncidentCategory.FIBER_FAILURE, List.of(1L)
         ), creator.getEmail());
 
         assertEquals(91L, result.id());

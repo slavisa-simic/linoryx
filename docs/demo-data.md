@@ -17,7 +17,7 @@ The dataset contains:
 | Network nodes | 80 across Sarajevo, Banja Luka, Tuzla, Mostar, Zenica, Beograd, Novi Sad and Nis |
 | Customer services and service locations | 500 each |
 | Customer reports | 1,200, including 120 awaiting incident triage |
-| Incidents | 180, with all current statuses and severities |
+| Incidents | 180, with telecom causes, current statuses and severities |
 | Incident comments | 720 |
 | Audit entries | Several thousand, following the corresponding workflow events |
 
@@ -36,7 +36,7 @@ Open [localhost:8081](http://localhost:8081). These local demo accounts all use 
 
 Other accounts are named `admin02`, `dispatcher02`–`dispatcher04`, `technician02`–`technician24` and `customer002`–`customer200`, all followed by `@demo.vigil.test`.
 
-The first seed also runs one report through assignment, incident start, technician work, resolution, customer confirmation and closure via the application's HTTP API. Its incident is titled `[DEMO v1] Provera kompletnog toka prijave`. The bulk fixtures use one SQL transaction and do not send email alerts.
+The first seed also runs one report through assignment, incident start, diagnosis (`UNDETERMINED` → `FIBER_FAILURE`), technician work, resolution, customer confirmation and closure via the application's HTTP API. Its incident is titled `[DEMO v1] Provera kompletnog toka prijave`. The bulk fixtures use one SQL transaction and do not send email alerts.
 
 ## Repeat or verify
 

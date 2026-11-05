@@ -8,6 +8,7 @@ import type {
   WorkloadCount
 } from '../models/dashboard'
 import type { Incident, IncidentCategory, IncidentStatus, Severity } from '../models/incidents'
+import { incidentCategories } from '../models/incidents'
 import type { Technician, User } from '../models/users'
 
 export const statusLabels = {
@@ -23,12 +24,15 @@ export const severityLabels = {
   LOW: 'Low'
 }
 
-export const categoryLabels = {
-  SECURITY: 'Security',
-  NETWORK: 'Network',
-  APPLICATION: 'Application',
-  CLOUD: 'Cloud',
-  DATABASE: 'Database',
+export const categoryLabels: Record<IncidentCategory, string> = {
+  UNDETERMINED: 'Undetermined',
+  FIBER_FAILURE: 'Fiber failure',
+  GPON_FAILURE: 'GPON failure',
+  ROUTING_FAILURE: 'Routing failure',
+  EQUIPMENT_FAILURE: 'Equipment failure',
+  WIRELESS_FAILURE: 'Wireless failure',
+  POWER_OUTAGE: 'Power outage',
+  UPSTREAM_FAILURE: 'Upstream failure',
   OTHER: 'Other'
 }
 
@@ -94,14 +98,6 @@ export function buildDashboard(
 ): DashboardStatistics {
   const statusKeys: IncidentStatus[] = ['OPEN', 'IN_PROGRESS', 'CLOSED']
   const severityKeys: Severity[] = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW']
-  const categoryKeys: IncidentCategory[] = [
-    'SECURITY',
-    'NETWORK',
-    'APPLICATION',
-    'CLOUD',
-    'DATABASE',
-    'OTHER'
-  ]
 
   const status: StatusCount[] = []
   const severity: ChartCount[] = []
@@ -138,7 +134,7 @@ export function buildDashboard(
     severity.push({ name: severityLabels[key], value: count, fill: severityColors[key] })
   }
 
-  for (const key of categoryKeys) {
+  for (const key of incidentCategories) {
     let active = 0
     let completed = 0
     for (const incident of incidents) {

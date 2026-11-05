@@ -132,6 +132,7 @@ export function AuditTable({ entries, onNavigate }: AuditTableProps) {
             <option value="ALL">All actions</option>
 {Object.entries(auditActionLabels).filter(([value]) => value.startsWith('REPORT_') || value.startsWith('CUSTOMER_')).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
             <option value="CREATED">Incident created</option>
+            <option value="CATEGORY_CHANGED">Incident category changed</option>
             <option value="ASSIGNED">Technician assigned</option>
             <option value="STARTED">Work started</option>
             <option value="RESOLVED">Incident resolved</option>

@@ -95,7 +95,7 @@ class ReportConcurrencyIntegrationTest {
     }
 
     private CreateIncidentRequest request(List<Long> ids) {
-        return new CreateIncidentRequest("Concurrency test", "Details", Severity.LOW, IncidentCategory.NETWORK, ids);
+        return new CreateIncidentRequest("Concurrency test", "Details", Severity.LOW, IncidentCategory.FIBER_FAILURE, ids);
     }
 
     @AfterEach

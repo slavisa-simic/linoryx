@@ -5,10 +5,12 @@ import com.vigil.api.comment.service.CommentService;
 import com.vigil.api.config.JwtConfig;
 import com.vigil.api.config.SecurityConfig;
 import com.vigil.api.incident.services.IncidentService;
+import com.vigil.api.incident.domain.IncidentCategory;
 import com.vigil.api.user.domain.UserRole;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -20,6 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.verify;
 
 @WebMvcTest(controllers = {IncidentController.class, CommentController.class}, properties =
         "security.jwt.secret=test-secret-for-workflow-at-least-32-bytes")
@@ -44,9 +47,47 @@ class WorkflowAccessTests {
         mvc.perform(post("/api/incidents/from-reports").with(jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role.name())))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"title":"Network problem","description":"Connection lost","severity":"HIGH","category":"NETWORK","reportIds":[1]}
+                                {"title":"Network problem","description":"Connection lost","severity":"HIGH","category":"FIBER_FAILURE","reportIds":[1]}
                                 """))
                 .andExpect(status().is((role == UserRole.USER || role == UserRole.TECHNICIAN) ? 403 : 201));
+    }
+
+    @ParameterizedTest
+    @EnumSource(UserRole.class)
+    void onlyOperatorsCanChangeTheCause(UserRole role) throws Exception {
+        mvc.perform(patch("/api/incidents/10/category")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_" + role.name())))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"category\":\"FIBER_FAILURE\"}"))
+                .andExpect(status().is(role == UserRole.USER || role == UserRole.TECHNICIAN ? 403 : 200));
+    }
+
+    @ParameterizedTest
+    @EnumSource(IncidentCategory.class)
+    void categoryEndpointAcceptsEveryTelecomCause(IncidentCategory category) throws Exception {
+        mvc.perform(patch("/api/incidents/10/category")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_DISPATCHER")))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"category\":\"" + category.name() + "\"}"))
+                .andExpect(status().isOk());
+        verify(incidentService).changeCategory(10L, category, "user");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{}", "{\"category\":null}", "{\"category\":\"CLOUD\"}", "{\"category\":\"NO_INTERNET\"}"})
+    void categoryUpdateRequiresAValidIncidentCause(String body) throws Exception {
+        mvc.perform(patch("/api/incidents/10/category")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_DISPATCHER")))
+                        .contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void creatingAnIncidentCanOmitTheCause() throws Exception {
+        mvc.perform(post("/api/incidents/from-reports")
+                        .with(jwt().authorities(new SimpleGrantedAuthority("ROLE_DISPATCHER")))
+                        .contentType(MediaType.APPLICATION_JSON).content("""
+                                {"title":"Outage","description":"Investigating","severity":"HIGH","reportIds":[1]}
+                                """))
+                .andExpect(status().isCreated());
     }
 
     @ParameterizedTest
@@ -78,5 +119,7 @@ class WorkflowAccessTests {
         mvc.perform(get("/api/incidents")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/incidents/10")).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/incidents/10/comments")).andExpect(status().isUnauthorized());
+        mvc.perform(patch("/api/incidents/10/category").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"category\":\"FIBER_FAILURE\"}")).andExpect(status().isUnauthorized());
     }
 }

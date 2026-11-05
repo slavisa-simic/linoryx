@@ -4,6 +4,7 @@ import type {
   CreateIncidentRequest,
   Incident,
   IncidentAction,
+  IncidentCategory,
   IncidentComment,
   IncidentPage
 } from '../models/incidents'
@@ -37,6 +38,14 @@ export async function createIncident(
   data: CreateIncidentRequest
 ): Promise<Incident> {
   return apiRequest('/incidents/from-reports', session.token, 'POST', data)
+}
+
+export async function changeIncidentCategory(
+  session: AuthSession,
+  id: number,
+  category: IncidentCategory
+): Promise<Incident> {
+  return apiRequest('/incidents/' + id + '/category', session.token, 'PATCH', { category })
 }
 
 export async function progressIncident(

@@ -10,6 +10,7 @@ export const auditActionLabels = {
   CUSTOMER_STILL_NOT_WORKING: 'Customer: still not working',
   REPORT_CLOSED: 'Report closed',
   CREATED: 'Incident created',
+  CATEGORY_CHANGED: 'Incident category changed',
   ASSIGNED: 'Technician assigned',
   STARTED: 'Work started',
   RESOLVED: 'Incident resolved',

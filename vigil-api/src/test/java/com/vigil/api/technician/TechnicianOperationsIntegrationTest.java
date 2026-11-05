@@ -106,7 +106,7 @@ class TechnicianOperationsIntegrationTest {
 
     private Long link(Long... ids) {
         return incidents.createIncident(new CreateIncidentRequest("Fiber outage", "Investigate", Severity.LOW,
-                IncidentCategory.NETWORK, List.of(ids)), dispatcher.getEmail()).id();
+                IncidentCategory.FIBER_FAILURE, List.of(ids)), dispatcher.getEmail()).id();
     }
 
     @Test

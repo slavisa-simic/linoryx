@@ -1,10 +1,13 @@
 package com.vigil.api.incident.domain;
 
 public enum IncidentCategory {
-    SECURITY,
-    NETWORK,
-    APPLICATION,
-    CLOUD,
-    DATABASE,
+    UNDETERMINED,
+    FIBER_FAILURE,
+    GPON_FAILURE,
+    ROUTING_FAILURE,
+    EQUIPMENT_FAILURE,
+    WIRELESS_FAILURE,
+    POWER_OUTAGE,
+    UPSTREAM_FAILURE,
     OTHER
 }

@@ -56,6 +56,13 @@ public class IncidentController {
         return incidents.attachReports(id, request.reportIds(), jwt.getSubject());
     }
 
+    @PatchMapping("/{id}/category")
+    @PreAuthorize("hasAnyRole('DISPATCHER', 'ADMIN')")
+    public IncidentResponse changeCategory(@PathVariable Long id,
+            @Valid @RequestBody UpdateIncidentCategoryRequest request, @AuthenticationPrincipal Jwt jwt) {
+        return incidents.changeCategory(id, request.category(), jwt.getSubject());
+    }
+
     @PatchMapping("/{id}/start")
     @PreAuthorize("hasAnyRole('DISPATCHER', 'ADMIN')")
     public IncidentResponse start(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {

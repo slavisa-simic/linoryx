@@ -67,7 +67,7 @@ public class Incident {
         this.title = title;
         this.description = description;
         this.severity = severity;
-        this.category = category;
+        this.category = category == null ? IncidentCategory.UNDETERMINED : category;
         this.createdBy = createdBy;
 
         this.status = IncidentStatus.OPEN;
@@ -129,6 +129,15 @@ public class Incident {
             throw new IllegalStateException("Only open incidents can be started.");
         }
         this.status = IncidentStatus.IN_PROGRESS;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void changeCategory(IncidentCategory category) {
+        requireCurrentWorkflow();
+        if (category == null) {
+            throw new IllegalArgumentException("Incident category is required.");
+        }
+        this.category = category;
         this.updatedAt = LocalDateTime.now();
     }
 

@@ -100,7 +100,7 @@ class ReportWorkflowIntegrationTest {
 
     private IncidentResponse incident(Long... ids) {
         return incidents.createIncident(new CreateIncidentRequest("Fiber outage", "Investigate customer reports", Severity.HIGH,
-                IncidentCategory.NETWORK, List.of(ids)), dispatcher.getEmail());
+                IncidentCategory.FIBER_FAILURE, List.of(ids)), dispatcher.getEmail());
     }
 
     private Long resolvedReport() {
@@ -111,6 +111,33 @@ class ReportWorkflowIntegrationTest {
         reports.start(id, technician.getEmail());
         reports.resolve(id, technician.getEmail());
         return id;
+    }
+
+    @Test
+    void diagnosisChangesOnlyTheIncidentCauseAndIsPersistedAndAudited() {
+        Long reportId = report(service, customer).id();
+        IncidentResponse created = incidents.createIncident(new CreateIncidentRequest("Diagnosis test", "Unknown cause",
+                Severity.HIGH, null, List.of(reportId)), dispatcher.getEmail());
+        assertEquals(IncidentCategory.UNDETERMINED, created.category());
+        incidents.startProgress(created.id(), dispatcher.getEmail());
+        IncidentResponse updated = incidents.changeCategory(created.id(), IncidentCategory.FIBER_FAILURE, dispatcher.getEmail());
+        assertEquals(IncidentCategory.FIBER_FAILURE, updated.category());
+        assertEquals(IncidentStatus.IN_PROGRESS, updated.status());
+        assertEquals(1, updated.reportCount());
+        assertEquals(0, updated.closedReportCount());
+        incidents.changeCategory(created.id(), IncidentCategory.FIBER_FAILURE, admin.getEmail());
+        entityManager.flush();
+        entityManager.clear();
+        assertEquals(IncidentCategory.FIBER_FAILURE, incidents.getIncident(created.id(), dispatcher.getEmail()).category());
+        CustomerReport savedReport = reportRepository.findById(reportId).orElseThrow();
+        assertEquals(ReportCategory.NO_INTERNET, savedReport.getCategory());
+        assertEquals(created.id(), savedReport.getIncident().getId());
+        assertEquals(1, audit.findByIncidentIdOrderByCreatedAtAsc(created.id(), PageRequest.of(0, 50))
+                .stream().filter(entry -> entry.getAction() == AuditAction.CATEGORY_CHANGED).count());
+        assertTrue(incidents.getAllIncidents(null, null, IncidentCategory.FIBER_FAILURE, "Diagnosis test",
+                dispatcher.getEmail(), PageRequest.of(0, 20)).stream().anyMatch(item -> item.id().equals(created.id())));
+        assertEquals(0, incidents.getAllIncidents(null, null, IncidentCategory.UNDETERMINED, "Diagnosis test",
+                dispatcher.getEmail(), PageRequest.of(0, 20)).getTotalElements());
     }
 
     @Test
@@ -322,7 +349,7 @@ class ReportWorkflowIntegrationTest {
 
     @Test
     void readOnlyHistoricalAssignmentsDoNotPreventDisablingAnAccount() {
-        Incident historical = new Incident("Old outage", "Details", Severity.LOW, IncidentCategory.NETWORK, customer);
+        Incident historical = new Incident("Old outage", "Details", Severity.LOW, IncidentCategory.FIBER_FAILURE, customer);
         ReflectionTestUtils.setField(historical, "legacy", true);
         ReflectionTestUtils.setField(historical, "assignedTo", technician);
         incidentRepository.saveAndFlush(historical);
@@ -332,7 +359,7 @@ class ReportWorkflowIntegrationTest {
 
     @Test
     void migrationPreservesLegacyRecordsAssignmentsCommentsAndOriginalStatus() {
-        Incident historical = new Incident("Old outage", "Keep the details", Severity.HIGH, IncidentCategory.NETWORK, customer);
+        Incident historical = new Incident("Old outage", "Keep the details", Severity.HIGH, IncidentCategory.FIBER_FAILURE, customer);
         ReflectionTestUtils.setField(historical, "legacy", true);
         ReflectionTestUtils.setField(historical, "assignedTo", technician);
         LocalDateTime resolved = LocalDateTime.of(2026, 10, 2, 12, 0);
@@ -343,6 +370,8 @@ class ReportWorkflowIntegrationTest {
         entityManager.flush();
         entityManager.createNativeQuery("ALTER TABLE incidents DROP CONSTRAINT incidents_status_check").executeUpdate();
         entityManager.createNativeQuery("UPDATE incidents SET status = 'RESOLVED' WHERE id = :id").setParameter("id", id).executeUpdate();
+        entityManager.createNativeQuery("ALTER TABLE incidents DROP CONSTRAINT incidents_category_check").executeUpdate();
+        entityManager.createNativeQuery("UPDATE incidents SET category = 'CLOUD' WHERE id = :id").setParameter("id", id).executeUpdate();
         ResourceDatabasePopulator migration =
                 new ResourceDatabasePopulator(new ClassPathResource("schema.sql"));
         migration.execute(dataSource);
@@ -352,6 +381,7 @@ class ReportWorkflowIntegrationTest {
         assertTrue(saved.isLegacy());
         assertEquals("RESOLVED", saved.getLegacyStatus());
         assertEquals(IncidentStatus.IN_PROGRESS, saved.getStatus());
+        assertEquals(IncidentCategory.UNDETERMINED, saved.getCategory());
         assertEquals(customer.getId(), saved.getCreatedBy().getId());
         assertEquals(technician.getId(), saved.getAssignedTo().getId());
         assertEquals(resolved, saved.getResolvedAt());

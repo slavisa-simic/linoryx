@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { SubmitEvent } from 'react'
 import { useUser } from '../../context/UserContext'
-import type { Incident, IncidentAction, IncidentComment } from '../../models/incidents'
+import type { Incident, IncidentAction, IncidentCategory, IncidentComment } from '../../models/incidents'
+import { incidentCategories } from '../../models/incidents'
 import type { Technician } from '../../models/users'
 import type { CustomerReport } from '../../models/reports'
-import { addComment, getComments, getIncident, progressIncident } from '../../api/incidentsApi'
+import { addComment, changeIncidentCategory, getComments, getIncident, progressIncident } from '../../api/incidentsApi'
 import { listReports } from '../../api/reportsApi'
 import { categoryLabels, formatDate, severityLabels, statusLabels } from '../../services/dashboardData'
 import { FormDialog } from '../workspace/FormDialog'
@@ -22,6 +23,7 @@ interface Props {
 export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
   const { session, onSessionExpired } = useUser()
   const [item, setItem] = useState(incident)
+  const [category, setCategory] = useState(incident.category)
   const [reports, setReports] = useState<CustomerReport[]>([])
   const [comments, setComments] = useState<IncidentComment[]>([])
   const [comment, setComment] = useState('')
@@ -43,6 +45,7 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
         const linked = await listReports(session, incident.id)
         if (active) {
           setItem(current)
+          setCategory(current.category)
           setComments(discussion)
           setReports(linked)
         }
@@ -71,6 +74,25 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
       setNotice('Incident updated.')
     } catch (error) {
       setError(error instanceof Error ? error.message : 'The incident could not be updated.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function saveCategory(event: SubmitEvent<HTMLFormElement>) {
+    event.preventDefault()
+    if (loading || saving || category === item.category) return
+    setSaving(true)
+    setError('')
+    setNotice('')
+    try {
+      const updated = await changeIncidentCategory(session, item.id, category)
+      setItem(updated)
+      setCategory(updated.category)
+      onUpdate(updated)
+      setNotice('Incident category updated.')
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'The category could not be updated.')
     } finally {
       setSaving(false)
     }
@@ -149,6 +171,21 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
         {!canClose && <p className="incident-muted">Close every associated report before closing the incident.</p>}
       </>}
     </div>}
+    {operator && !item.legacy && <section className="detail-section"><h3>Incident cause</h3>
+      <form className="incident-form" onSubmit={saveCategory} aria-busy={saving}>
+        <div className="incident-form-field">
+          <label htmlFor="incident-category">Category</label>
+          <select id="incident-category" className="field-input" value={category} disabled={disabled}
+            onChange={event => setCategory(event.target.value as IncidentCategory)}>
+            {incidentCategories.map(value => <option key={value} value={value}>{categoryLabels[value]}</option>)}
+          </select>
+        </div>
+        <p className="incident-muted">Choose the cause after diagnosis. Customer report categories describe symptoms.</p>
+        <div className="incident-workflow-actions">
+          <button className="dashboard-button button-neutral" type="submit" disabled={disabled || category === item.category}>Save category</button>
+        </div>
+      </form>
+    </section>}
     <section className="detail-section"><h3>Associated reports</h3>
       {session.role === 'TECHNICIAN' && <p className="incident-muted">Only your assigned reports are shown.</p>}
       {!loading && <ReportsTable reports={reports} onUpdated={updateReport} />}

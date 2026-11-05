@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { Incident, IncidentStatus, IncidentCategory, Severity } from '../../models/incidents'
+import { incidentCategories } from '../../models/incidents'
 import {
   categoryLabels,
   formatDate,
@@ -206,12 +207,7 @@ export function IncidentsTable({
             }}
           >
             <option value="ALL">All categories</option>
-            <option value="SECURITY">Security</option>
-            <option value="NETWORK">Network</option>
-            <option value="APPLICATION">Application</option>
-            <option value="CLOUD">Cloud</option>
-            <option value="DATABASE">Database</option>
-            <option value="OTHER">Other</option>
+            {incidentCategories.map(value => <option key={value} value={value}>{categoryLabels[value]}</option>)}
           </select>
           <Icon name="chevron-down" size={15} />
         </label>

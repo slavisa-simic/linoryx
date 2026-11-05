@@ -20,6 +20,7 @@ export interface AuditEntry {
     | 'CUSTOMER_STILL_NOT_WORKING'
     | 'REPORT_CLOSED'
     | 'CREATED'
+    | 'CATEGORY_CHANGED'
     | 'ASSIGNED'
     | 'STARTED'
     | 'RESOLVED'

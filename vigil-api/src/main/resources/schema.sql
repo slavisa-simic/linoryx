@@ -6,7 +6,7 @@ ALTER TABLE audit_logs DROP CONSTRAINT IF EXISTS audit_logs_action_check;
 ALTER TABLE audit_logs ADD CONSTRAINT audit_logs_action_check CHECK (action IN (
     'REPORT_CREATED', 'REPORT_LINKED', 'REPORT_ASSIGNED', 'REPORT_STARTED', 'REPORT_RESOLVED',
     'CUSTOMER_CONFIRMED', 'CUSTOMER_STILL_NOT_WORKING', 'REPORT_CLOSED',
-    'CREATED', 'ASSIGNED', 'STARTED', 'RESOLVED', 'CLOSED', 'COMMENT_ADDED',
+    'CREATED', 'CATEGORY_CHANGED', 'ASSIGNED', 'STARTED', 'RESOLVED', 'CLOSED', 'COMMENT_ADDED',
     'USER_ROLE_CHANGED', 'USER_DISABLED', 'USER_ENABLED'
 ));
 
@@ -36,6 +36,15 @@ ALTER TABLE incidents DROP CONSTRAINT IF EXISTS incidents_status_check;
 UPDATE incidents SET legacy_status = status WHERE legacy = true AND legacy_status IS NULL;
 UPDATE incidents SET status = 'IN_PROGRESS' WHERE status = 'RESOLVED';
 ALTER TABLE incidents ADD CONSTRAINT incidents_status_check CHECK (status IN ('OPEN', 'IN_PROGRESS', 'CLOSED'));
+
+-- Old IT categories do not identify a telecom cause. They need a fresh diagnosis.
+ALTER TABLE incidents DROP CONSTRAINT IF EXISTS incidents_category_check;
+UPDATE incidents SET category = 'UNDETERMINED'
+WHERE category IN ('SECURITY', 'NETWORK', 'APPLICATION', 'CLOUD', 'DATABASE');
+ALTER TABLE incidents ADD CONSTRAINT incidents_category_check CHECK (category IN (
+    'UNDETERMINED', 'FIBER_FAILURE', 'GPON_FAILURE', 'ROUTING_FAILURE', 'EQUIPMENT_FAILURE',
+    'WIRELESS_FAILURE', 'POWER_OUTAGE', 'UPSTREAM_FAILURE', 'OTHER'
+));
 
 -- Additive, idempotent VIGIL 2.0 migration. Never replace existing profile information.
 CREATE TABLE IF NOT EXISTS technician_profiles (

@@ -22,7 +22,6 @@ public record CreateIncidentRequest(
         @NotNull
         Severity severity,
 
-        @NotNull
         IncidentCategory category,
 
         @NotEmpty

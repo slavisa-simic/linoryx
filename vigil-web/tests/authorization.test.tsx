@@ -19,7 +19,7 @@ const incident: Incident = {
   title: 'Connection lost',
   description: 'Network unavailable',
   severity: 'HIGH',
-  category: 'NETWORK',
+  category: 'FIBER_FAILURE',
   status: 'OPEN',
   createdById: 2,
   createdByEmail: 'reporter@test.com',

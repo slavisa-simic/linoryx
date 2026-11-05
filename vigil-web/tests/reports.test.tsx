@@ -21,7 +21,7 @@ const report: CustomerReport = {
   customerReportedUnfixed: false, createdAt: '2026-11-01T10:00:00', updatedAt: '2026-11-01T12:00:00',
   assignedTechnicianId: 7, assignedTechnicianName: 'Ana Technician', incidentId: 10, incidentTitle: 'Outage', incidentStatus: 'IN_PROGRESS'
 }
-const incident: Incident = { id: 10, title: 'Outage', description: 'Two services offline', category: 'NETWORK', severity: 'HIGH',
+const incident: Incident = { id: 10, title: 'Outage', description: 'Two services offline', category: 'FIBER_FAILURE', severity: 'HIGH',
   status: 'IN_PROGRESS', createdById: 1, createdByEmail: 'dispatcher@test.invalid', assignedToId: null, assignedToEmail: null,
   createdAt: report.createdAt, updatedAt: report.updatedAt, resolvedAt: null, closedAt: null,
   legacy: false, legacyStatus: null, reportCount: 1, closedReportCount: 0 }
@@ -105,11 +105,17 @@ it('dispatcher selects unlinked reports and creates an incident with their IDs',
   fireEvent.click(screen.getByRole('button', { name: 'Create incident' }))
   const dialog = screen.getByRole('dialog')
   expect(within(dialog).getByText('Selected reports: REP-101')).toBeTruthy()
+  const category = within(dialog).getByRole('combobox', { name: 'Category' }) as HTMLSelectElement
+  expect(category.value).toBe('UNDETERMINED')
+  expect(Array.from(category.options, option => option.value)).toEqual([
+    'UNDETERMINED', 'FIBER_FAILURE', 'GPON_FAILURE', 'ROUTING_FAILURE', 'EQUIPMENT_FAILURE',
+    'WIRELESS_FAILURE', 'POWER_OUTAGE', 'UPSTREAM_FAILURE', 'OTHER'
+  ])
   fireEvent.change(within(dialog).getByRole('textbox', { name: 'Title' }), { target: { value: 'Fiber outage' } })
   fireEvent.change(within(dialog).getByRole('textbox', { name: 'Description' }), { target: { value: 'Investigate the connection' } })
   fireEvent.click(within(dialog).getByRole('button', { name: 'Create incident' }))
   await waitFor(() => expect(request).toHaveBeenCalledWith('/incidents/from-reports', 'token', 'POST', {
-    reportIds: [101], title: 'Fiber outage', description: 'Investigate the connection', category: 'OTHER', severity: 'MEDIUM'
+    reportIds: [101], title: 'Fiber outage', description: 'Investigate the connection', category: 'UNDETERMINED', severity: 'MEDIUM'
   }))
   await waitFor(() => expect(navigate).toHaveBeenCalledWith('incidents', 10))
 })
@@ -146,6 +152,60 @@ it('incident closure requires every report to be closed', async () => {
   })
   render(<Provider role="DISPATCHER"><IncidentDetails incident={incident} technicians={[]} onUpdate={vi.fn()} onClose={vi.fn()} /></Provider>)
   await waitFor(() => expect((screen.getByRole('button', { name: 'Close incident' }) as HTMLButtonElement).disabled).toBe(false))
+})
+
+it.each(['DISPATCHER', 'ADMIN'] as const)('%s can save a diagnosed incident cause without changing report symptoms', async role => {
+  const undetermined = { ...incident, category: 'UNDETERMINED' as const }
+  const diagnosed = { ...incident, category: 'FIBER_FAILURE' as const }
+  request.mockImplementation(async (path, _token, method) => {
+    if (path === '/incidents/10/category' && method === 'PATCH') return diagnosed
+    if (path === '/incidents/10') return undetermined
+    if (path.startsWith('/reports')) return { content: [report], totalPages: 1 }
+    return { content: [], totalPages: 1 }
+  })
+  const onUpdate = vi.fn()
+  render(<Provider role={role}><IncidentDetails incident={undetermined} technicians={[]} onUpdate={onUpdate} onClose={vi.fn()} /></Provider>)
+  await waitFor(() => expect(screen.queryByText('Loading incident details…')).toBeNull())
+  const save = screen.getByRole('button', { name: 'Save category' }) as HTMLButtonElement
+  expect(save.disabled).toBe(true)
+  fireEvent.change(screen.getByRole('combobox', { name: 'Category' }), { target: { value: 'FIBER_FAILURE' } })
+  fireEvent.click(save)
+  await waitFor(() => expect(request).toHaveBeenCalledWith('/incidents/10/category', 'token', 'PATCH', { category: 'FIBER_FAILURE' }))
+  expect(await screen.findByText('Incident category updated.')).toBeTruthy()
+  expect(onUpdate).toHaveBeenCalledWith(diagnosed)
+  expect(screen.getByText('No internet')).toBeTruthy()
+  expect(request.mock.calls.filter(([, , method]) => method === 'PATCH')).toHaveLength(1)
+  expect(save.disabled).toBe(true)
+})
+
+it('keeps a category edit available after a failed save', async () => {
+  request.mockImplementation(async path => {
+    if (path === '/incidents/10/category') throw new Error('Category could not be saved.')
+    if (path === '/incidents/10') return incident
+    return { content: [], totalPages: 1 }
+  })
+  const onUpdate = vi.fn()
+  render(<Provider role="DISPATCHER"><IncidentDetails incident={incident} technicians={[]} onUpdate={onUpdate} onClose={vi.fn()} /></Provider>)
+  await waitFor(() => expect(screen.queryByText('Loading incident details…')).toBeNull())
+  const category = screen.getByRole('combobox', { name: 'Category' }) as HTMLSelectElement
+  fireEvent.change(category, { target: { value: 'POWER_OUTAGE' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Save category' }))
+  expect(await screen.findByText('Category could not be saved.')).toBeTruthy()
+  expect(category.value).toBe('POWER_OUTAGE')
+  expect(onUpdate).not.toHaveBeenCalled()
+  expect((screen.getByRole('button', { name: 'Save category' }) as HTMLButtonElement).disabled).toBe(false)
+})
+
+it.each([
+  { role: 'TECHNICIAN' as const, legacy: false },
+  { role: 'DISPATCHER' as const, legacy: true }
+])('hides cause editing for role $role and legacy=$legacy', async ({ role, legacy }) => {
+  const item = { ...incident, legacy }
+  request.mockImplementation(async path => path === '/incidents/10' ? item : { content: [], totalPages: 1 })
+  render(<Provider role={role}><IncidentDetails incident={item} technicians={[]} onUpdate={vi.fn()} onClose={vi.fn()} /></Provider>)
+  await waitFor(() => expect(screen.queryByText('Loading incident details…')).toBeNull())
+  expect(screen.queryByRole('combobox', { name: 'Category' })).toBeNull()
+  expect(screen.queryByRole('button', { name: 'Save category' })).toBeNull()
 })
 
 it('customers use their private queue and cannot see internal report metadata', async () => {

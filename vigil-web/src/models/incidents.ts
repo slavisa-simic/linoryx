@@ -3,7 +3,13 @@ export type IncidentStatus = 'OPEN' | 'IN_PROGRESS' | 'CLOSED'
 export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
 export type IncidentCategory =
-  'SECURITY' | 'NETWORK' | 'APPLICATION' | 'CLOUD' | 'DATABASE' | 'OTHER'
+  'UNDETERMINED' | 'FIBER_FAILURE' | 'GPON_FAILURE' | 'ROUTING_FAILURE' |
+  'EQUIPMENT_FAILURE' | 'WIRELESS_FAILURE' | 'POWER_OUTAGE' | 'UPSTREAM_FAILURE' | 'OTHER'
+
+export const incidentCategories: IncidentCategory[] = [
+  'UNDETERMINED', 'FIBER_FAILURE', 'GPON_FAILURE', 'ROUTING_FAILURE',
+  'EQUIPMENT_FAILURE', 'WIRELESS_FAILURE', 'POWER_OUTAGE', 'UPSTREAM_FAILURE', 'OTHER'
+]
 
 export interface Incident {
   id: number

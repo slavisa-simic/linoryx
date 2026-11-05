@@ -157,9 +157,17 @@ function fixtures() {
     'Korisnicki ruter se samostalno restartuje i gubi konfiguraciju.',
     'Potrebna je provera konfiguracije usluge i pristupne opreme.'
   ]
-  const titles = ['Prekid optickog linka', 'Nestabilan pristupni segment', 'Povecana latencija',
-    'Kvar agregacionog uredjaja', 'Problem sa autentifikacijom', 'Gubitak paketa na uplinku',
-    'Nedostupan korisnicki portal', 'Preopterecenje bazne stanice', 'Provera DNS servisa', 'Kvar napajanja']
+  const scenarios = [
+    { title: 'Dijagnostika prekida veze', category: 'UNDETERMINED' },
+    { title: 'Prekid optickog linka', category: 'FIBER_FAILURE' },
+    { title: 'Kvar GPON pristupnog segmenta', category: 'GPON_FAILURE' },
+    { title: 'Problem rutiranja', category: 'ROUTING_FAILURE' },
+    { title: 'Kvar agregacionog uredjaja', category: 'EQUIPMENT_FAILURE' },
+    { title: 'Preopterecenje bazne stanice', category: 'WIRELESS_FAILURE' },
+    { title: 'Kvar napajanja', category: 'POWER_OUTAGE' },
+    { title: 'Prekid kod nadredjenog provajdera', category: 'UPSTREAM_FAILURE' },
+    { title: 'Problem sa autentifikacijom', category: 'OTHER' }
+  ]
   const commentText = ['Prijave su proverene i grupisane prema lokaciji i simptomima.',
     'Terenska ekipa je obavestena. Proveravaju se signal, napajanje i pristupni portovi.',
     'Izvrsena je dijagnostika linka i uporedjena merenja sa monitoring sistemom.',
@@ -171,10 +179,11 @@ function fixtures() {
       ? 1440 + random(20 * 1440) : 3 * 1440 + random(87 * 1440)
     const city_n = (i - 1) % cities.length
     const operator = dispatchers[(i - 1) % 4]
-    const incident = { n: i, title: i === 1 ? marker : `[DEMO v1] ${pick(titles)} - ${cities[city_n][0]} #${pad(i, 3)}`,
+    const scenario = pick(scenarios)
+    const incident = { n: i, title: i === 1 ? marker : `[DEMO v1] ${scenario.title} - ${cities[city_n][0]} #${pad(i, 3)}`,
       description: `Demo scenario ${i}: vise korisnickih prijava zahteva koordinisanu proveru pristupne mreze u gradu ${cities[city_n][0]}.`,
       severity: ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'][random(4)],
-      category: ['NETWORK', 'NETWORK', 'NETWORK', 'APPLICATION', 'SECURITY', 'CLOUD', 'DATABASE', 'OTHER'][random(8)],
+      category: i === 1 ? 'UNDETERMINED' : scenario.category,
       status, created_by_n: operator.n, age, updated_age: status === 'OPEN' ? age : age - 5,
       closed_age: status === 'CLOSED' ? age - 900 : null }
     if (status === 'CLOSED') incident.updated_age = incident.closed_age
@@ -413,6 +422,8 @@ async function exerciseWorkflow(tokens) {
     CROSS JOIN users u WHERE i.title='${marker}' AND u.email='technician${domain}';`))
   await api(`/reports/${fixture.report}/assign`, tokens.dispatcher, 'PATCH', { technicianId: fixture.technician })
   await api(`/incidents/${fixture.incident}/start`, tokens.dispatcher, 'PATCH')
+  const diagnosed = await api(`/incidents/${fixture.incident}/category`, tokens.dispatcher, 'PATCH', { category: 'FIBER_FAILURE' })
+  assert(diagnosed.category === 'FIBER_FAILURE', 'Incident cause was not updated after diagnosis')
   await api(`/reports/${fixture.report}/start`, tokens.technician, 'PATCH')
   await api(`/reports/${fixture.report}/resolve`, tokens.technician, 'PATCH')
   await api(`/reports/${fixture.report}/confirm-fixed`, tokens.customer, 'PATCH')

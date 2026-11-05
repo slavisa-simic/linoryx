@@ -103,6 +103,19 @@ public class IncidentService {
     }
 
     @Transactional
+    public IncidentResponse changeCategory(Long id, IncidentCategory category, String email) {
+        User actor = users.getActiveUser(email);
+        requireOperator(actor);
+        Incident incident = lockIncident(id);
+        incident.requireCurrentWorkflow();
+        if (incident.getCategory() != category) {
+            incident.changeCategory(category);
+            audit.log(incident, actor, AuditAction.CATEGORY_CHANGED);
+        }
+        return responseWithCounts(incident);
+    }
+
+    @Transactional
     public IncidentResponse startProgress(Long id, String email) {
         User actor = users.getActiveUser(email);
         requireOperator(actor);

@@ -3,6 +3,8 @@ import { useUser } from '../../context/UserContext'
 import { useEffect, useState } from 'react'
 import type { SubmitEvent } from 'react'
 import type { Incident, IncidentCategory, Severity } from '../../models/incidents'
+import { incidentCategories } from '../../models/incidents'
+import { categoryLabels } from '../../services/dashboardData'
 import { createIncident } from '../../api/incidentsApi'
 import { FormMessage } from '../auth/FormMessage'
 import { Icon } from '../Icon'
@@ -21,7 +23,7 @@ export function CreateIncidentDialog({
   const { session, onSessionExpired } = useUser()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
-  const [category, setCategory] = useState<IncidentCategory>('OTHER')
+  const [category, setCategory] = useState<IncidentCategory>('UNDETERMINED')
   const [severity, setSeverity] = useState<Severity>('MEDIUM')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -151,13 +153,9 @@ export function CreateIncidentDialog({
                 }
                 disabled={saving}
               >
-                <option value="SECURITY">Security</option>
-                <option value="NETWORK">Network</option>
-                <option value="APPLICATION">Application</option>
-                <option value="CLOUD">Cloud</option>
-                <option value="DATABASE">Database</option>
-                <option value="OTHER">Other</option>
+                {incidentCategories.map(value => <option key={value} value={value}>{categoryLabels[value]}</option>)}
               </select>
+              <p className="incident-muted">Leave undetermined until the cause is diagnosed.</p>
             </div>
             <div className="incident-form-field">
               <label htmlFor="new-incident-priority">Priority</label>
