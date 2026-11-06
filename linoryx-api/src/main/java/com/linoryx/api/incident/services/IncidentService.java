@@ -6,7 +6,6 @@ import com.linoryx.api.exception.ResourceNotFoundException;
 import com.linoryx.api.incident.domain.*;
 import com.linoryx.api.incident.dto.*;
 import com.linoryx.api.incident.repository.IncidentRepository;
-import com.linoryx.api.notification.NotificationService;
 import com.linoryx.api.report.domain.*;
 import com.linoryx.api.report.dto.IncidentReportCount;
 import com.linoryx.api.report.repository.CustomerReportRepository;
@@ -24,15 +23,13 @@ public class IncidentService {
     private final CustomerReportRepository reports;
     private final UserService users;
     private final AuditService audit;
-    private final NotificationService notifications;
 
     public IncidentService(IncidentRepository incidents, CustomerReportRepository reports, UserService users,
-                           AuditService audit, NotificationService notifications) {
+                           AuditService audit) {
         this.incidents = incidents;
         this.reports = reports;
         this.users = users;
         this.audit = audit;
-        this.notifications = notifications;
     }
 
     @Transactional
@@ -44,7 +41,6 @@ public class IncidentService {
                 request.severity(), request.category(), actor));
         audit.log(incident, actor, AuditAction.CREATED);
         linkReports(incident, selected, actor);
-        notifications.processIncidentAlerts(incident);
         return response(incident, selected.size(), 0);
     }
 

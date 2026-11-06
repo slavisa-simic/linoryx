@@ -1,110 +1,60 @@
 package com.linoryx.api.notification;
 
-import com.linoryx.api.incident.domain.Incident;
-import com.linoryx.api.incident.domain.IncidentStatus;
-import com.linoryx.api.incident.domain.Severity;
-import com.linoryx.api.incident.repository.IncidentRepository;
-import com.linoryx.api.user.domain.User;
-import com.linoryx.api.user.domain.UserRole;
-import com.linoryx.api.user.repository.UserRepository;
-import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
+import com.linoryx.api.report.domain.ReportResolvedEvent;
+import jakarta.mail.MessagingException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailSendException;
 
-import java.util.List;
-
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class NotificationServiceTest {
-
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private IncidentRepository incidentRepository;
-
-    @Mock
-    private EmailService emailService;
-
-    @InjectMocks
-    private NotificationService notificationService;
+    @Mock EmailService email;
+    @InjectMocks NotificationService notifications;
+    private final ReportResolvedEvent event = new ReportResolvedEvent(42L, "customer@test.invalid");
 
     @Test
-    void processIncidentAlerts_whenIncidentIsCritical_sendsCriticalAlert() {
-
-        Incident incident = mock(Incident.class);
-        User admin = mock(User.class);
-
-        List<User> admins = List.of(admin);
-
-        when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN))
-                .thenReturn(admins);
-
-        when(incident.getSeverity())
-                .thenReturn(Severity.CRITICAL);
-
-        notificationService.processIncidentAlerts(incident);
-
-        verify(emailService)
-                .sendCriticalIncidentAlert(
-                        incident,
-                        admins
-                );
+    void successfulDeliveryIsNotRetried() throws Exception {
+        notifications.onReportResolved(event);
+        verify(email).sendReportResolved(42L, "customer@test.invalid");
+        verifyNoMoreInteractions(email);
     }
 
     @Test
-    void processIncidentAlerts_whenThreeHighIncidentsExist_sendsThresholdAlert() {
-
-        Incident incident = mock(Incident.class);
-        User admin = mock(User.class);
-
-        List<User> admins = List.of(admin);
-
-        when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN))
-                .thenReturn(admins);
-
-        when(incident.getSeverity())
-                .thenReturn(Severity.HIGH);
-
-        when(incidentRepository.countBySeverityAndStatusIn(
-                Severity.HIGH,
-                List.of(
-                        IncidentStatus.OPEN,
-                        IncidentStatus.IN_PROGRESS
-                )
-        )).thenReturn(3L);
-
-        notificationService.processIncidentAlerts(incident);
-
-        verify(emailService)
-                .sendHighIncidentThresholdAlert(
-                        3L,
-                        admins
-                );
+    void temporaryFailureIsRetriedOnce() throws Exception {
+        doThrow(new MailSendException("Unavailable")).doNothing().when(email)
+                .sendReportResolved(42L, "customer@test.invalid");
+        notifications.onReportResolved(event);
+        verify(email, times(2)).sendReportResolved(42L, "customer@test.invalid");
     }
 
     @Test
-    void processIncidentAlerts_whenIncidentIsMedium_doesNotSendAlert() {
+    void providerOutageStopsAfterTwoAttempts() throws Exception {
+        doThrow(new MailSendException("Unavailable")).when(email)
+                .sendReportResolved(42L, "customer@test.invalid");
+        assertDoesNotThrow(() -> notifications.onReportResolved(event));
+        verify(email, times(2)).sendReportResolved(42L, "customer@test.invalid");
+    }
 
-        Incident incident = mock(Incident.class);
-        User admin = mock(User.class);
+    @Test
+    void authenticationFailureIsNotRetried() throws Exception {
+        doThrow(new MailAuthenticationException("Invalid credentials")).when(email)
+                .sendReportResolved(42L, "customer@test.invalid");
+        assertDoesNotThrow(() -> notifications.onReportResolved(event));
+        verify(email).sendReportResolved(42L, "customer@test.invalid");
+    }
 
-        List<User> admins = List.of(admin);
-
-        when(userRepository.findAllByRoleAndEnabledTrue(UserRole.ADMIN))
-                .thenReturn(admins);
-
-        when(incident.getSeverity())
-                .thenReturn(Severity.MEDIUM);
-
-        notificationService.processIncidentAlerts(incident);
-
-        verifyNoInteractions(emailService);
+    @Test
+    void invalidMessageIsNotRetried() throws Exception {
+        doThrow(new MessagingException("Invalid message")).when(email)
+                .sendReportResolved(42L, "customer@test.invalid");
+        assertDoesNotThrow(() -> notifications.onReportResolved(event));
+        verify(email).sendReportResolved(42L, "customer@test.invalid");
     }
 }

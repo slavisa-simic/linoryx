@@ -23,6 +23,19 @@ interface AppProps {
 
 type Page = 'login' | 'register' | WorkspacePage
 
+function getReportLinkId(): number | undefined {
+  if (window.location.pathname !== '/reports' && window.location.pathname !== '/login') return
+  const id = Number(new URLSearchParams(window.location.search).get('report'))
+  if (Number.isSafeInteger(id) && id > 0) return id
+}
+
+function replacePage(nextPage: Page) {
+  const reportId = getReportLinkId()
+  let url = '/' + nextPage
+  if (nextPage === 'login' && reportId) url += '?report=' + reportId
+  window.history.replaceState(null, '', url)
+}
+
 function getCurrentPage(): Page {
   if (window.location.pathname === '/profile') return 'profile'
   if (window.location.pathname === '/technicians') return 'technicians'
@@ -97,7 +110,7 @@ function App({ authApi, sessionService }: AppProps) {
     function handlePopState() {
       const nextPage = getSessionPage(sessionService.getSession())
       if (window.location.pathname !== '/' + nextPage) {
-        window.history.replaceState(null, '', '/' + nextPage)
+        replacePage(nextPage)
       }
       setPage(nextPage)
       setNotice('')
@@ -135,7 +148,7 @@ function App({ authApi, sessionService }: AppProps) {
 
   useEffect(() => {
     if (window.location.pathname !== '/' + page) {
-      window.history.replaceState(null, '', '/' + page)
+      replacePage(page)
     }
   }, [page])
 
@@ -168,9 +181,12 @@ function App({ authApi, sessionService }: AppProps) {
   }
 
   function handleLogin(response: AuthResponse, loginEmail: string) {
+    const reportId = getReportLinkId()
     const savedSession = sessionService.saveSession(response, loginEmail)
     setSession(savedSession)
-    if (savedSession.role === 'USER') {
+    if (reportId) {
+      navigate('reports', reportId)
+    } else if (savedSession.role === 'USER') {
       navigate('services')
     } else {
       navigate('dashboard')

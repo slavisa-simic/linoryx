@@ -5,7 +5,6 @@ import com.linoryx.api.exception.ResourceNotFoundException;
 import com.linoryx.api.incident.domain.Incident;
 import com.linoryx.api.incident.dto.IncidentResponse;
 import com.linoryx.api.incident.repository.IncidentRepository;
-import com.linoryx.api.notification.NotificationService;
 import com.linoryx.api.report.repository.CustomerReportRepository;
 import com.linoryx.api.user.domain.User;
 import com.linoryx.api.user.domain.UserRole;
@@ -31,9 +30,6 @@ class IncidentServiceTest {
 
     @Mock
     private AuditService auditService;
-
-    @Mock
-    private NotificationService notificationService;
 
     @Mock private CustomerReportRepository reports;
     @InjectMocks

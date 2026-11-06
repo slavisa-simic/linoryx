@@ -4,7 +4,6 @@ import com.linoryx.api.audit.service.AuditService;
 import com.linoryx.api.incident.domain.*;
 import com.linoryx.api.incident.dto.CreateIncidentRequest;
 import com.linoryx.api.incident.repository.IncidentRepository;
-import com.linoryx.api.notification.NotificationService;
 import com.linoryx.api.report.domain.*;
 import com.linoryx.api.report.repository.CustomerReportRepository;
 import com.linoryx.api.user.domain.*;
@@ -28,7 +27,6 @@ class IncidentWorkflowTest {
     @Mock CustomerReportRepository reports;
     @Mock UserService users;
     @Mock AuditService audit;
-    @Mock NotificationService notifications;
     @InjectMocks IncidentService service;
 
     private User actor(UserRole role) {

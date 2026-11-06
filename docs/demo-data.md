@@ -1,5 +1,7 @@
 # Linoryx local demo data
 
+Keep `DEMO_MODE=true` and `MAIL_ENABLED=false` in `linoryx-api/.env` for local or publicly accessible demos. Demo mode blocks all outgoing email even if delivery is accidentally enabled. These switches also protect accounts registered with arbitrary addresses; the seeded `.test` domain alone is not the delivery guard. See [email notifications](email-notifications.md).
+
 Start Docker Desktop and the app with `docker compose up -d`, then run this from the repository root:
 
 ```powershell

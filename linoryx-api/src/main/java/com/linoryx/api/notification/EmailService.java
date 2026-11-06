@@ -1,129 +1,60 @@
 package com.linoryx.api.notification;
 
-import com.linoryx.api.incident.domain.Incident;
-import com.linoryx.api.user.domain.User;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
-import org.springframework.mail.SimpleMailMessage;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.web.util.HtmlUtils;
 
 @Service
 public class EmailService {
-
-    private static final Logger logger =
-            LoggerFactory.getLogger(EmailService.class);
-
     private final JavaMailSender mailSender;
     private final String senderEmail;
+    private final String frontendUrl;
+    private final boolean enabled;
+    private final boolean demoMode;
+    private final String template;
 
-    public EmailService(
-            JavaMailSender mailSender,
-            @Value("${spring.mail.username}") String senderEmail
-    ) {
+    public EmailService(JavaMailSender mailSender,
+                        @Value("${spring.mail.username}") String senderEmail,
+                        @Value("${notification.frontend-url}") String frontendUrl,
+                        @Value("${notification.email-enabled}") boolean enabled,
+                        @Value("${notification.demo-mode}") boolean demoMode) throws IOException {
         this.mailSender = mailSender;
         this.senderEmail = senderEmail;
+        this.frontendUrl = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
+        this.enabled = enabled;
+        this.demoMode = demoMode;
+        this.template = new ClassPathResource("templates/report-resolved.html")
+                .getContentAsString(StandardCharsets.UTF_8);
     }
 
-    public void sendHighIncidentThresholdAlert(
-            long activeHighIncidents,
-            List<User> admins
-    ) {
-
-        for (User admin : admins) {
-
-            SimpleMailMessage message =
-                    new SimpleMailMessage();
-
-            message.setFrom(senderEmail);
-            message.setTo(admin.getEmail());
-
-            message.setSubject(
-                    "[LINORYX] High incident threshold reached"
-            );
-
-            message.setText(
-                    "Linoryx has detected a high number of active incidents.\n\n"
-                            + "Active HIGH incidents: "
-                            + activeHighIncidents
-                            + "\n"
-                            + "Threshold: 3\n\n"
-                            + "Please review the active incident queue."
-            );
-
-            try {
-                mailSender.send(message);
-            }
-            catch (MailException exception) {
-
-                logger.error(
-                        "Failed to send HIGH incident threshold alert to {}",
-                        admin.getEmail(),
-                        exception
-                );
-            }
+    public void sendReportResolved(Long reportId, String customerEmail) throws MessagingException {
+        if (!enabled || demoMode) {
+            return;
         }
-    }
 
-    public void sendCriticalIncidentAlert(
-            Incident incident,
-            List<User> admins
-    ) {
+        String reportUrl = frontendUrl + "/reports?report=" + reportId;
+        String html = template.replace("{{reportId}}", reportId.toString())
+                .replace("{{reportUrl}}", HtmlUtils.htmlEscape(reportUrl));
+        String text = "Your connection may be restored\n\n"
+                + "Our technician has marked your reported issue as resolved.\n\n"
+                + "Report: REP-" + reportId + "\nStatus: RESOLVED\n\n"
+                + "Please sign in to Linoryx to confirm whether your connection is working correctly.\n"
+                + "Review Your Report: " + reportUrl + "\n\n"
+                + "This is an automated notification from Linoryx. Please do not reply.";
 
-        for (User admin : admins) {
-
-            SimpleMailMessage message =
-                    new SimpleMailMessage();
-
-            message.setFrom(senderEmail);
-            message.setTo(admin.getEmail());
-
-            message.setSubject(
-                    "[LINORYX] Critical incident #" +
-                            incident.getId()
-            );
-
-            message.setText(
-                    "A critical incident has been created.\n\n" +
-
-                            "Incident ID: " +
-                            incident.getId() + "\n" +
-
-                            "Title: " +
-                            incident.getTitle() + "\n" +
-
-                            "Category: " +
-                            incident.getCategory() + "\n" +
-
-                            "Severity: " +
-                            incident.getSeverity() + "\n" +
-
-                            "Status: " +
-                            incident.getStatus() + "\n" +
-
-                            "Created by: " +
-                            incident.getCreatedBy().getFirstName() +
-                            " " +
-                            incident.getCreatedBy().getLastName()
-            );
-
-            try {
-                mailSender.send(message);
-            }
-            catch (MailException exception) {
-
-                logger.error(
-                        "Failed to send critical incident email to {}",
-                        admin.getEmail(),
-                        exception
-                );
-            }
-        }
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true, StandardCharsets.UTF_8.name());
+        helper.setFrom(senderEmail);
+        helper.setTo(customerEmail);
+        helper.setSubject("Linoryx — Your issue has been resolved");
+        helper.setText(text, html);
+        mailSender.send(message);
     }
 }

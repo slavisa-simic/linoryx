@@ -28,7 +28,7 @@ The interface is light mode only: Inter typography, warm ivory surfaces, charcoa
 | Technicians | Availability, location and specialization profiles; workload and distance recommendations; an operational team map; technicians' own profile and assignment map. |
 | Dashboard | Incident activity, status, priority, category and team workload charts; closure rate and operational metrics calculated from role-scoped API responses. |
 | Administration and audit | Manage roles and enabled accounts, review recorded account and workflow changes, and retain historical assignments. |
-| Exports and alerts | Incident PDF and CSV export; email alerts for critical incidents and a threshold of three active high-severity incidents. SMTP configuration is required for delivery. |
+| Exports and alerts | Incident PDF and CSV export; customers receive an email after a technician resolves their individual report. Delivery is disabled by default and blocked in demo mode. |
 
 Address search and geocoding use a server-side Geoapify key. Existing data remains available without a key; address lookup reports its configuration requirement. Maps use Leaflet and OpenStreetMap tiles, which require network access.
 
@@ -97,7 +97,7 @@ if (!(Test-Path linoryx-api/.env)) { Copy-Item linoryx-api/.env.example linoryx-
 if (!(Test-Path linoryx-web/.env)) { Copy-Item linoryx-web/.env.example linoryx-web/.env }
 ```
 
-Set the same `DB_PASSWORD` in the root and API environment files. Configure a random `JWT_SECRET` of at least 32 ASCII characters in `linoryx-api/.env`. Keep `VITE_API_BASE_URL=/api`; configure `MAIL_USERNAME` / `MAIL_APP_PASSWORD` for email and `GEOAPIFY_API_KEY` for location lookup. Secrets belong in ignored local environment files.
+Set the same `DB_PASSWORD` in the root and API environment files. Configure a random `JWT_SECRET` of at least 32 ASCII characters in `linoryx-api/.env`. Keep `VITE_API_BASE_URL=/api`; configure `GEOAPIFY_API_KEY` for location lookup. Email is disabled by default. For real delivery, configure `MAIL_USERNAME`, `MAIL_APP_PASSWORD`, `MAIL_ENABLED=true`, `DEMO_MODE=false` and the public application `FRONTEND_URL` in `linoryx-api/.env`. Public demos should keep `DEMO_MODE=true` and `MAIL_ENABLED=false`. See [email notifications](docs/email-notifications.md). Secrets belong in ignored local environment files.
 
 Build the applications and images:
 

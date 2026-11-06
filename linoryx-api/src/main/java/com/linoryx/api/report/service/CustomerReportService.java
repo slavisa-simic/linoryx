@@ -18,6 +18,7 @@ import com.linoryx.api.technician.domain.TechnicianProfile;
 import com.linoryx.api.technician.repository.TechnicianProfileRepository;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.*;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -32,10 +33,12 @@ public class CustomerReportService {
     private final UserService users;
     private final AuditService audit;
     private final TechnicianProfileRepository profiles;
+    private final ApplicationEventPublisher events;
 
     public CustomerReportService(CustomerReportRepository reports, CustomerServiceRepository services,
                                  IncidentRepository incidents, UserRepository userRepository,
-                                 UserService users, AuditService audit, TechnicianProfileRepository profiles) {
+                                 UserService users, AuditService audit, TechnicianProfileRepository profiles,
+                                 ApplicationEventPublisher events) {
         this.reports = reports;
         this.services = services;
         this.incidents = incidents;
@@ -43,6 +46,7 @@ public class CustomerReportService {
         this.users = users;
         this.audit = audit;
         this.profiles = profiles;
+        this.events = events;
     }
 
     @Transactional
@@ -121,6 +125,7 @@ public class CustomerReportService {
         requireIncidentInProgress(report);
         report.resolve();
         audit.logReport(report, actor, AuditAction.REPORT_RESOLVED);
+        events.publishEvent(new ReportResolvedEvent(report.getId(), report.getCustomerService().getCustomer().getEmail()));
         return toResponse(report, actor);
     }
 

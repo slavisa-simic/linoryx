@@ -47,8 +47,4 @@ public interface IncidentRepository
             Pageable pageable
     );
 
-    long countBySeverityAndStatusIn(
-            Severity severity,
-            Collection<IncidentStatus> statuses
-    );
 }

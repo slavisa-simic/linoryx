@@ -1,68 +1,47 @@
 package com.linoryx.api.notification;
 
-import com.linoryx.api.incident.domain.Incident;
-import com.linoryx.api.incident.domain.IncidentStatus;
-import com.linoryx.api.incident.domain.Severity;
-import com.linoryx.api.incident.repository.IncidentRepository;
-import com.linoryx.api.user.domain.User;
-import com.linoryx.api.user.domain.UserRole;
-import com.linoryx.api.user.repository.UserRepository;
-
+import com.linoryx.api.report.domain.ReportResolvedEvent;
+import jakarta.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.mail.MailException;
+import org.springframework.mail.MailSendException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 @Service
 public class NotificationService {
-
-    private final UserRepository userRepository;
-    private final IncidentRepository incidentRepository;
+    private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
     private final EmailService emailService;
 
-    public NotificationService(
-            UserRepository userRepository,
-            EmailService emailService,
-            IncidentRepository incidentRepository
-    ) {
-        this.userRepository = userRepository;
+    public NotificationService(EmailService emailService) {
         this.emailService = emailService;
-        this.incidentRepository = incidentRepository;
     }
 
-    public void processIncidentAlerts(Incident incident) {
-
-        List<User> admins =
-                userRepository.findAllByRoleAndEnabledTrue(
-                        UserRole.ADMIN
-                );
-
-        if (incident.getSeverity() == Severity.CRITICAL) {
-
-            emailService.sendCriticalIncidentAlert(
-                    incident,
-                    admins
-            );
-
-            return;
-        }
-
-        if (incident.getSeverity() == Severity.HIGH) {
-
-            long activeHighIncidents =
-                    incidentRepository.countBySeverityAndStatusIn(
-                            Severity.HIGH,
-                            List.of(
-                                    IncidentStatus.OPEN,
-                                    IncidentStatus.IN_PROGRESS
-                            )
-                    );
-
-            if (activeHighIncidents >= 3) {
-
-                emailService.sendHighIncidentThresholdAlert(
-                        activeHighIncidents,
-                        admins
-                );
+    @Async
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onReportResolved(ReportResolvedEvent event) {
+        for (int attempt = 1; attempt <= 2; attempt++) {
+            try {
+                emailService.sendReportResolved(event.reportId(), event.customerEmail());
+                return;
+            } catch (MailSendException exception) {
+                // Provider exception text can include addresses and message content.
+                logger.warn("Email delivery failed for report REP-{} (attempt {}/2)", event.reportId(), attempt);
+                if (attempt == 2) {
+                    return;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException interrupted) {
+                    Thread.currentThread().interrupt();
+                    return;
+                }
+            } catch (MailException | MessagingException exception) {
+                logger.warn("Email could not be prepared or sent for report REP-{}", event.reportId());
+                return;
             }
         }
     }

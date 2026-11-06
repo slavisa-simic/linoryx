@@ -2,16 +2,30 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_APP_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_APP_PASSWORD:}
 
     properties:
       mail:
         smtp:
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
           auth: true
           starttls:
             enable: true
             required: true
+
+  task:
+    execution:
+      thread-name-prefix: notification-
+      pool:
+        core-size: 1
+        max-size: 2
+        queue-capacity: 100
+      shutdown:
+        await-termination: true
+        await-termination-period: 30s
 
   config:
     import: "optional:file:.env[.properties]"
@@ -33,6 +47,11 @@ spring:
   sql:
     init:
       mode: always
+
+notification:
+  email-enabled: ${MAIL_ENABLED:false}
+  demo-mode: ${DEMO_MODE:false}
+  frontend-url: ${FRONTEND_URL:http://localhost:8081}
 
 security:
   jwt:
