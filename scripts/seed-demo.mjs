@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url'
 // Local Docker demo fixtures. No packages, application rebuild or mail delivery needed.
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const apiBase = 'http://127.0.0.1:8081/api'
+// Preserve existing demo identities, credentials and advisory lock for idempotent reseeding.
 const domain = '@demo.vigil.test'
 const password = 'VigilDemo2026!'
 const marker = '[DEMO v1] Provera kompletnog toka prijave'
@@ -58,7 +59,7 @@ function originalRows() {
 }
 
 function backup() {
-  const folder = path.join(process.env.LOCALAPPDATA || homedir(), 'Vigil', 'backups')
+  const folder = path.join(process.env.LOCALAPPDATA || homedir(), 'Linoryx', 'backups')
   mkdirSync(folder, { recursive: true })
   const name = 'before-demo-' + new Date().toISOString().replace(/[:.]/g, '-') + '.dump'
   const inside = '/tmp/' + name

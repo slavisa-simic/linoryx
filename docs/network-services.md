@@ -7,7 +7,7 @@ The new features use the same controller, service, repository and feature-folder
 Create a Geoapify project and copy its API key into your local environment file:
 
 - Docker Compose: set `GEOAPIFY_API_KEY` in the root `.env`.
-- Running the API with Maven: set `GEOAPIFY_API_KEY` in `vigil-api/.env`.
+- Running the API with Maven: set `GEOAPIFY_API_KEY` in `linoryx-api/.env`.
 
 Restart the API after changing the key. No key belongs in the frontend or a `VITE_` setting. Existing features continue to work without a key; address search shows a configuration message until one is supplied.
 
@@ -64,6 +64,6 @@ The existing Hibernate schema update and `schema.sql` initialization create the 
 
 ## Checks
 
-Run `./mvnw.cmd test` from `vigil-api` with a PostgreSQL test database configured through `DB_URL` and `DB_PASSWORD`. Run `npm.cmd test`, `npm.cmd run lint` and `npm.cmd run build` from `vigil-web`.
+Run `./mvnw.cmd test` from `linoryx-api` with a PostgreSQL test database configured through `DB_URL` and `DB_PASSWORD`. Run `npm.cmd test`, `npm.cmd run lint` and `npm.cmd run build` from `linoryx-web`.
 
 Tests cover concurrent counter reservations, reservations after rollback/deletion, immutable codes, city-change rejection, service ownership and role restrictions, referential integrity, shared location validation, confirmation, service summaries, and the existing account and incident workflows. Provider contract tests use a local HTTP fixture; they do not require a real Geoapify key.

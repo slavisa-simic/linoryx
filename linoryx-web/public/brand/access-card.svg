@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="444" viewBox="0 0 720 444" fill="none">
+  <defs>
+    <linearGradient id="surface" x1="40" y1="0" x2="680" y2="444" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fff5ee"/>
+      <stop offset="0.5" stop-color="#f8ebe5"/>
+      <stop offset="1" stop-color="#e7d5cf"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="0" cy="0" r="1" gradientTransform="translate(190 90) rotate(35) scale(590 390)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ribbon" x1="530" y1="390" x2="700" y2="470" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#e33d2c"/>
+      <stop offset="1" stop-color="#c62c21"/>
+    </linearGradient>
+    <clipPath id="card">
+      <rect x="1" y="1" width="718" height="442" rx="46"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect width="720" height="444" fill="url(#surface)"/>
+    <rect width="720" height="444" fill="url(#sheen)"/>
+    <path d="M462 444C500 444 510 390 550 390H720V444H462Z" fill="url(#ribbon)"/>
+    <path d="M462 444C500 444 510 390 550 390H720" stroke="#ef7261" stroke-opacity="0.55"/>
+  </g>
+  <rect x="1" y="1" width="718" height="442" rx="46" stroke="#ffe0ce" stroke-width="2"/>
+  <rect x="3" y="3" width="714" height="438" rx="44" stroke="#ffffff" stroke-opacity="0.28"/>
+</svg>

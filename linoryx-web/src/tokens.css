@@ -1,0 +1,100 @@
+/* Linoryx: the single, light-only source of visual tokens. */
+:root {
+  color-scheme: only light;
+
+  /* Approved brand primitives. */
+  --brand-charcoal: #1a1a1a;
+  --brand-terracotta: #d05445;
+  --brand-ivory: #f7f5f2;
+  --brand-warm-gray: #d6d2cc;
+  --brand-muted: #6b6b6b;
+  --neutral-white: #ffffff;
+  --neutral-soft: #fcfbf9;
+  --neutral-line: #e7e3dd;
+  --neutral-hover: #f0ede8;
+  --neutral-strong: #87817a;
+  --terracotta-ink: #a83e32;
+  --terracotta-hover: #b74335;
+  --terracotta-soft: #fbede9;
+  --terracotta-line: #e8c2b8;
+
+  /* Semantic colors remain distinct from the brand accent. */
+  --color-white: var(--neutral-white);
+  --color-background: var(--brand-ivory);
+  --color-text: var(--brand-charcoal);
+  --color-text-muted: var(--brand-muted);
+  --color-placeholder: var(--brand-muted);
+  --color-border: var(--neutral-line);
+  --color-border-strong: var(--neutral-strong);
+  --color-surface: var(--brand-ivory);
+  --color-surface-soft: var(--neutral-soft);
+  --color-surface-hover: var(--neutral-hover);
+  --color-primary: var(--terracotta-ink);
+  --color-primary-hover: var(--terracotta-hover);
+  --color-primary-light: var(--terracotta-soft);
+  --color-primary-border: var(--terracotta-line);
+  --color-focus: var(--terracotta-ink);
+  --color-danger: #a92d38;
+  --color-danger-light: #fceef0;
+  --color-danger-border: #efcbd1;
+  --color-warning: #855511;
+  --color-warning-light: #fbf2df;
+  --color-warning-border: #e9d5aa;
+  --color-success: #236346;
+  --color-success-light: #edf5ef;
+  --color-success-border: #c6dfcf;
+  --color-info: #315f83;
+  --color-info-light: #edf3f8;
+  --color-info-border: #c5d9e8;
+
+  /* Layout, typography and interaction. */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-sans);
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --radius-small: 4px;
+  --radius-control: 8px;
+  --radius-panel: 12px;
+  --radius-dialog: 16px;
+  --shadow-small: 0 1px 2px rgb(26 26 26 / 4%);
+  --shadow-overlay: 0 12px 40px rgb(26 26 26 / 12%);
+  --color-backdrop: rgb(26 26 26 / 32%);
+  --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --control-height: 36px;
+  --control-small-height: 32px;
+  --control-icon-size: 32px;
+  --field-height: 44px;
+
+  /* Shared component and data-visualization aliases. */
+  --dashboard-background: var(--color-background);
+  --dashboard-border: var(--color-border);
+  --dashboard-grid: var(--color-border);
+  --dashboard-shadow: var(--shadow-overlay);
+  --chart-accent: var(--brand-terracotta);
+  --chart-secondary: var(--brand-muted);
+  --chart-green: var(--color-success);
+  --chart-amber: var(--color-warning);
+  --chart-red: var(--color-danger);
+  --chart-orange: var(--color-warning);
+  --chart-slate: var(--brand-warm-gray);
+  --chart-info: var(--color-info);
+  --chart-medium-text: var(--color-warning);
+  --button-background: var(--terracotta-hover);
+  --button-foreground: var(--color-white);
+  --button-hover-background: var(--terracotta-ink);
+  --button-hover-foreground: var(--color-white);
+  --input-border: var(--color-border-strong);
+  --card-background: var(--color-white);
+  --card-border: var(--color-border);
+
+  /* Authentication artwork. */
+  --auth-panel-background: #441413;
+  --auth-card-muted: #68534c;
+  --auth-card-placeholder: #cfb9af;
+  --auth-card-shadow: 0 24px 64px rgb(24 8 7 / 28%), 0 0 44px rgb(255 224 206 / 18%);
+}

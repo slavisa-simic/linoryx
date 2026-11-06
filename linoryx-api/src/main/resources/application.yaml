@@ -1,0 +1,50 @@
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_APP_PASSWORD}
+
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+
+  config:
+    import: "optional:file:.env[.properties]"
+
+  application:
+    name: linoryx-api
+
+  datasource:
+    url: ${DB_URL}
+    username: vigil_api_user
+    password: ${DB_PASSWORD}
+
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-minutes: 60
+
+server:
+  port: 8080
+
+location:
+  geoapify:
+    api-key: ${GEOAPIFY_API_KEY:}
+    base-url: ${GEOAPIFY_BASE_URL:https://api.geoapify.com}
+    timeout-seconds: 8
+

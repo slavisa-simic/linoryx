@@ -1,4 +1,4 @@
-# Local demo data
+# Linoryx local demo data
 
 Start Docker Desktop and the app with `docker compose up -d`, then run this from the repository root:
 
@@ -6,7 +6,7 @@ Start Docker Desktop and the app with `docker compose up -d`, then run this from
 node .\scripts\seed-demo.mjs
 ```
 
-Node.js 22.12+ and the running Docker Compose services are required. No extra npm packages or application rebuild are needed. The script creates a database backup in `%LOCALAPPDATA%\Vigil\backups` before the first seed and prints its exact path. Existing accounts, passwords and other records are preserved.
+Node.js 22.12+ and the running Docker Compose services are required. No extra npm packages or application rebuild are needed. The script creates a database backup in `%LOCALAPPDATA%\Linoryx\backups` before the first seed and prints its exact path. Existing accounts, passwords and other records are preserved.
 
 The dataset contains:
 
@@ -49,3 +49,7 @@ node .\scripts\seed-demo.mjs --check
 Checks cover all pages of the admin lists, all four demo logins, the customer's service scope, incident comments and audit, technician workloads, recommendations and assignment locations. If you rename or remove the main demo accounts or substantially change the fixture counts, the checks may report that the expected demo scenario is missing.
 
 The script adds data to the existing database. It does not reset or empty it. `docker compose down` preserves the database volume; rebuilding application images also preserves these records.
+
+## Rebranding compatibility
+
+The demo domain, existing passwords, `[DEMO v1]` marker and `vigil-demo-v1` advisory lock deliberately stay unchanged so reseeding recognizes existing records. They are fixture identifiers, not product branding. New backups use the Linoryx directory; existing backup files remain in their original location.

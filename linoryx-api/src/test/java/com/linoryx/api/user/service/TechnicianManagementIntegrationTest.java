@@ -1,0 +1,114 @@
+package com.linoryx.api.user.service;
+
+import com.linoryx.api.incident.domain.Incident;
+import com.linoryx.api.incident.domain.IncidentCategory;
+import com.linoryx.api.incident.domain.IncidentStatus;
+import com.linoryx.api.incident.domain.Severity;
+import com.linoryx.api.incident.repository.IncidentRepository;
+import com.linoryx.api.user.domain.User;
+import com.linoryx.api.user.domain.UserRole;
+import com.linoryx.api.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
+import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.transaction.annotation.Transactional;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+@SpringBootTest
+@Transactional
+class TechnicianManagementIntegrationTest {
+    @Autowired private UserRepository userRepository;
+    @Autowired private IncidentRepository incidentRepository;
+    @Autowired private UserService userService;
+    @Autowired private EntityManager entityManager;
+
+    private User admin;
+    private User technician;
+
+    @BeforeEach
+    void createUsers() {
+        String prefix = "technician-test-" + UUID.randomUUID();
+        admin = userRepository.save(new User(
+                prefix + "-admin@example.invalid", "hash", "Test", "Admin", UserRole.ADMIN
+        ));
+        technician = userRepository.save(new User(
+                prefix + "-tech@example.invalid", "hash", "Test", "Technician", UserRole.TECHNICIAN
+        ));
+    }
+
+    @Test
+    void technicianListingExcludesDisabledTechniciansAndOtherRoles() {
+        String prefix = "listing-test-" + UUID.randomUUID();
+        User dispatcher = userRepository.saveAndFlush(new User(
+                prefix + "-dispatcher@example.invalid", "hash", "Test", "Dispatcher", UserRole.DISPATCHER
+        ));
+        User disabled = new User(prefix + "-disabled@example.invalid", "hash", "Disabled", "Technician", UserRole.TECHNICIAN);
+        disabled.disable();
+        userRepository.saveAndFlush(disabled);
+
+        var technicians = userService.getTechnicians(dispatcher.getEmail());
+
+        assertTrue(technicians.stream().anyMatch(item -> item.id().equals(technician.getId())));
+        assertFalse(technicians.stream().anyMatch(item -> item.id().equals(disabled.getId())));
+        assertFalse(technicians.stream().anyMatch(item -> item.id().equals(admin.getId())));
+        assertFalse(technicians.stream().anyMatch(item -> item.id().equals(dispatcher.getId())));
+    }
+
+    @Test
+    void dispatcherRoleCanBeGrantedAndRevokedWithAuditHistory() {
+        Long userId = technician.getId();
+        assertEquals(UserRole.DISPATCHER, userService.changeUserRole(admin.getEmail(), userId, UserRole.DISPATCHER).role());
+        entityManager.flush();
+        entityManager.clear();
+        assertEquals(UserRole.DISPATCHER, userRepository.findById(userId).orElseThrow().getRole());
+
+        assertEquals(UserRole.USER, userService.changeUserRole(admin.getEmail(), userId, UserRole.USER).role());
+        entityManager.flush();
+    }
+
+    @Test
+    void activeIncidentBlocksDisablingAndChangingRole() {
+        assignedIncident();
+        Long technicianId = technician.getId();
+
+        assertThrows(IllegalStateException.class,
+                () -> userService.disableUser(admin.getEmail(), technicianId));
+        assertThrows(IllegalStateException.class,
+                () -> userService.changeUserRole(admin.getEmail(), technicianId, UserRole.USER));
+        assertTrue(technician.isEnabled());
+        assertEquals(UserRole.TECHNICIAN, technician.getRole());
+    }
+
+    @Test
+    void closedIncidentAllowsManagementAndPreservesAssignment() {
+        Incident incident = assignedIncident();
+        incident.startProgress();
+        incident.close();
+        incidentRepository.saveAndFlush(incident);
+        Long technicianId = technician.getId();
+        Long incidentId = incident.getId();
+
+        assertFalse(userService.disableUser(admin.getEmail(), technicianId).enabled());
+        assertEquals(UserRole.USER,
+                userService.changeUserRole(admin.getEmail(), technicianId, UserRole.USER).role());
+
+        entityManager.flush();
+        entityManager.clear();
+        Incident saved = incidentRepository.findById(incidentId).orElseThrow();
+        assertEquals(IncidentStatus.CLOSED, saved.getStatus());
+        assertEquals(technicianId, saved.getAssignedTo().getId());
+    }
+
+    private Incident assignedIncident() {
+        Incident incident = new Incident(
+                "Technician access test", "Test incident", Severity.LOW, IncidentCategory.OTHER, admin
+        );
+        ReflectionTestUtils.setField(incident, "assignedTo", technician);
+        return incidentRepository.saveAndFlush(incident);
+    }
+}

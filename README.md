@@ -1,200 +1,174 @@
 <p align="center">
-  <img src="docs/readme/hero.png" alt="Vigil incident management" width="100%" />
+  <img src="linoryx-web/public/brand/linoryx-logo.svg" alt="Linoryx" width="360" />
 </p>
 
-# Vigil
+# Linoryx — Telecom Operations Platform
 
-Vigil is a web app for handling IT incidents. Users report problems, administrators assign them, and technicians track the work through to resolution.
+Linoryx connects customer services, network infrastructure, customer reports and field technicians in one operational workspace. Customers report service problems, dispatchers group and coordinate the response, and technicians track assigned work through customer confirmation and closure.
 
-The local Docker setup is ready. Deployments to Azure and AWS and a CI/CD pipeline are planned.
+The interface is light mode only: Inter typography, warm ivory surfaces, charcoal text and terracotta accents. The local Docker stack is implemented; hosted deployments and CI/CD are not yet provided.
 
-**Contents**
+## Product preview
 
-[What works today](#features) · [The app](#preview) · [Incident workflow](#workflow) · [Architecture](#architecture) · [Database](#database) · [Run locally](#getting-started) · [JUnit tests](#tests) · [Azure, AWS and CI/CD](#roadmap)
+- **Live demo:** coming soon.
+- **Screenshots:** [current local screens](docs/readme/); a broader product gallery is coming soon.
+- **Product walkthrough video:** coming soon.
 
-<a id="features"></a>
-## <img src="docs/readme/banner-overview.svg" alt="What works today" width="100%" />
+![Linoryx dashboard with a light sidebar, warm ivory canvas and operational charts](docs/readme/dashboard.jpg)
 
-| Area | What you can do |
+## Existing features
+
+| Area | Implemented behavior |
 | --- | --- |
-| Accounts | Register and sign in with JWT authentication. Three roles control access; passwords are hashed with BCrypt. |
-| Incidents | Report a problem, assign a technician, and search or filter by status, severity and category. |
-| Dashboard | Check incident counts, priorities, trends and technician workloads through cards and charts. |
-| Comments and exports | Technicians and administrators can add comments. Export an incident as a PDF or a list as CSV. |
-| Users and audit | Change roles, enable or disable accounts, and see who made each change. |
-| Email alerts | Notify administrators about a critical incident or a threshold of at least three active high-severity incidents. |
+| Authentication | Registration, sign-in, BCrypt password hashing, expiring JWT sessions and role-based API authorization. Disabled accounts and changed roles are checked on authenticated requests. |
+| Customer services | Provision multiple services per customer, select an installation address and network node, track service status, and terminate services while preserving their history. Customers see their own services. |
+| Network | Create and manage typed network nodes with generated city/type codes, confirmed locations, map markers, search and filters. Node deletion respects service relationships. |
+| Customer reports | Report a problem against an active service, filter and select reports, link them to incidents, assign technicians and track work. Customers can confirm a fix or report that the problem persists. |
+| Incidents | Group eligible customer reports, set telecom categories and priorities, start incidents, add internal comments, and close incidents after their linked reports close. Historical incidents remain readable. |
+| Technicians | Availability, location and specialization profiles; workload and distance recommendations; an operational team map; technicians' own profile and assignment map. |
+| Dashboard | Incident activity, status, priority, category and team workload charts; closure rate and operational metrics calculated from role-scoped API responses. |
+| Administration and audit | Manage roles and enabled accounts, review recorded account and workflow changes, and retain historical assignments. |
+| Exports and alerts | Incident PDF and CSV export; email alerts for critical incidents and a threshold of three active high-severity incidents. SMTP configuration is required for delivery. |
 
-<a id="preview"></a>
-## <img src="docs/readme/banner-preview.svg" alt="The app" width="100%" />
+Address search and geocoding use a server-side Geoapify key. Existing data remains available without a key; address lookup reports its configuration requirement. Maps use Leaflet and OpenStreetMap tiles, which require network access.
 
-![Vigil sign-in screen with a blue sign-in button and an account card](docs/readme/sign-in.png)
+## Roles
 
-The sign-in screen from the local frontend. After signing in, users see their own incidents. Technicians see their assigned work and a dashboard; administrators can also manage users and view audit logs.
-
-<a id="workflow"></a>
-## <img src="docs/readme/banner-workflow.svg" alt="Incident workflow" width="100%" />
-
-![Incident workflow: OPEN, technician assignment, IN_PROGRESS, RESOLVED and CLOSED](docs/readme/workflow.svg)
-
-A user or administrator reports a problem. An administrator assigns a technician, who starts work, resolves the incident and closes it. Administrators can also perform these status changes.
-
-The API enforces the order: work starts after assignment, an incident must be in progress before it can be resolved, and it must be resolved before it can be closed. Status changes are recorded in the audit log.
-
-<a id="architecture"></a>
-## <img src="docs/readme/banner-architecture.svg" alt="Project architecture" width="100%" />
-
-![Local architecture: browser, Nginx and React, Spring Boot API, PostgreSQL and SMTP email alerts](docs/readme/architecture.svg)
-
-The frontend displays data and sends requests to the API. The API checks permissions and handles the work; PostgreSQL stores the data. Nginx serves the frontend and forwards `/api` requests to the backend.
-
-| Layer | Technologies and purpose |
+| Role | Workspace |
 | --- | --- |
-| Web | React 19, TypeScript 6 and Vite 8, with Recharts for charts and React PDF for exports. |
-| API | Java 25 and Spring Boot 4.1, with Spring Security, JWT, validation and Spring Mail. |
-| Data | PostgreSQL 18 and Spring Data JPA for reading and storing records. |
-| Local setup | Docker Compose connects the database, API and Nginx frontend. Swagger documents the API. |
+| Customer (`USER`) | Own services, own reports and confirmation of resolved work. |
+| Technician (`TECHNICIAN`) | Assigned reports and relevant incidents, dashboard, personal profile and assignment locations. |
+| Dispatcher (`DISPATCHER`) | Operational dashboard, reports and incident coordination, technician recommendations and overview, audit logs. |
+| Administrator (`ADMIN`) | Operational access plus account, customer-service and network management. |
 
-Inside the API, controllers receive requests, services apply business rules, and repositories access the database. Dashboard statistics are currently calculated in the frontend from API responses.
+The API enforces permissions independently of navigation visibility. Registration creates a customer account. Role-management safeguards protect the last administrator and active operational assignments.
 
-<details>
-<summary><strong>Where is the code?</strong></summary>
+## Workflows
+
+A customer creates a report for an active service. An administrator or dispatcher links eligible reports to an incident, starts the incident and assigns an available technician. The assigned technician starts and resolves the report. The customer confirms the fix; an operator then closes the report. A customer who still has a problem returns the report to work in progress. The incident closes only when all linked reports are closed.
+
+Report states are `OPEN → IN_PROGRESS → RESOLVED → CLOSED`. Incident states are `OPEN → IN_PROGRESS → CLOSED`. Each workflow records audit entries. Historical incidents retain their original metadata and are read-only in the current report-based workflow.
+
+## Architecture and stack
 
 ```text
-vigil/
-├── vigil-web/src/
-│   ├── pages/           Application screens
-│   ├── components/      UI components
-│   ├── api/             Backend requests
-│   └── services/        Session, statistics and exports
-├── vigil-api/src/
-│   ├── main/java/com/vigil/api/
-│   │   └── auth, user, incident, comment, audit, notification
-│   └── test/java/       JUnit tests
-├── docs/readme/         Illustrations, diagrams and screenshot
-└── compose.yaml         Local Docker setup
+Browser → Nginx / React → Spring Boot REST API → PostgreSQL
+                               ├─ SMTP email
+                               └─ Geoapify location lookup
 ```
 
-</details>
-
-<a id="database"></a>
-## <img src="docs/readme/banner-database.svg" alt="Database schema" width="100%" />
-
-![Database relationships between users, incidents, comments and audit logs, with primary keys, foreign keys and nullable fields](docs/readme/database.svg)
-
-Each incident has a reporter and can have an assigned technician. A comment belongs to an incident and its author. Audit entries record who made a change and can reference an incident or a target user.
-
-User roles, incident statuses, severities and categories are stored as enum names. Email addresses are unique. An audit entry can have no incident because account changes are logged too.
-
-<details>
-<summary><strong>Columns in each table</strong></summary>
-
-| Table | Columns |
+| Layer | Technologies |
 | --- | --- |
-| `users` | `id`, `email`, `password_hash`, `first_name`, `last_name`, `role`, `enabled`, `created_at` |
-| `incidents` | `id`, `title`, `description`, `severity`, `status`, `category`, `created_by_id`, `assigned_to_id`, `created_at`, `updated_at`, `resolved_at` |
-| `comments` | `id`, `incident_id`, `user_id`, `content`, `created_at` |
-| `audit_logs` | `id`, `incident_id`, `actor_id`, `action`, `target_user_id`, `previous_role`, `new_role`, `created_at` |
+| Frontend | React 19, TypeScript 6, Vite 8, CSS tokens, Lucide, Recharts, Leaflet / React Leaflet, React PDF. |
+| Backend | Java 25, Spring Boot 4.1, Spring Security, JWT HS256, Spring Data JPA, validation, Spring Mail and springdoc OpenAPI. |
+| Persistence | PostgreSQL 18; Hibernate schema updates and the existing additive, idempotent `schema.sql` startup migration. |
+| Validation | JUnit / Spring tests against PostgreSQL; Vitest and Testing Library; Oxlint and TypeScript. |
+| Local hosting | Docker Compose, Nginx and a Java runtime container. |
 
-Each `id` is an automatically generated primary key. `assigned_to_id` and `resolved_at` are nullable. In `audit_logs`, `incident_id`, `actor_id`, `target_user_id`, `previous_role` and `new_role` are nullable; the role fields hold the before and after values for a role change. All other listed columns are required.
+Controllers handle HTTP and validation, services enforce permissions and business rules, and repositories access data. The principal entities include users, technician profiles, network nodes, service locations, customer services, reports, incidents, comments and audit logs.
 
-</details>
-
-<a id="getting-started"></a>
-## <img src="docs/readme/banner-setup.svg" alt="Run locally" width="100%" />
-
-Install JDK 25 and Node.js 22.12+, and start Docker Desktop with Linux containers. The Maven Wrapper is included.
-
-Run the commands below in PowerShell from the repository root.
-
-**1. Set up the environment files.** Copy the examples if you do not already have local `.env` files:
-
-```powershell
-Copy-Item .env.example .env
-Copy-Item vigil-api/.env.example vigil-api/.env
-Copy-Item vigil-web/.env.example vigil-web/.env
+```text
+linoryx-api/
+  src/main/java/com/linoryx/api/   Feature packages and API configuration
+  src/main/resources/            Application configuration and preserved migrations
+  src/test/java/com/linoryx/api/  Backend tests
+linoryx-web/
+  src/pages/                     Application screens
+  src/components/                Shared UI and feature components
+  src/api/                       Typed API clients
+  src/services/                  Sessions, data preparation and exports
+  src/tokens.css                 Central light-only design tokens
+  public/brand/                  Approved vector logo, app icons and social preview
+  public/fonts/                  Self-hosted, licensed Inter fonts
+scripts/                         Local demo-data utility
+docs/                            Feature, branding and validation documentation
+compose.yaml                     Local services and persistent database volume
 ```
 
-Edit these values before starting the app:
+## Run locally
 
-| File | Setting |
-| --- | --- |
-| `.env` and `vigil-api/.env` | Use the same `DB_PASSWORD` in both files. |
-| `vigil-api/.env` | Set a random `JWT_SECRET` of at least 32 ASCII characters. For email alerts, enter `MAIL_USERNAME` and a Gmail `MAIL_APP_PASSWORD`. |
-| `vigil-web/.env` | Keep `VITE_API_BASE_URL=/api`. The example includes the other local settings. |
+Install JDK 25, Node.js 22.12+ and Docker Desktop with Linux containers. The Maven Wrapper is included. Commands below use PowerShell from the repository root.
 
-**2. Build the apps and Docker images, then start the services.**
+Copy example environment files **only if the destination does not already exist**:
 
 ```powershell
-Push-Location vigil-api
+if (!(Test-Path .env)) { Copy-Item .env.example .env }
+if (!(Test-Path linoryx-api/.env)) { Copy-Item linoryx-api/.env.example linoryx-api/.env }
+if (!(Test-Path linoryx-web/.env)) { Copy-Item linoryx-web/.env.example linoryx-web/.env }
+```
+
+Set the same `DB_PASSWORD` in the root and API environment files. Configure a random `JWT_SECRET` of at least 32 ASCII characters in `linoryx-api/.env`. Keep `VITE_API_BASE_URL=/api`; configure `MAIL_USERNAME` / `MAIL_APP_PASSWORD` for email and `GEOAPIFY_API_KEY` for location lookup. Secrets belong in ignored local environment files.
+
+Build the applications and images:
+
+```powershell
+Push-Location linoryx-api
 .\mvnw.cmd clean package -DskipTests
 Pop-Location
 
-Push-Location vigil-web
+Push-Location linoryx-web
 npm.cmd ci
 npm.cmd run build
 Pop-Location
 
-docker build -t vigil-api:local ./vigil-api
-docker build -t vigil-web:local ./vigil-web
+docker build -t linoryx-api:local ./linoryx-api
+docker build -t linoryx-web:local ./linoryx-web
 docker compose up -d
 ```
 
-| Address | Purpose |
-| --- | --- |
-| [localhost:8081](http://localhost:8081) | Open the app and create an account. |
-| [localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) | Read the API documentation and try requests. |
-| `localhost:5433` | Connect to PostgreSQL from local tools and tests. |
+Open [the local application](http://localhost:8081) or [Swagger UI](http://localhost:8080/swagger-ui/index.html). Nginx forwards `/api` to the backend. PostgreSQL is available on loopback port 5433; API and web ports are also loopback-only.
 
-<details>
-<summary><strong>Create the first local administrator</strong></summary>
-
-Registration creates a `USER` account. To set up the first local administrator, register an account, replace the email below with yours, and run:
+For the first administrator on a fresh database, register your account and then bootstrap that account locally:
 
 ```powershell
 docker compose exec db psql -U vigil_api_user -d vigil_db -c "UPDATE users SET role = 'ADMIN' WHERE email = 'your@example.com';"
 ```
 
-Sign out and back in. You can then assign the `TECHNICIAN` role to other accounts on the Users screen.
+Sign in again to obtain the administrator role. Use the application's Users screen for subsequent account management. Optional synthetic accounts and records are described in [demo data](docs/demo-data.md).
 
-</details>
+For development, start the database with `docker compose up -d db`, run `.\mvnw.cmd spring-boot:run` inside `linoryx-api`, and `npm.cmd run dev` inside `linoryx-web`. Vite proxies `/api` to `API_PROXY_TARGET`, normally `http://localhost:8080`. The API environment example points at PostgreSQL on port 5433.
 
-Check service status with `docker compose ps` and API logs with `docker compose logs api`. Stop the app with `docker compose down`. Database records stay in the Docker volume.
+## Testing
 
-<a id="tests"></a>
-## <img src="docs/readme/banner-tests.svg" alt="JUnit tests and checks" width="100%" />
-
-The backend has JUnit Jupiter tests using Mockito, MockMvc and Spring Boot. They cover:
-
-- Registration, authentication and access permissions for each role.
-- Incident assignment, allowed status changes, comments, audit records and email alerts.
-- Role changes, account activation and deactivation, and restrictions on managing technicians with active assignments.
-
-[`vigil-api/src/test/java`](vigil-api/src/test/java) contains service tests, HTTP access tests and integration tests against a real database.
+Use a separate database for the backend suite. Existing integration tests use transactions, and startup still applies the configured migrations.
 
 ```powershell
-Push-Location vigil-api
-.\mvnw.cmd test
+docker compose up -d db
+# Create once; use a distinct name for an existing test database if needed.
+docker compose exec db psql -U vigil_api_user -d vigil_db -c "CREATE DATABASE linoryx_test;"
+
+Push-Location linoryx-api
+$env:DB_URL = 'jdbc:postgresql://localhost:5433/linoryx_test'
+.\mvnw.cmd clean verify
+Remove-Item Env:DB_URL
 Pop-Location
 
-Push-Location vigil-web
+Push-Location linoryx-web
+npm.cmd test
 npm.cmd run lint
 npm.cmd run build
 Pop-Location
 ```
 
-The full backend suite needs PostgreSQL running. Set `DB_URL=jdbc:postgresql://localhost:5433/vigil_db` in `vigil-api/.env` for local tests. Frontend checks use the linter and TypeScript/Vite build.
+The frontend build runs TypeScript project checks before generating production assets. Backend tests cover authentication, authorization, account safeguards, provisioning, reports, incident workflows, technician management and auditing. See [rebranding validation](docs/rebrand-validation.md) for results from this change, including limitations; these are observations from a local run, not a CI guarantee.
 
-<a id="roadmap"></a>
-## <img src="docs/readme/banner-roadmap.svg" alt="Azure, AWS and CI/CD" width="100%" />
+## Upgrading an existing checkout
 
-![Deployment plan: local Docker setup, planned CI checks, Azure and AWS deployments, then CD](docs/readme/cloud-plan.svg)
+The modules are now `linoryx-api` and `linoryx-web`, and Java uses `com.linoryx.api`. Local environment files moved with their modules; do not replace existing secrets. Update IDE run configurations or external scripts that reference the former module paths or Maven artifact.
 
-We plan to deploy Vigil to Azure and AWS. The specific cloud services and network setup are still to be decided.
+Rebuild the new Docker image names and run `docker compose up -d`. The Compose project identity, database name, database user and `postgres_data` volume are deliberately retained to reconnect to the existing data. Stop the stack with `docker compose down` when needed; omitting `-v` retains the database volume.
 
-| Step | Planned work |
-| --- | --- |
-| CI, before or alongside the first deployment | Run JUnit tests, frontend lint/build and Docker builds automatically. Give integration tests their own database. |
-| Azure and AWS deployment | Host the web app, API and PostgreSQL with HTTPS and secure secret storage. |
-| CD, once the environment is ready | Deliver tested Docker images through a controlled release process, with a way to roll back. |
+Public API paths, database tables, enum values, migration SQL and historical records are unchanged. The existing JWT issuer remains a protocol compatibility value. Saved browser sessions migrate from the old storage key to `linoryx.session`. Demo-account domains, credentials and the seed advisory lock remain stable. The Git remote and checkout directory are not renamed. See [brand guidelines and compatibility](docs/brand-guidelines.md).
 
-CI (continuous integration) checks the build and tests when code changes. CD (continuous delivery) automates delivery of a tested version. Cloud deployments and these pipelines have not been implemented yet.
+## Further documentation
+
+- [Brand, light-mode tokens and compatibility](docs/brand-guidelines.md)
+- [Frontend design](docs/frontend-design.md)
+- [Network nodes and customer services](docs/network-services.md)
+- [Report and incident categories](docs/incident-categories.md)
+- [Technician management](docs/technician-management.md)
+- [Local demo data](docs/demo-data.md)
+
+## Roadmap
+
+Hosted demo, product screenshots, walkthrough video, cloud deployments and CI/CD remain planned. No public deployment URL is available.

@@ -1,0 +1,35 @@
+.incidents-page-actions { display: flex; align-items: center; gap: 12px; }
+.incidents-main .metric-grid { margin-bottom: 24px; }
+.incidents-export { display: flex; justify-content: flex-end; margin-top: 16px; }
+.critical-incident-note { display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 12px; border-radius: var(--radius-control); background: var(--color-danger-light); color: var(--color-danger); font-size: 12px; line-height: 1.5; }
+.critical-incident-note svg { flex-shrink: 0; margin-top: 1px; }
+.detail-status-row { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.detail-status-row .status-badge, .detail-status-row .severity-badge { font-size: 12px; }
+.detail-status-row .refresh-button { margin-left: auto; }
+.detail-description { margin: 16px 0 24px; color: var(--color-text-muted); font-size: 14px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 24px; margin: 0 0 24px; padding: 20px 0; border-block: 1px solid var(--color-border); }
+.detail-facts dt { margin-bottom: 8px; color: var(--color-text-muted); font-size: 12px; }
+.detail-facts dd { margin: 0; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.comments-section { padding-top: 24px; border-top: 1px solid var(--dashboard-border); }
+.comments-empty { margin: 20px 0; color: var(--color-text-muted); font-size: 13px; }
+.incident-comments { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.incident-comments > li { overflow: hidden; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-white); }
+.comment-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; padding: 12px 16px; border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
+.comment-heading strong { min-width: 0; font-size: 13px; font-weight: 500; line-height: 20px; overflow-wrap: anywhere; }
+.comment-heading time { flex-shrink: 0; color: var(--color-text-muted); font-size: 12px; line-height: 20px; font-variant-numeric: tabular-nums; }
+.incident-comments p { margin: 0; padding: 16px; color: var(--color-text); font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.incident-comment-form { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+.incident-comment-form button { align-self: flex-end; }
+
+@media (max-width: 760px) {
+  .incidents-page-heading { align-items: flex-start; flex-direction: column; gap: 20px; }
+  .incidents-main .incident-table { min-width: 720px; }
+  .detail-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 480px) {
+  .incidents-page-actions { width: 100%; flex-wrap: wrap; }
+  .incidents-page-actions .dashboard-button { flex: 1; white-space: nowrap; }
+  .detail-status-row { gap: 12px; }
+  .detail-facts { grid-template-columns: 1fr; gap: 16px; }
+}

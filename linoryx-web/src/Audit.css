@@ -1,0 +1,15 @@
+.audit-table { min-width: 820px; }
+.audit-date { display: flex; flex-direction: column; gap: 4px; color: var(--color-text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.audit-date span:last-child { font-size: 12px; }
+.audit-actor { max-width: 180px; font-weight: 500; white-space: normal; overflow-wrap: anywhere; }
+.audit-action { display: inline-block; padding: 4px 8px; border-radius: var(--radius-small); background: var(--color-info-light); color: var(--color-info); font-size: 12px; }
+.audit-action-resolved, .audit-action-closed, .audit-action-user_enabled { background: var(--color-success-light); color: var(--color-success); }
+.audit-action-user_disabled { background: var(--color-danger-light); color: var(--color-danger); }
+.audit-incident-link { display: inline-flex; align-items: center; gap: 4px; min-height: 28px; text-decoration: none; font-size: 12px; }
+.audit-incident-link:hover { text-decoration: underline; }
+.audit-target { font-size: 12px; }
+.audit-details { max-width: 240px; color: var(--color-text-muted); white-space: normal; overflow-wrap: anywhere; }
+
+@media (max-width: 480px) {
+  .audit-page-heading { align-items: flex-start; gap: 16px; }
+}

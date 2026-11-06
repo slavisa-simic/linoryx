@@ -1,0 +1,48 @@
+.technician-profile-form { max-width: 760px; padding: 24px; margin-top: 24px; }
+.technician-profile-form fieldset { min-width: 0; padding: 0; border: 0; }
+.technician-profile-form legend { font-weight: 500; margin-bottom: 16px; }
+.technician-profile-form label, .technician-filters label { display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+.technician-profile-form > fieldset > label { margin: 20px 0; }
+.technician-profile-form .incident-form-row > label { flex: 1; min-width: 0; }
+.technician-profile-form .technician-skills { display: flex; flex-wrap: wrap; gap: 16px; margin: 24px 0; }
+.technician-skills label { flex-direction: row; align-items: center; }
+.assignment-context { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-control); background: var(--color-surface); }
+.assignment-context > svg { flex-shrink: 0; color: var(--color-text-muted); }
+.assignment-context strong, .assignment-context span { display: block; font-size: 13px; line-height: 20px; overflow-wrap: anywhere; }
+.assignment-context span { color: var(--color-text-muted); }
+.technician-candidates { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.technician-choice { display: grid; grid-template-columns: 16px minmax(0, 1fr) 80px 96px; align-items: center; gap: 16px; min-height: 88px; padding: 12px 16px; border: 1px solid var(--color-border); border-radius: var(--radius-control); cursor: pointer; transition: border-color 160ms var(--motion-ease), background-color 160ms var(--motion-ease); }
+.technician-choice:hover:not(.is-unavailable) { border-color: var(--color-primary-border); background: var(--color-surface); }
+.technician-choice.is-selected { border-color: var(--color-primary); background: var(--color-primary-light); }
+.technician-choice:focus-within { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+.technician-choice.is-unavailable { background: var(--color-surface); color: var(--color-text-muted); cursor: default; }
+.technician-choice input { width: 16px; height: 16px; margin: 0; }
+.technician-identity { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; min-width: 0; }
+.technician-name { display: inline-flex; gap: 8px; align-items: baseline; font-size: 14px; overflow-wrap: anywhere; }
+.technician-rank { color: var(--color-text-muted); font-family: var(--font-mono); font-size: 11px; }
+.technician-availability { display: inline-flex; align-items: center; gap: 6px; color: var(--color-text-muted); font-size: 11px; }
+.availability-available .status-dot { background: var(--color-success); }
+.availability-busy .status-dot { background: var(--color-warning); }
+.technician-specializations { flex-basis: 100%; color: var(--color-text-muted); font-size: 12px; line-height: 20px; overflow-wrap: anywhere; }
+.technician-warnings { flex-basis: 100%; color: var(--color-warning); font-size: 12px; line-height: 18px; }
+.technician-metric { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; font-variant-numeric: tabular-nums; }
+.technician-metric strong { font-size: 14px; }
+.technician-metric > span { color: var(--color-text-muted); font-size: 11px; }
+.technician-other { margin-top: 20px; border-top: 1px solid var(--color-border); }
+.technician-other summary { display: flex; align-items: center; gap: 8px; min-height: 48px; padding-block: 12px; color: var(--color-text-muted); font-size: 13px; cursor: pointer; list-style: none; }
+.technician-other summary::-webkit-details-marker { display: none; }
+.technician-other summary > svg { margin-left: auto; }
+.technician-other[open] summary > svg { transform: rotate(180deg); }
+.technician-filters label { flex: 1; min-width: 180px; }
+.technician-profile-form input[readonly] { color: var(--color-text-muted); background: var(--color-surface); }
+@media (max-width: 760px) {
+  .technician-profile-form { padding: 16px; }
+  .workspace-navigation { overflow-x: auto; }
+}
+@media (max-width: 640px) {
+  .technician-choice { grid-template-columns: 16px minmax(0, 1fr) 80px; gap: 12px; padding: 12px; }
+  .technician-identity { grid-column: 2 / -1; }
+  .technician-choice > input { align-self: start; margin-top: 4px; }
+  .technician-metric { grid-column: 2; align-items: flex-start; flex-direction: row; align-items: baseline; gap: 4px; }
+  .technician-metric:last-child { grid-column: 3; justify-self: end; flex-direction: column; align-items: flex-end; }
+}

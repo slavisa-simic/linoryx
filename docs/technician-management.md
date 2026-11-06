@@ -1,4 +1,4 @@
-# VIGIL 2.0 technician management
+# LINORYX 2.0 technician management
 
 The implementation extends the existing controller → service → repository structure. Controllers handle HTTP and validation, services apply permissions and business rules, and repositories scope database access. React uses the existing session, dialogs, tables, CSS and Leaflet infrastructure. No dependencies were added.
 
@@ -14,7 +14,7 @@ The existing administrator lock and a lock on the target user serialize account 
 
 ## Database migration
 
-The additive migration is appended to `vigil-api/src/main/resources/schema.sql`, following the project's existing startup migration convention. Spring runs it after Hibernate schema updates.
+The additive migration is appended to `linoryx-api/src/main/resources/schema.sql`, following the project's existing startup migration convention. Spring runs it after Hibernate schema updates.
 
 - Creates `technician_profiles` and `technician_specializations` if absent.
 - Enforces the unique user relationship, coordinate pairs and ranges, and allowed enum values.

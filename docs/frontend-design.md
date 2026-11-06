@@ -1,73 +1,25 @@
-# Vigil frontend design
+# Linoryx frontend design
 
-This pass follows [unslop by Damir Sokolovsky (@heydamir)](https://heydamir.design/unslop), licensed under CC BY 4.0.
+The approved Linoryx reference defines a light-only enterprise workspace: charcoal typography, terracotta identity, warm ivory backgrounds, warm gray borders and Inter. The existing screens and business workflows remain in the React feature structure.
 
-## Direction
+## Shared design system
 
-- Product: an operational workspace for customer reports, incidents and technician assignments
-- Character: calm, precise, readable
-- World: an incident desk, with neutral surfaces and Vigil's existing blue brand accent
-- Moments: the incident activity chart and statuses that need attention
-- Signature: small status marks beside incident and report states
+All raw UI colors live in [tokens.css](../linoryx-web/src/tokens.css), organized as brand primitives, semantic roles and component aliases. Application CSS uses those variables. PDF exports resolve colors from the same stylesheet and use self-hosted static Inter fonts. The web UI uses the Inter variable font, including regular, medium, semibold and bold weights.
 
-## Initial audit
+Exact terracotta is used in the logo and chart accents. Small action text and links use darker derived tones for AA contrast. Success, warning, error and information keep separate semantic colors. The light sidebar, white cards and ivory canvas share a 4px spacing rhythm, restrained borders and consistent radii. Forms and search controls have visible boundaries and focus indicators.
 
-- `workspace.css`: four saturated metric backgrounds compete with the data
-- `workspace.css`: navigation becomes crowded as role-specific links are added
-- `workspace.css`: table references use 9px text and badges use 10px text
-- `workspace.css`: spacing varies between similar controls, panel headings and rows
-- `Dashboard.css`: supporting charts compete with the primary activity chart
-- `Dashboard.css`: small text uses negative letter spacing in several numeric summaries
-- `Reports.css`: filters, selection controls and checkboxes use inconsistent spacing
-- `index.css`: hidden scrollbars obscure horizontal scrolling in wide tables
-- `App.css`: the auth card has a looping animation; preserved at the user's explicit request
+There is one color scheme, declared as light-only in the document and CSS. There is no theme provider, theme toggle, persisted theme preference or operating-system color-scheme branch. Reduced-motion preferences remain supported.
 
-The existing logo, local Outfit font, page structure and Lucide icons already provide a usable foundation. They remain in place.
+## Components and layouts
 
-## Nine passes
+- Navigation retains role-scoped links. A desktop sidebar becomes a wrapping header on smaller screens.
+- Tables share headings, search, filters, selection, pagination, hover states and semantic badges. Wide tables scroll inside their panels; reports adapt to stacked fields in narrow containers.
+- Shared FormDialog owns modal headings, body scrolling, actions, focus management and Escape dismissal. Parent/child dialogs retain their existing behavior.
+- Authentication uses a white form panel on roughly one third of the desktop width (at least 400px) and the supplied red artwork in the remaining space. The artwork panel contains only a centered SVG card, without promotional copy. Both auth screens stack on smaller displays. The gently floating card shows the form's live name/email values and masked password length; the float is disabled for reduced-motion preferences.
+- Dashboard charts use flat fills and the central tokens. Existing chart periods and legend controls remain functional.
+- Network and technician maps retain location behavior and provider attribution. Map markers use the shared accent and status tokens.
+- Empty, loading, notice and error states inherit the same typography, surfaces and accessible semantic colors.
 
-1. Spacing: page gutters, panel padding, filters and form groups follow a shared 4px rhythm. Desktop navigation uses a 240px side column.
-2. Color: white panels sit on a neutral background. Blue marks actions, selections and the primary chart. Critical values and workflow statuses retain semantic colors.
-3. Icons: the existing Lucide set uses a consistent 1.5 stroke. Decorative metric icons are removed; the component keeps its existing props so callers stay compatible.
-4. Copy: short contextual descriptions explain the dashboard, incident list and account management. Existing action labels and workflow wording remain intact.
-5. Type: Outfit stays local. Table text and badges become more readable; references and chart axes use a system monospace font. Numbers use tabular figures.
-6. Layout: existing sections keep their order. Desktop navigation moves to the side through CSS; smaller screens retain visible links above the content. Tables scroll within their panels.
-7. Details: quieter borders, consistent control radii, visible keyboard focus and scrollbars clarify interaction. Report selection controls and filters share the same visual rules.
-8. Visuals: existing charts and real application content carry the visual emphasis. No generated images, avatars, sample records or new dependencies are added to the application.
-9. Motion: interface feedback uses short color and background transitions. The original auth card animation is preserved as requested; workspace controls respect reduced motion.
+The visual treatment replaces the prior frontend direction. The pre-existing CSS attribution to [unslop by Damir Sokolovsky](https://heydamir.design/unslop), CC BY 4.0, remains in the relevant source comments.
 
-## Preserved behavior
-
-API calls, business rules, permissions, routing, form validation and state handling stay unchanged. The original auth cards retain their markup, colors, dimensions, typography, rotation, outlines, live form preview and animation. No user profile images or upload controls are introduced.
-
-Changes stay in the existing CSS files and simple presentation markup. No new component architecture or styling framework is introduced.
-
-## Validation
-
-- Production build passes; Vite still reports the large application and PDF bundles
-- Oxlint passes
-- All 63 existing frontend tests pass across five test files
-- Browser checks cover navigation, incident search, incident dialog opening and closing, chart periods and legend toggles
-- Eleven role/page combinations fit within 1440, 1024, 768, 390 and 320px viewports; wide tables retain their own horizontal scrolling
-- Original and updated auth card styles were compared for colors, dimensions, typography, transforms and animation
-- Visual checks use temporary API fixtures outside the repository because a local backend was not running; no fixture data is included in the application
-
-## Modal refinement — 5 November 2026
-
-The shared `FormDialog` now owns every modal's header, scrollable body and optional action footer. Its layout and shared form styles live in `vigil-web/src/dialogs.css`; obsolete modal rules were removed from the page styles. Creating an incident uses the same component. The requested hidden scrollbars are defined globally in `index.css`, with scrolling retained.
-
-Incident details separate the reference, title, status and metadata. PDF export is an outlined footer action beside the incident workflow. The existing reports table adapts to stacked fields inside narrow modals without a second rendering implementation. Technician choices align skills, availability, workload and distance; other profiles expand on demand, and the selected technician and confirmation stay visible in the footer.
-
-References: [Carbon modal layout and actions](https://v10.carbondesignsystem.com/components/modal/usage/) and [Linear issue assignment](https://linear.app/docs/assigning-issues). The existing Outfit font, blue accent and Lucide icons are retained. No dependencies were added.
-
-All refresh and retry actions use the simple shared `RefreshButton`, which reuses the existing neutral button styles and Lucide icon. Table headings omit entity counts; existing table footers retain their totals. Network table types reuse the same `nodeTypeIcons` mapping as map markers.
-
-Browser checks use the running local API and existing demo records, including INC-183 and REP-1116. They cover 1440px and 375px layouts, keyboard scrolling, selection, nested modal dismissal, restored page scrolling and a successful PDF download. Frontend validation includes the existing workflow tests and a regression check that cancelling an assignment keeps its parent incident open.
-
-## Report queue refinement — 5 November 2026
-
-The report queue follows the existing calm, precise incident desk direction. The screenshot audit found tall rows, weak separation between primary and supporting information, no row selection feedback and an empty actions column. Reports and incidents have a separate Category column, using their existing label mappings and one shared column style. Customer and network information form separate groups. Selected rows use the existing blue tokens. Workflow actions sit with assignment information, or with status for customers.
-
-The queue reuses the existing report details dialog to show the full description; only the queue preview is limited to two lines. One `ReportsTable` handles the queue and dialogs. Its existing container-based layout now also serves narrow pages, with larger selection targets. Existing shared icons, status badges, typography, buttons and permissions are reused; no dependencies were added.
-
-Validation: production build, lint and all 76 frontend tests pass, including opening and closing report details without losing the queue selection. The local web container serves the updated build at `http://localhost:8081/reports`. Visual browser verification was blocked because the computer-use tool cannot enforce URL policy for the current Windows Firefox browser; responsive rules were reviewed in source, without a rendered visual check.
+See [brand guidelines](brand-guidelines.md) for asset usage and compatibility exceptions, and [validation](rebrand-validation.md) for the actual checks performed.
