@@ -1,0 +1,13 @@
+{
+  "width": 1200,
+  "height": 400,
+  "holdMs": 4000,
+  "transitionMs": 360,
+  "transition": "slide-left",
+  "slides": [
+    "intro",
+    "overview",
+    "integrations",
+    "responsive"
+  ]
+}

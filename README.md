@@ -1,14 +1,5 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/overview.webp" />
-    <img src="docs/readme/visuals/header-carousel.gif" alt="Linoryx full-stack project: dashboard, external integrations and responsive layouts" width="1200" height="600" />
-  </picture>
-</p>
-
-<p align="center">
-  <a href="docs/readme/visuals/overview.webp">Overview</a> ·
-  <a href="docs/readme/visuals/integrations.webp">Integrations</a> ·
-  <a href="docs/readme/visuals/responsive.webp">Devices</a>
+  <img src="docs/readme/visuals/header-carousel.gif" alt="Four-slide carousel: Linoryx telecom introduction, full-stack project, external API integrations and responsive design" width="1200" height="400" />
 </p>
 
 # Linoryx — Telecom Operations Platform
@@ -17,7 +8,7 @@ Linoryx is a full-stack project for managing telecom services and repair reports
 
 The project covers role-based access, report workflows, database relationships, external integrations and testing. You can run it locally with Docker.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/product-preview-title.png" /><img src="docs/readme/visuals/product-preview-title.gif" alt="Product preview" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/product-preview-title.gif" alt="Product preview" width="1200" height="132" />
 
 The dashboard shows open incidents, priorities and team workload. Here is the app running with local demo data.
 
@@ -27,13 +18,13 @@ The dashboard shows open incidents, priorities and team workload. Here is the ap
 - **Screenshots:** [dashboard](docs/readme/dashboard.jpg), [sign-in](docs/readme/captures/login-desktop.jpg) and [incident details](docs/readme/incident.jpg).
 - **Product walkthrough video:** coming soon.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/responsive-design-title.png" /><img src="docs/readme/visuals/responsive-design-title.gif" alt="Responsive design" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/responsive-design-title.gif" alt="Responsive design" width="1200" height="132" />
 
 ![Linoryx sign-in shown on a laptop, tablet and phone](docs/readme/visuals/responsive.webp)
 
 The layout adapts to laptops, tablets and phones. The sign-in form stays simple on smaller screens, with the artwork shown on desktop.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/external-integrations-title.png" /><img src="docs/readme/visuals/external-integrations-title.gif" alt="External API integrations" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/external-integrations-title.gif" alt="External API integrations" width="1200" height="132" />
 
 ![Implemented Geoapify address search and Gmail SMTP report notifications](docs/readme/visuals/integrations.webp)
 
@@ -42,7 +33,7 @@ The layout adapts to laptops, tablets and phones. The sign-in form stays simple 
 
 See [location setup](docs/network-services.md) and [email notifications](docs/email-notifications.md) for details.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/existing-features-title.png" /><img src="docs/readme/visuals/existing-features-title.gif" alt="Existing features" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/existing-features-title.gif" alt="Existing features" width="1200" height="132" />
 
 | Area | What it does |
 | --- | --- |
@@ -58,7 +49,7 @@ See [location setup](docs/network-services.md) and [email notifications](docs/em
 
 Address search needs a Geoapify API key. Maps use Leaflet and OpenStreetMap and need an internet connection. Existing records remain available without the key.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/roles-title.png" /><img src="docs/readme/visuals/roles-title.gif" alt="Roles" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/roles-title.gif" alt="Roles" width="1200" height="132" />
 
 | Role | Access |
 | --- | --- |
@@ -69,7 +60,7 @@ Address search needs a Geoapify API key. Maps use Leaflet and OpenStreetMap and 
 
 New accounts start as customers. The backend checks permissions for each role.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/use-case-diagram-title.png" /><img src="docs/readme/visuals/use-case-diagram-title.gif" alt="Use-case diagram" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/use-case-diagram-title.gif" alt="Use-case diagram" width="1200" height="132" />
 
 The diagram shows the main actions for all four roles. `«include»` means a required step; `«extend»` means an optional action. Administrators also have dispatcher access.
 
@@ -77,12 +68,9 @@ The diagram shows the main actions for all four roles. `«include»` means a req
 
 [Editable use-case source](docs/readme/visuals/source/use-cases.puml)
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/workflows-title.png" /><img src="docs/readme/visuals/workflows-title.gif" alt="Workflows" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/workflows-title.gif" alt="Workflows" width="1200" height="132" />
 
-<picture>
-  <source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/workflow.png" />
-  <img src="docs/readme/visuals/workflow.gif" alt="Report workflow: open, in progress, resolved and closed" width="1200" height="330" />
-</picture>
+<img src="docs/readme/visuals/workflow.gif" alt="Report workflow: open, in progress, resolved and closed" width="1200" height="330" />
 
 1. A customer reports a problem with an active service.
 2. An administrator or dispatcher links the report to an incident, starts the incident and assigns a technician.
@@ -92,7 +80,7 @@ The diagram shows the main actions for all four roles. `«include»` means a req
 
 Reports use `OPEN → IN_PROGRESS → RESOLVED → CLOSED`. Incidents use `OPEN → IN_PROGRESS → CLOSED`.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/architecture-and-stack-title.png" /><img src="docs/readme/visuals/architecture-and-stack-title.gif" alt="Architecture and stack" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/architecture-and-stack-title.gif" alt="Architecture and stack" width="1200" height="132" />
 
 ```text
 Browser → Nginx / React → Spring Boot REST API → PostgreSQL
@@ -128,7 +116,7 @@ docs/                            Project documentation
 compose.yaml                     Local Docker services
 ```
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/database-schema-title.png" /><img src="docs/readme/visuals/database-schema-title.gif" alt="Database schema" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/database-schema-title.gif" alt="Database schema" width="1200" height="132" />
 
 The database has 11 tables and 16 foreign-key relationships. The overview shows the main fields, keys and relationships. Click it to open the full schema with all columns.
 
@@ -136,7 +124,7 @@ The database has 11 tables and 16 foreign-key relationships. The overview shows 
 
 [Editable schema source](docs/readme/visuals/source/database-schema.dot)
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/run-locally-title.png" /><img src="docs/readme/visuals/run-locally-title.gif" alt="Run locally" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/run-locally-title.gif" alt="Run locally" width="1200" height="132" />
 
 Install JDK 25, Node.js 22.12+ and Docker Desktop with Linux containers. The Maven Wrapper is included. Run these commands in PowerShell from the project root.
 
@@ -193,7 +181,7 @@ For development, run these in separate terminals:
 
 Vite forwards `/api` requests to `API_PROXY_TARGET`, which defaults to `http://localhost:8080` in the example file.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/testing-title.png" /><img src="docs/readme/visuals/testing-title.gif" alt="Testing" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/testing-title.gif" alt="Testing" width="1200" height="132" />
 
 Use a separate database for backend tests:
 
@@ -217,7 +205,7 @@ Pop-Location
 
 The tests cover sign-in, permissions, services, reports, incidents and technicians. The frontend build also checks TypeScript. Previous local results are in [rebranding validation](docs/rebrand-validation.md).
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/upgrading-title.png" /><img src="docs/readme/visuals/upgrading-title.gif" alt="Upgrading an existing checkout" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/upgrading-title.gif" alt="Upgrading an existing checkout" width="1200" height="132" />
 
 The folders are now `linoryx-api` and `linoryx-web`, and the Java package is `com.linoryx.api`. Update any IDE settings or scripts that use the old paths. Keep your existing `.env` values.
 
@@ -225,7 +213,7 @@ Rebuild the Docker images using the commands above, then run `docker compose up 
 
 Some internal names still use `vigil` to keep existing data and sessions working. See [brand guidelines](docs/brand-guidelines.md) for details.
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/documentation-title.png" /><img src="docs/readme/visuals/documentation-title.gif" alt="Further documentation" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/documentation-title.gif" alt="Further documentation" width="1200" height="132" />
 
 - [Brand guidelines](docs/brand-guidelines.md)
 - [Frontend design](docs/frontend-design.md)
@@ -234,7 +222,7 @@ Some internal names still use `vigil` to keep existing data and sessions working
 - [Technician management](docs/technician-management.md)
 - [Local demo data](docs/demo-data.md)
 
-## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/roadmap-title.png" /><img src="docs/readme/visuals/roadmap-title.gif" alt="Roadmap" width="1200" height="132" /></picture>
+## <img src="docs/readme/visuals/roadmap-title.gif" alt="Roadmap" width="1200" height="132" />
 
 - Hosted demo and cloud deployment.
 - More product screenshots and a walkthrough video.

@@ -106,31 +106,44 @@ for (const [name, svg] of Object.entries(diagrams)) {
 // Four state highlights show the real report sequence without browser scripts.
 const flowGif = GIFEncoder()
 for (let state = 0; state < 4; state++) {
-  const pixels = await sharp(render(workflow(state))).ensureAlpha().raw().toBuffer()
+  const pixels = await sharp(render(workflow(state))).flatten({ background: color.white }).ensureAlpha().raw().toBuffer()
   const palette = quantize(pixels, 128)
   flowGif.writeFrame(applyPalette(pixels, palette), 1200, 330, { palette, delay: 1800, repeat: 0 })
 }
 flowGif.finish()
 await writeFile(join(output, 'workflow.gif'), flowGif.bytes())
 
-// Three generated campaign images form the header's automatic carousel.
-const slideNames = ['overview', 'integrations', 'responsive']
+// One compact, four-slide header: brand intro, project, integrations, devices.
+const slideNames = ['intro', 'overview', 'integrations', 'responsive']
 const width = 1200
-const height = 600
+const height = 400
+await writeFile(join(source, 'header-carousel.json'), JSON.stringify({ width, height, holdMs: 4000, transitionMs: 360, transition: 'slide-left', slides: slideNames }, null, 2) + '\n')
 const slides = await Promise.all(slideNames.map(name => sharp(join(output, name + '.png')).resize(width, height, { fit: 'contain', background: color.canvas }).ensureAlpha().raw().toBuffer()))
 const carousel = GIFEncoder()
-function addFrame(pixels, delay) {
-  const palette = quantize(pixels, 256)
-  carousel.writeFrame(applyPalette(pixels, palette), width, height, { palette, delay, repeat: 0 })
+async function addFrame(pixels, slide, delay) {
+  const light = slide === 0
+  const ink = light ? '#FFF0DF' : color.ink
+  const inactive = light ? '#D6A79C' : '#BDB5AE'
+  const dots = `<svg width="1200" height="400" xmlns="http://www.w3.org/2000/svg">${slideNames.map((_, index) => `<rect x="${555 + index * 26}" y="375" width="${index === slide ? 24 : 8}" height="6" rx="3" fill="${index === slide ? ink : inactive}"/>`).join('')}</svg>`
+  const frame = await sharp(pixels, { raw: { width, height, channels: 4 } }).composite([{ input: Buffer.from(dots) }]).raw().toBuffer()
+  const palette = quantize(frame, 256)
+  carousel.writeFrame(applyPalette(frame, palette), width, height, { palette, delay, repeat: 0 })
 }
 for (let slide = 0; slide < slides.length; slide++) {
-  addFrame(slides[slide], 3500)
+  await addFrame(slides[slide], slide, 4000)
   const next = slides[(slide + 1) % slides.length]
-  for (let step = 1; step <= 5; step++) {
-    const mix = step / 6
+  for (let step = 1; step <= 6; step++) {
+    const progress = step / 7
+    const eased = progress * progress * (3 - 2 * progress)
+    const offset = Math.round(width * eased)
+    const remaining = width - offset
     const pixels = Buffer.alloc(slides[slide].length)
-    for (let pixel = 0; pixel < pixels.length; pixel++) pixels[pixel] = Math.round(slides[slide][pixel] * (1 - mix) + next[pixel] * mix)
-    addFrame(pixels, 80)
+    for (let row = 0; row < height; row++) {
+      const start = row * width * 4
+      slides[slide].copy(pixels, start, start + offset * 4, start + width * 4)
+      next.copy(pixels, start + remaining * 4, start, start + offset * 4)
+    }
+    await addFrame(pixels, progress < .5 ? slide : (slide + 1) % slides.length, 60)
   }
 }
 carousel.finish()
@@ -185,11 +198,11 @@ for (const [name, title, kind] of sections) {
   const animation = GIFEncoder()
   for (let step = 0; step < 12; step++) {
     const phase = step < 8 ? (step + 1) / 8 : 1
-    const pixels = await sharp(render(titleGraphic(title, kind, phase))).ensureAlpha().raw().toBuffer()
+    const pixels = await sharp(render(titleGraphic(title, kind, phase))).flatten({ background: color.white }).ensureAlpha().raw().toBuffer()
     const palette = quantize(pixels, 64)
     animation.writeFrame(applyPalette(pixels, palette), 1200, 132, { palette, delay: step === 11 ? 1800 : 100, repeat: 0 })
   }
   animation.finish()
   await writeFile(join(output, name + '-title.gif'), animation.bytes())
 }
-console.log('Built section graphics, 14 animated section titles, the workflow and the header carousel.')
+console.log('Built section graphics, 14 animated titles, the workflow and a compact 4-slide carousel.')
