@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="docs/readme/visuals/header-carousel.gif" alt="Four-slide carousel: Linoryx telecom introduction, full-stack project, external API integrations and responsive design" width="1200" height="400" />
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/header-carousel-reduced.svg" />
+    <img src="docs/readme/visuals/header-carousel.svg" alt="Four-slide carousel: Linoryx telecom introduction, full-stack project, external API integrations and responsive design" width="1200" height="400" />
+  </picture>
 </p>
 
 # Linoryx — Telecom Operations Platform

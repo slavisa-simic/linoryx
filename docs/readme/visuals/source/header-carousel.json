@@ -1,13 +1,19 @@
 {
+  "format": "svg",
+  "animation": "SMIL",
   "width": 1200,
   "height": 400,
   "holdMs": 4000,
-  "transitionMs": 360,
+  "transitionMs": 400,
+  "durationMs": 17600,
   "transition": "slide-left",
+  "repeat": "indefinite",
+  "controls": false,
   "slides": [
     "intro",
     "overview",
     "integrations",
     "responsive"
-  ]
+  ],
+  "reference": "https://github.com/slavisa-simic/slavisa-simic/blob/main/scripts/build_carousel.py"
 }

@@ -1,6 +1,6 @@
 # README carousel image prompts
 
-The built-in image-generation tool produced four matching 3:1 slides. They are saved as `intro.png`, `overview.png`, `integrations.png` and `responsive.png`. The header embeds one GIF containing all four, in that order.
+The built-in image-generation tool produced four matching 3:1 slides. They are saved as `intro.png`, `overview.png`, `integrations.png` and `responsive.png`. The header embeds all four in one continuously animated SVG, in that order.
 
 ## intro
 

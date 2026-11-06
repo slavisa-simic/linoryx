@@ -114,42 +114,47 @@ flowGif.finish()
 await writeFile(join(output, 'workflow.gif'), flowGif.bytes())
 
 // One compact, four-slide header: brand intro, project, integrations, devices.
+// Same self-contained SMIL image-track animation as the profile repository:
+// https://github.com/slavisa-simic/slavisa-simic/blob/main/scripts/build_carousel.py
 const slideNames = ['intro', 'overview', 'integrations', 'responsive']
 const width = 1200
 const height = 400
-await writeFile(join(source, 'header-carousel.json'), JSON.stringify({ width, height, holdMs: 4000, transitionMs: 360, transition: 'slide-left', slides: slideNames }, null, 2) + '\n')
-const slides = await Promise.all(slideNames.map(name => sharp(join(output, name + '.png')).resize(width, height, { fit: 'contain', background: color.canvas }).ensureAlpha().raw().toBuffer()))
-const carousel = GIFEncoder()
-async function addFrame(pixels, slide, delay) {
-  const light = slide === 0
-  const ink = light ? '#FFF0DF' : color.ink
-  const inactive = light ? '#D6A79C' : '#BDB5AE'
-  const dots = `<svg width="1200" height="400" xmlns="http://www.w3.org/2000/svg">${slideNames.map((_, index) => `<rect x="${555 + index * 26}" y="375" width="${index === slide ? 24 : 8}" height="6" rx="3" fill="${index === slide ? ink : inactive}"/>`).join('')}</svg>`
-  const frame = await sharp(pixels, { raw: { width, height, channels: 4 } }).composite([{ input: Buffer.from(dots) }]).raw().toBuffer()
-  const palette = quantize(frame, 256)
-  carousel.writeFrame(applyPalette(frame, palette), width, height, { palette, delay, repeat: 0 })
-}
-for (let slide = 0; slide < slides.length; slide++) {
-  await addFrame(slides[slide], slide, 4000)
-  const next = slides[(slide + 1) % slides.length]
-  for (let step = 1; step <= 6; step++) {
-    const progress = step / 7
-    const eased = progress * progress * (3 - 2 * progress)
-    const offset = Math.round(width * eased)
-    const remaining = width - offset
-    const pixels = Buffer.alloc(slides[slide].length)
-    for (let row = 0; row < height; row++) {
-      const start = row * width * 4
-      slides[slide].copy(pixels, start, start + offset * 4, start + width * 4)
-      next.copy(pixels, start + remaining * 4, start, start + offset * 4)
-    }
-    await addFrame(pixels, progress < .5 ? slide : (slide + 1) % slides.length, 60)
-  }
-}
-carousel.finish()
-await writeFile(join(output, 'header-carousel.gif'), carousel.bytes())
-
+const holdMs = 4000
+const transitionMs = 400
 for (const name of slideNames) await sharp(join(output, name + '.png')).resize(1600).webp({ quality: 90 }).toFile(join(output, name + '.webp'))
+const slideImages = await Promise.all(slideNames.map(async name => 'data:image/webp;base64,' + (await readFile(join(output, name + '.webp'))).toString('base64')))
+
+function headerCarousel(reduced = false) {
+  const duration = slideNames.length * (holdMs + (reduced ? 0 : transitionMs))
+  const values = ['0 0']
+  const times = [0]
+  const splines = []
+  if (reduced) {
+    for (let i = 1; i <= slideNames.length; i++) {
+      values.push(`${-i * width} 0`)
+      times.push(i / slideNames.length)
+    }
+  } else {
+    for (let i = 0; i < slideNames.length; i++) {
+      values.push(`${-i * width} 0`, `${-(i + 1) * width} 0`)
+      times.push((i * (holdMs + transitionMs) + holdMs) / duration, (i + 1) * (holdMs + transitionMs) / duration)
+      splines.push('0 0 1 1', '0.22 1 0.36 1')
+    }
+  }
+  const precision = values => values.map(value => Number(value.toFixed(8))).join(';')
+  const images = [...slideImages, slideImages[0]].map((uri, index) => `<image href="${uri}" x="${index * width}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"/>`).join('')
+  const motion = `<animateTransform attributeName="transform" type="translate" begin="0s" values="${values.join(';')}" keyTimes="${precision(times)}" ${reduced ? 'calcMode="discrete"' : `calcMode="spline" keySplines="${splines.join(';')}"`} dur="${duration / 1000}s" repeatCount="indefinite"/>`
+  const switches = reduced ? [0, .25, .5, .75, 1] : [0, ...slideNames.map((_, i) => (i * (holdMs + transitionMs) + holdMs + transitionMs / 2) / duration), 1]
+  const indicators = slideNames.map((_, index) => {
+    const states = reduced ? Array.from({ length: 5 }, (_, i) => Number(i % 4 === index)) : [Number(index === 0), ...slideNames.map((_, i) => Number((i + 1) % 4 === index)), Number(index === 0)]
+    const cx = 561 + index * 26
+    return `<circle cx="${cx}" cy="378" r="3" fill="#B7ABA3"/><rect x="${cx - 8}" y="375.5" width="16" height="5" rx="2.5" fill="${index === 0 ? '#FFF0DF' : color.ink}" opacity="${states[0]}"><animate attributeName="opacity" begin="0s" values="${states.join(';')}" keyTimes="${precision(switches)}" calcMode="discrete" dur="${duration / 1000}s" repeatCount="indefinite"/></rect>`
+  }).join('')
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img"><title>Linoryx project carousel</title><desc>Automatically cycles through the red telecom introduction, full-stack project, external API integrations and responsive design. Each slide is held for four seconds. The animation repeats continuously.</desc><defs><clipPath id="carousel-frame"><rect width="${width}" height="${height}"/></clipPath></defs><g clip-path="url(#carousel-frame)"><g id="carousel-track">${images}${motion}</g></g>${indicators}</svg>\n`
+}
+await writeFile(join(output, 'header-carousel.svg'), headerCarousel())
+await writeFile(join(output, 'header-carousel-reduced.svg'), headerCarousel(true))
+await writeFile(join(source, 'header-carousel.json'), JSON.stringify({ format: 'svg', animation: 'SMIL', width, height, holdMs, transitionMs, durationMs: slideNames.length * (holdMs + transitionMs), transition: 'slide-left', repeat: 'indefinite', controls: false, slides: slideNames, reference: 'https://github.com/slavisa-simic/slavisa-simic/blob/main/scripts/build_carousel.py' }, null, 2) + '\n')
 const sections = [
   ['product-preview', 'Product preview', 'chart'],
   ['responsive-design', 'Responsive design', 'devices'],
@@ -205,4 +210,4 @@ for (const [name, title, kind] of sections) {
   animation.finish()
   await writeFile(join(output, name + '-title.gif'), animation.bytes())
 }
-console.log('Built section graphics, 14 animated titles, the workflow and a compact 4-slide carousel.')
+console.log('Built section graphics, 14 animated titles, the workflow and a continuously looping SVG carousel.')
