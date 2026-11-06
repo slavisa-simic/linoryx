@@ -1,0 +1,308 @@
+{
+  "actors": [
+    {
+      "id": "customer",
+      "name": "Customer",
+      "role": "USER",
+      "x": 130,
+      "y": 430,
+      "cases": [
+        "services",
+        "report",
+        "review"
+      ]
+    },
+    {
+      "id": "technician",
+      "name": "Technician",
+      "role": "TECHNICIAN",
+      "x": 130,
+      "y": 930,
+      "cases": [
+        "assignments",
+        "profile",
+        "work"
+      ]
+    },
+    {
+      "id": "dispatcher",
+      "name": "Dispatcher",
+      "role": "DISPATCHER",
+      "x": 130,
+      "y": 1450,
+      "cases": [
+        "createIncident",
+        "assign",
+        "closeIncident",
+        "operations"
+      ]
+    },
+    {
+      "id": "administrator",
+      "name": "Administrator",
+      "role": "ADMIN",
+      "x": 130,
+      "y": 1970,
+      "cases": [
+        "accounts",
+        "provision",
+        "network"
+      ]
+    }
+  ],
+  "useCases": [
+    {
+      "id": "services",
+      "label": "View own services",
+      "x": 590,
+      "y": 290,
+      "rx": 190
+    },
+    {
+      "id": "report",
+      "label": "Report a service problem",
+      "x": 590,
+      "y": 430,
+      "rx": 190
+    },
+    {
+      "id": "eligibleService",
+      "label": "Check service ownership|and active status",
+      "x": 1200,
+      "y": 430,
+      "rx": 245
+    },
+    {
+      "id": "review",
+      "label": "Review a resolved report",
+      "x": 590,
+      "y": 570,
+      "rx": 190
+    },
+    {
+      "id": "confirm",
+      "label": "Confirm the repair",
+      "x": 1200,
+      "y": 540,
+      "rx": 245
+    },
+    {
+      "id": "stillBroken",
+      "label": "Report still not working",
+      "x": 1200,
+      "y": 650,
+      "rx": 245
+    },
+    {
+      "id": "assignments",
+      "label": "View assigned reports|and assignment map",
+      "x": 590,
+      "y": 790,
+      "rx": 190
+    },
+    {
+      "id": "profile",
+      "label": "Update own technician profile",
+      "x": 590,
+      "y": 930,
+      "rx": 190
+    },
+    {
+      "id": "work",
+      "label": "Start / resolve assigned report",
+      "x": 590,
+      "y": 1070,
+      "rx": 190
+    },
+    {
+      "id": "assignmentChecks",
+      "label": "Check assignment|and started incident",
+      "x": 1200,
+      "y": 1010,
+      "rx": 245
+    },
+    {
+      "id": "email",
+      "label": "Send resolution email",
+      "x": 1200,
+      "y": 1120,
+      "rx": 245
+    },
+    {
+      "id": "createIncident",
+      "label": "Create incident from reports",
+      "x": 590,
+      "y": 1280,
+      "rx": 190
+    },
+    {
+      "id": "linkReports",
+      "label": "Select and link eligible reports",
+      "x": 1200,
+      "y": 1280,
+      "rx": 245
+    },
+    {
+      "id": "assign",
+      "label": "Assign a technician",
+      "x": 590,
+      "y": 1420,
+      "rx": 190
+    },
+    {
+      "id": "available",
+      "label": "Check enabled technician|and AVAILABLE status",
+      "x": 1200,
+      "y": 1420,
+      "rx": 245
+    },
+    {
+      "id": "closeIncident",
+      "label": "Close an incident",
+      "x": 590,
+      "y": 1560,
+      "rx": 190
+    },
+    {
+      "id": "closedReports",
+      "label": "Check all linked reports|are closed",
+      "x": 1200,
+      "y": 1560,
+      "rx": 245
+    },
+    {
+      "id": "operations",
+      "label": "View operations and audit logs",
+      "x": 590,
+      "y": 1690,
+      "rx": 190
+    },
+    {
+      "id": "accounts",
+      "label": "Manage accounts and roles",
+      "x": 590,
+      "y": 1840,
+      "rx": 190
+    },
+    {
+      "id": "provision",
+      "label": "Provision a customer service",
+      "x": 590,
+      "y": 1980,
+      "rx": 190
+    },
+    {
+      "id": "location",
+      "label": "Verify the installation address",
+      "x": 1200,
+      "y": 1920,
+      "rx": 245
+    },
+    {
+      "id": "node",
+      "label": "Select a network node",
+      "x": 1200,
+      "y": 2060,
+      "rx": 245
+    },
+    {
+      "id": "network",
+      "label": "Manage network nodes",
+      "x": 590,
+      "y": 2120,
+      "rx": 190
+    }
+  ],
+  "relations": [
+    {
+      "from": "report",
+      "to": "eligibleService",
+      "type": "include",
+      "path": "M780 430H955",
+      "x": 866,
+      "y": 409
+    },
+    {
+      "from": "confirm",
+      "to": "review",
+      "type": "extend",
+      "guard": "repair works",
+      "path": "M955 540H860V555H778",
+      "x": 866,
+      "y": 518
+    },
+    {
+      "from": "stillBroken",
+      "to": "review",
+      "type": "extend",
+      "guard": "problem remains",
+      "path": "M955 650H850V590H775",
+      "x": 866,
+      "y": 683
+    },
+    {
+      "from": "work",
+      "to": "assignmentChecks",
+      "type": "include",
+      "path": "M780 1070H866V1010H955",
+      "x": 867,
+      "y": 988
+    },
+    {
+      "from": "email",
+      "to": "work",
+      "type": "extend",
+      "guard": "resolved; mail on; demo off",
+      "path": "M955 1120H866V1085H778",
+      "x": 866,
+      "y": 1153
+    },
+    {
+      "from": "createIncident",
+      "to": "linkReports",
+      "type": "include",
+      "path": "M780 1280H955",
+      "x": 866,
+      "y": 1258
+    },
+    {
+      "from": "assign",
+      "to": "available",
+      "type": "include",
+      "path": "M780 1420H955",
+      "x": 866,
+      "y": 1398
+    },
+    {
+      "from": "closeIncident",
+      "to": "closedReports",
+      "type": "include",
+      "path": "M780 1560H955",
+      "x": 866,
+      "y": 1538
+    },
+    {
+      "from": "provision",
+      "to": "location",
+      "type": "include",
+      "path": "M780 1980H866V1920H955",
+      "x": 866,
+      "y": 1898
+    },
+    {
+      "from": "provision",
+      "to": "node",
+      "type": "include",
+      "path": "M780 1980H850V2060H955",
+      "x": 866,
+      "y": 2092
+    }
+  ],
+  "generalizations": [
+    {
+      "from": "administrator",
+      "to": "dispatcher"
+    }
+  ],
+  "precondition": "All roles sign in; access is checked by the backend."
+}

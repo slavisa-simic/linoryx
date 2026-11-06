@@ -1,0 +1,673 @@
+{
+  "tables": [
+    {
+      "table_name": "audit_logs",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "action",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "new_role",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "name": "previous_role",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "name": "actor_id",
+          "type": "bigint",
+          "nullable": "YES"
+        },
+        {
+          "name": "incident_id",
+          "type": "bigint",
+          "nullable": "YES"
+        },
+        {
+          "name": "target_user_id",
+          "type": "bigint",
+          "nullable": "YES"
+        },
+        {
+          "name": "report_id",
+          "type": "bigint",
+          "nullable": "YES"
+        }
+      ]
+    },
+    {
+      "table_name": "comments",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "content",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "user_id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "incident_id",
+          "type": "bigint",
+          "nullable": "NO"
+        }
+      ]
+    },
+    {
+      "table_name": "customer_reports",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "category",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "closed_at",
+          "type": "timestamp without time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "customer_reported_unfixed",
+          "type": "boolean",
+          "nullable": "NO"
+        },
+        {
+          "name": "description",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp without time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "status",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "user_confirmed",
+          "type": "boolean",
+          "nullable": "NO"
+        },
+        {
+          "name": "assigned_technician_id",
+          "type": "bigint",
+          "nullable": "YES"
+        },
+        {
+          "name": "customer_service_id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "incident_id",
+          "type": "bigint",
+          "nullable": "YES"
+        }
+      ]
+    },
+    {
+      "table_name": "customer_services",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "service_type",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "customer_id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "network_node_id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "service_location_id",
+          "type": "bigint",
+          "nullable": "NO"
+        }
+      ]
+    },
+    {
+      "table_name": "incidents",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "category",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "description",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "resolved_at",
+          "type": "timestamp without time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "severity",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "title",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "assigned_to_id",
+          "type": "bigint",
+          "nullable": "YES"
+        },
+        {
+          "name": "created_by_id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "closed_at",
+          "type": "timestamp without time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "legacy",
+          "type": "boolean",
+          "nullable": "NO"
+        },
+        {
+          "name": "legacy_status",
+          "type": "character varying",
+          "nullable": "YES"
+        }
+      ]
+    },
+    {
+      "table_name": "network_nodes",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "city",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "code",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "country_code",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "latitude",
+          "type": "numeric",
+          "nullable": "NO"
+        },
+        {
+          "name": "location",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "longitude",
+          "type": "numeric",
+          "nullable": "NO"
+        },
+        {
+          "name": "name",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "node_type",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "status",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    },
+    {
+      "table_name": "node_code_counters",
+      "columns": [
+        {
+          "name": "prefix",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "last_number",
+          "type": "bigint",
+          "nullable": "NO"
+        }
+      ]
+    },
+    {
+      "table_name": "service_locations",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "city",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "country_code",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "formatted_address",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "latitude",
+          "type": "numeric",
+          "nullable": "NO"
+        },
+        {
+          "name": "longitude",
+          "type": "numeric",
+          "nullable": "NO"
+        }
+      ]
+    },
+    {
+      "table_name": "technician_profiles",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "availability",
+          "type": "character varying",
+          "nullable": "YES"
+        },
+        {
+          "name": "latitude",
+          "type": "numeric",
+          "nullable": "YES"
+        },
+        {
+          "name": "location_updated_at",
+          "type": "timestamp without time zone",
+          "nullable": "YES"
+        },
+        {
+          "name": "longitude",
+          "type": "numeric",
+          "nullable": "YES"
+        },
+        {
+          "name": "user_id",
+          "type": "bigint",
+          "nullable": "NO"
+        }
+      ]
+    },
+    {
+      "table_name": "technician_specializations",
+      "columns": [
+        {
+          "name": "profile_id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "specialization",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    },
+    {
+      "table_name": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "bigint",
+          "nullable": "NO"
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp without time zone",
+          "nullable": "NO"
+        },
+        {
+          "name": "email",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "nullable": "NO"
+        },
+        {
+          "name": "first_name",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "last_name",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "password_hash",
+          "type": "character varying",
+          "nullable": "NO"
+        },
+        {
+          "name": "role",
+          "type": "character varying",
+          "nullable": "NO"
+        }
+      ]
+    }
+  ],
+  "foreignKeys": [
+    {
+      "table_name": "audit_logs",
+      "column_name": "actor_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "incident_id",
+      "references_table": "incidents",
+      "references_column": "id"
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "report_id",
+      "references_table": "customer_reports",
+      "references_column": "id"
+    },
+    {
+      "table_name": "audit_logs",
+      "column_name": "target_user_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "comments",
+      "column_name": "incident_id",
+      "references_table": "incidents",
+      "references_column": "id"
+    },
+    {
+      "table_name": "comments",
+      "column_name": "user_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "customer_reports",
+      "column_name": "assigned_technician_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "customer_reports",
+      "column_name": "customer_service_id",
+      "references_table": "customer_services",
+      "references_column": "id"
+    },
+    {
+      "table_name": "customer_reports",
+      "column_name": "incident_id",
+      "references_table": "incidents",
+      "references_column": "id"
+    },
+    {
+      "table_name": "customer_services",
+      "column_name": "customer_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "customer_services",
+      "column_name": "network_node_id",
+      "references_table": "network_nodes",
+      "references_column": "id"
+    },
+    {
+      "table_name": "customer_services",
+      "column_name": "service_location_id",
+      "references_table": "service_locations",
+      "references_column": "id"
+    },
+    {
+      "table_name": "incidents",
+      "column_name": "assigned_to_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "incidents",
+      "column_name": "created_by_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "technician_profiles",
+      "column_name": "user_id",
+      "references_table": "users",
+      "references_column": "id"
+    },
+    {
+      "table_name": "technician_specializations",
+      "column_name": "profile_id",
+      "references_table": "technician_profiles",
+      "references_column": "id"
+    }
+  ],
+  "keys": [
+    {
+      "table_name": "audit_logs",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "comments",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "customer_reports",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "customer_services",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "incidents",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "network_nodes",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "network_nodes",
+      "constraint_type": "UNIQUE",
+      "columns": [
+        "code"
+      ]
+    },
+    {
+      "table_name": "node_code_counters",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "prefix"
+      ]
+    },
+    {
+      "table_name": "service_locations",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "technician_profiles",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "technician_profiles",
+      "constraint_type": "UNIQUE",
+      "columns": [
+        "user_id"
+      ]
+    },
+    {
+      "table_name": "technician_specializations",
+      "constraint_type": "UNIQUE",
+      "columns": [
+        "profile_id",
+        "specialization"
+      ]
+    },
+    {
+      "table_name": "users",
+      "constraint_type": "PRIMARY KEY",
+      "columns": [
+        "id"
+      ]
+    },
+    {
+      "table_name": "users",
+      "constraint_type": "UNIQUE",
+      "columns": [
+        "email"
+      ]
+    }
+  ]
+}

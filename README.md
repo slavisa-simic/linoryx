@@ -1,55 +1,98 @@
 <p align="center">
-  <img src="linoryx-web/public/brand/linoryx-logo.svg" alt="Linoryx" width="360" />
+  <picture>
+    <source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/overview.webp" />
+    <img src="docs/readme/visuals/header-carousel.gif" alt="Linoryx full-stack project: dashboard, external integrations and responsive layouts" width="1200" height="600" />
+  </picture>
+</p>
+
+<p align="center">
+  <a href="docs/readme/visuals/overview.webp">Overview</a> ·
+  <a href="docs/readme/visuals/integrations.webp">Integrations</a> ·
+  <a href="docs/readme/visuals/responsive.webp">Devices</a>
 </p>
 
 # Linoryx — Telecom Operations Platform
 
-Linoryx connects customer services, network infrastructure, customer reports and field technicians in one operational workspace. Customers report service problems, dispatchers group and coordinate the response, and technicians track assigned work through customer confirmation and closure.
+Linoryx is a full-stack project for managing telecom services and repair reports. It is built with React, Spring Boot and PostgreSQL.
 
-The interface is light mode only: Inter typography, warm ivory surfaces, charcoal text and terracotta accents. The local Docker stack is implemented; hosted deployments and CI/CD are not yet provided.
+The project covers role-based access, report workflows, database relationships, external integrations and testing. You can run it locally with Docker.
 
-## Product preview
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/product-preview-title.png" /><img src="docs/readme/visuals/product-preview-title.gif" alt="Product preview" width="1200" height="132" /></picture>
+
+The dashboard shows open incidents, priorities and team workload. Here is the app running with local demo data.
+
+![Linoryx dashboard with incident charts and team workload](docs/readme/dashboard.jpg)
 
 - **Live demo:** coming soon.
-- **Screenshots:** [current local screens](docs/readme/); a broader product gallery is coming soon.
+- **Screenshots:** [dashboard](docs/readme/dashboard.jpg), [sign-in](docs/readme/captures/login-desktop.jpg) and [incident details](docs/readme/incident.jpg).
 - **Product walkthrough video:** coming soon.
 
-![Linoryx dashboard with a light sidebar, warm ivory canvas and operational charts](docs/readme/dashboard.jpg)
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/responsive-design-title.png" /><img src="docs/readme/visuals/responsive-design-title.gif" alt="Responsive design" width="1200" height="132" /></picture>
 
-## Existing features
+![Linoryx sign-in shown on a laptop, tablet and phone](docs/readme/visuals/responsive.webp)
 
-| Area | Implemented behavior |
+The layout adapts to laptops, tablets and phones. The sign-in form stays simple on smaller screens, with the artwork shown on desktop.
+
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/external-integrations-title.png" /><img src="docs/readme/visuals/external-integrations-title.gif" alt="External API integrations" width="1200" height="132" /></picture>
+
+![Implemented Geoapify address search and Gmail SMTP report notifications](docs/readme/visuals/integrations.webp)
+
+- **Geoapify:** the backend searches addresses and verifies the selected location before saving it. The API key stays on the server.
+- **Gmail SMTP:** Spring Mail sends a notification after a technician resolves a report. The customer follows the link to review the repair. Email is disabled by default.
+
+See [location setup](docs/network-services.md) and [email notifications](docs/email-notifications.md) for details.
+
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/existing-features-title.png" /><img src="docs/readme/visuals/existing-features-title.gif" alt="Existing features" width="1200" height="132" /></picture>
+
+| Area | What it does |
 | --- | --- |
-| Authentication | Registration, sign-in, BCrypt password hashing, expiring JWT sessions and role-based API authorization. Disabled accounts and changed roles are checked on authenticated requests. |
-| Customer services | Provision multiple services per customer, select an installation address and network node, track service status, and terminate services while preserving their history. Customers see their own services. |
-| Network | Create and manage typed network nodes with generated city/type codes, confirmed locations, map markers, search and filters. Node deletion respects service relationships. |
-| Customer reports | Report a problem against an active service, filter and select reports, link them to incidents, assign technicians and track work. Customers can confirm a fix or report that the problem persists. |
-| Incidents | Group eligible customer reports, set telecom categories and priorities, start incidents, add internal comments, and close incidents after their linked reports close. Historical incidents remain readable. |
-| Technicians | Availability, location and specialization profiles; workload and distance recommendations; an operational team map; technicians' own profile and assignment map. |
-| Dashboard | Incident activity, status, priority, category and team workload charts; closure rate and operational metrics calculated from role-scoped API responses. |
-| Administration and audit | Manage roles and enabled accounts, review recorded account and workflow changes, and retain historical assignments. |
-| Exports and alerts | Incident PDF and CSV export; customers receive an email after a technician resolves their individual report. Delivery is disabled by default and blocked in demo mode. |
+| Authentication | Register and sign in with password hashing, JWT sessions and access based on user roles. |
+| Customer services | Add services with an address and network node, track their status, and keep service history. |
+| Network | Manage network nodes, search and filter them, and view their locations on a map. |
+| Customer reports | Report service problems, link reports to incidents, assign technicians and track repairs. |
+| Incidents | Group reports, set categories and priorities, add comments and track progress. |
+| Technicians | Manage availability, locations and specializations. Suggest technicians based on workload and distance. |
+| Dashboard | View incident activity, status, priority, categories, closure rate and team workload. |
+| Administration and audit | Manage accounts and roles, and review account and workflow changes. |
+| Exports and alerts | Export incidents as PDF or CSV. Email customers when their report is resolved, if email is enabled. |
 
-Address search and geocoding use a server-side Geoapify key. Existing data remains available without a key; address lookup reports its configuration requirement. Maps use Leaflet and OpenStreetMap tiles, which require network access.
+Address search needs a Geoapify API key. Maps use Leaflet and OpenStreetMap and need an internet connection. Existing records remain available without the key.
 
-## Roles
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/roles-title.png" /><img src="docs/readme/visuals/roles-title.gif" alt="Roles" width="1200" height="132" /></picture>
 
-| Role | Workspace |
+| Role | Access |
 | --- | --- |
-| Customer (`USER`) | Own services, own reports and confirmation of resolved work. |
-| Technician (`TECHNICIAN`) | Assigned reports and relevant incidents, dashboard, personal profile and assignment locations. |
-| Dispatcher (`DISPATCHER`) | Operational dashboard, reports and incident coordination, technician recommendations and overview, audit logs. |
-| Administrator (`ADMIN`) | Operational access plus account, customer-service and network management. |
+| Customer (`USER`) | View their services, report problems and confirm repairs. |
+| Technician (`TECHNICIAN`) | Work on assigned reports and view related incidents, their dashboard, profile and assignment map. |
+| Dispatcher (`DISPATCHER`) | Manage reports and incidents, assign technicians, and view the dashboard and audit logs. |
+| Administrator (`ADMIN`) | Dispatcher access plus account, customer-service and network management. |
 
-The API enforces permissions independently of navigation visibility. Registration creates a customer account. Role-management safeguards protect the last administrator and active operational assignments.
+New accounts start as customers. The backend checks permissions for each role.
 
-## Workflows
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/use-case-diagram-title.png" /><img src="docs/readme/visuals/use-case-diagram-title.gif" alt="Use-case diagram" width="1200" height="132" /></picture>
 
-A customer creates a report for an active service. An administrator or dispatcher links eligible reports to an incident, starts the incident and assigns an available technician. The assigned technician starts and resolves the report. The customer confirms the fix; an operator then closes the report. A customer who still has a problem returns the report to work in progress. The incident closes only when all linked reports are closed.
+The diagram shows the main actions for all four roles. `«include»` means a required step; `«extend»` means an optional action. Administrators also have dispatcher access.
 
-Report states are `OPEN → IN_PROGRESS → RESOLVED → CLOSED`. Incident states are `OPEN → IN_PROGRESS → CLOSED`. Each workflow records audit entries. Historical incidents retain their original metadata and are read-only in the current report-based workflow.
+[![UML use-case diagram with all four roles, include and extend connections](docs/readme/visuals/use-cases.png)](docs/readme/visuals/use-cases.svg)
 
-## Architecture and stack
+[Editable use-case source](docs/readme/visuals/source/use-cases.puml)
+
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/workflows-title.png" /><img src="docs/readme/visuals/workflows-title.gif" alt="Workflows" width="1200" height="132" /></picture>
+
+<picture>
+  <source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/workflow.png" />
+  <img src="docs/readme/visuals/workflow.gif" alt="Report workflow: open, in progress, resolved and closed" width="1200" height="330" />
+</picture>
+
+1. A customer reports a problem with an active service.
+2. An administrator or dispatcher links the report to an incident, starts the incident and assigns a technician.
+3. The technician starts the work and marks the report as resolved.
+4. The customer confirms the repair, and an administrator or dispatcher closes the report. If the problem remains, the report goes back to work in progress.
+5. The incident can close once all linked reports are closed.
+
+Reports use `OPEN → IN_PROGRESS → RESOLVED → CLOSED`. Incidents use `OPEN → IN_PROGRESS → CLOSED`.
+
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/architecture-and-stack-title.png" /><img src="docs/readme/visuals/architecture-and-stack-title.gif" alt="Architecture and stack" width="1200" height="132" /></picture>
 
 ```text
 Browser → Nginx / React → Spring Boot REST API → PostgreSQL
@@ -59,37 +102,45 @@ Browser → Nginx / React → Spring Boot REST API → PostgreSQL
 
 | Layer | Technologies |
 | --- | --- |
-| Frontend | React 19, TypeScript 6, Vite 8, CSS tokens, Lucide, Recharts, Leaflet / React Leaflet, React PDF. |
-| Backend | Java 25, Spring Boot 4.1, Spring Security, JWT HS256, Spring Data JPA, validation, Spring Mail and springdoc OpenAPI. |
-| Persistence | PostgreSQL 18; Hibernate schema updates and the existing additive, idempotent `schema.sql` startup migration. |
-| Validation | JUnit / Spring tests against PostgreSQL; Vitest and Testing Library; Oxlint and TypeScript. |
-| Local hosting | Docker Compose, Nginx and a Java runtime container. |
+| Frontend | React 19, TypeScript 6, Vite 8, Lucide, Recharts, Leaflet and React PDF. |
+| Backend | Java 25, Spring Boot 4.1, Spring Security, JWT, Spring Data JPA, Spring Mail and OpenAPI. |
+| Database | PostgreSQL 18, Hibernate and `schema.sql` for database setup. |
+| Testing | JUnit, Spring tests, Vitest, Testing Library, Oxlint and TypeScript. |
+| Local hosting | Docker Compose and Nginx. |
 
-Controllers handle HTTP and validation, services enforce permissions and business rules, and repositories access data. The principal entities include users, technician profiles, network nodes, service locations, customer services, reports, incidents, comments and audit logs.
+The backend uses controllers for requests, services for application logic and repositories for database access.
 
 ```text
 linoryx-api/
-  src/main/java/com/linoryx/api/   Feature packages and API configuration
-  src/main/resources/            Application configuration and preserved migrations
+  src/main/java/com/linoryx/api/   Backend code
+  src/main/resources/            Configuration and database setup
   src/test/java/com/linoryx/api/  Backend tests
 linoryx-web/
   src/pages/                     Application screens
-  src/components/                Shared UI and feature components
+  src/components/                Shared components
   src/api/                       Typed API clients
-  src/services/                  Sessions, data preparation and exports
-  src/tokens.css                 Central light-only design tokens
-  public/brand/                  Approved vector logo, app icons and social preview
-  public/fonts/                  Self-hosted, licensed Inter fonts
+  src/services/                  Sessions and exports
+  src/tokens.css                 Shared styles and colors
+  public/brand/                  Linoryx logo, icons and artwork
+  public/fonts/                  Inter fonts
 scripts/                         Local demo-data utility
-docs/                            Feature, branding and validation documentation
-compose.yaml                     Local services and persistent database volume
+docs/                            Project documentation
+compose.yaml                     Local Docker services
 ```
 
-## Run locally
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/database-schema-title.png" /><img src="docs/readme/visuals/database-schema-title.gif" alt="Database schema" width="1200" height="132" /></picture>
 
-Install JDK 25, Node.js 22.12+ and Docker Desktop with Linux containers. The Maven Wrapper is included. Commands below use PowerShell from the repository root.
+The database has 11 tables and 16 foreign-key relationships. The overview shows the main fields, keys and relationships. Click it to open the full schema with all columns.
 
-Copy example environment files **only if the destination does not already exist**:
+[![Database schema with all 11 tables, keys and 16 foreign-key relationships](docs/readme/visuals/database-schema.png)](docs/readme/visuals/database-schema.svg)
+
+[Editable schema source](docs/readme/visuals/source/database-schema.dot)
+
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/run-locally-title.png" /><img src="docs/readme/visuals/run-locally-title.gif" alt="Run locally" width="1200" height="132" /></picture>
+
+Install JDK 25, Node.js 22.12+ and Docker Desktop with Linux containers. The Maven Wrapper is included. Run these commands in PowerShell from the project root.
+
+Copy the example environment files if you do not already have them:
 
 ```powershell
 if (!(Test-Path .env)) { Copy-Item .env.example .env }
@@ -97,7 +148,15 @@ if (!(Test-Path linoryx-api/.env)) { Copy-Item linoryx-api/.env.example linoryx-
 if (!(Test-Path linoryx-web/.env)) { Copy-Item linoryx-web/.env.example linoryx-web/.env }
 ```
 
-Set the same `DB_PASSWORD` in the root and API environment files. Configure a random `JWT_SECRET` of at least 32 ASCII characters in `linoryx-api/.env`. Keep `VITE_API_BASE_URL=/api`; configure `GEOAPIFY_API_KEY` for location lookup. Email is disabled by default. For real delivery, configure `MAIL_USERNAME`, `MAIL_APP_PASSWORD`, `MAIL_ENABLED=true`, `DEMO_MODE=false` and the public application `FRONTEND_URL` in `linoryx-api/.env`. Public demos should keep `DEMO_MODE=true` and `MAIL_ENABLED=false`. See [email notifications](docs/email-notifications.md). Secrets belong in ignored local environment files.
+Update the local `.env` files:
+
+- Set the same `DB_PASSWORD` in the root and API files.
+- Set a random `JWT_SECRET` of at least 32 ASCII characters in `linoryx-api/.env`.
+- Keep `VITE_API_BASE_URL=/api` in `linoryx-web/.env`.
+- For address search, set `GEOAPIFY_API_KEY` in the root and API files.
+- Email is off by default. See [email setup](docs/email-notifications.md) to enable it. Keep it disabled for public demos.
+
+Keep passwords and API keys in the ignored local `.env` files.
 
 Build the applications and images:
 
@@ -116,21 +175,27 @@ docker build -t linoryx-web:local ./linoryx-web
 docker compose up -d
 ```
 
-Open [the local application](http://localhost:8081) or [Swagger UI](http://localhost:8080/swagger-ui/index.html). Nginx forwards `/api` to the backend. PostgreSQL is available on loopback port 5433; API and web ports are also loopback-only.
+Open [the app](http://localhost:8081) or [Swagger UI](http://localhost:8080/swagger-ui/index.html). The database runs on local port 5433. Nginx forwards `/api` requests to the backend.
 
-For the first administrator on a fresh database, register your account and then bootstrap that account locally:
+To create the first administrator on a fresh database, register an account in the app, then run this with your email:
 
 ```powershell
 docker compose exec db psql -U vigil_api_user -d vigil_db -c "UPDATE users SET role = 'ADMIN' WHERE email = 'your@example.com';"
 ```
 
-Sign in again to obtain the administrator role. Use the application's Users screen for subsequent account management. Optional synthetic accounts and records are described in [demo data](docs/demo-data.md).
+Sign in again to use the administrator role. You can manage other accounts from the Users screen. See [demo data](docs/demo-data.md) for sample accounts and records.
 
-For development, start the database with `docker compose up -d db`, run `.\mvnw.cmd spring-boot:run` inside `linoryx-api`, and `npm.cmd run dev` inside `linoryx-web`. Vite proxies `/api` to `API_PROXY_TARGET`, normally `http://localhost:8080`. The API environment example points at PostgreSQL on port 5433.
+For development, run these in separate terminals:
 
-## Testing
+- From the project root: `docker compose up -d db`.
+- From `linoryx-api`: `.\mvnw.cmd spring-boot:run`.
+- From `linoryx-web`: `npm.cmd run dev`.
 
-Use a separate database for the backend suite. Existing integration tests use transactions, and startup still applies the configured migrations.
+Vite forwards `/api` requests to `API_PROXY_TARGET`, which defaults to `http://localhost:8080` in the example file.
+
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/testing-title.png" /><img src="docs/readme/visuals/testing-title.gif" alt="Testing" width="1200" height="132" /></picture>
+
+Use a separate database for backend tests:
 
 ```powershell
 docker compose up -d db
@@ -150,25 +215,27 @@ npm.cmd run build
 Pop-Location
 ```
 
-The frontend build runs TypeScript project checks before generating production assets. Backend tests cover authentication, authorization, account safeguards, provisioning, reports, incident workflows, technician management and auditing. See [rebranding validation](docs/rebrand-validation.md) for results from this change, including limitations; these are observations from a local run, not a CI guarantee.
+The tests cover sign-in, permissions, services, reports, incidents and technicians. The frontend build also checks TypeScript. Previous local results are in [rebranding validation](docs/rebrand-validation.md).
 
-## Upgrading an existing checkout
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/upgrading-title.png" /><img src="docs/readme/visuals/upgrading-title.gif" alt="Upgrading an existing checkout" width="1200" height="132" /></picture>
 
-The modules are now `linoryx-api` and `linoryx-web`, and Java uses `com.linoryx.api`. Local environment files moved with their modules; do not replace existing secrets. Update IDE run configurations or external scripts that reference the former module paths or Maven artifact.
+The folders are now `linoryx-api` and `linoryx-web`, and the Java package is `com.linoryx.api`. Update any IDE settings or scripts that use the old paths. Keep your existing `.env` values.
 
-Rebuild the new Docker image names and run `docker compose up -d`. The Compose project identity, database name, database user and `postgres_data` volume are deliberately retained to reconnect to the existing data. Stop the stack with `docker compose down` when needed; omitting `-v` retains the database volume.
+Rebuild the Docker images using the commands above, then run `docker compose up -d`. The database names and Docker volume stay the same so existing data is kept. Use `docker compose down` without `-v` to stop the stack and keep the database.
 
-Public API paths, database tables, enum values, migration SQL and historical records are unchanged. The existing JWT issuer remains a protocol compatibility value. Saved browser sessions migrate from the old storage key to `linoryx.session`. Demo-account domains, credentials and the seed advisory lock remain stable. The Git remote and checkout directory are not renamed. See [brand guidelines and compatibility](docs/brand-guidelines.md).
+Some internal names still use `vigil` to keep existing data and sessions working. See [brand guidelines](docs/brand-guidelines.md) for details.
 
-## Further documentation
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/documentation-title.png" /><img src="docs/readme/visuals/documentation-title.gif" alt="Further documentation" width="1200" height="132" /></picture>
 
-- [Brand, light-mode tokens and compatibility](docs/brand-guidelines.md)
+- [Brand guidelines](docs/brand-guidelines.md)
 - [Frontend design](docs/frontend-design.md)
 - [Network nodes and customer services](docs/network-services.md)
 - [Report and incident categories](docs/incident-categories.md)
 - [Technician management](docs/technician-management.md)
 - [Local demo data](docs/demo-data.md)
 
-## Roadmap
+## <picture><source media="(prefers-reduced-motion: reduce)" srcset="docs/readme/visuals/roadmap-title.png" /><img src="docs/readme/visuals/roadmap-title.gif" alt="Roadmap" width="1200" height="132" /></picture>
 
-Hosted demo, product screenshots, walkthrough video, cloud deployments and CI/CD remain planned. No public deployment URL is available.
+- Hosted demo and cloud deployment.
+- More product screenshots and a walkthrough video.
+- CI/CD pipeline.

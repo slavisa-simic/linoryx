@@ -1,0 +1,57 @@
+@startuml
+left to right direction
+skinparam shadowing false
+actor "Customer\n(USER)" as customer
+actor "Technician\n(TECHNICIAN)" as technician
+actor "Dispatcher\n(DISPATCHER)" as dispatcher
+actor "Administrator\n(ADMIN)" as administrator
+rectangle "Linoryx" {
+usecase "View own services" as services
+usecase "Report a service problem" as report
+usecase "Check service ownership\nand active status" as eligibleService
+usecase "Review a resolved report" as review
+usecase "Confirm the repair" as confirm
+usecase "Report still not working" as stillBroken
+usecase "View assigned reports\nand assignment map" as assignments
+usecase "Update own technician profile" as profile
+usecase "Start / resolve assigned report" as work
+usecase "Check assignment\nand started incident" as assignmentChecks
+usecase "Send resolution email" as email
+usecase "Create incident from reports" as createIncident
+usecase "Select and link eligible reports" as linkReports
+usecase "Assign a technician" as assign
+usecase "Check enabled technician\nand AVAILABLE status" as available
+usecase "Close an incident" as closeIncident
+usecase "Check all linked reports\nare closed" as closedReports
+usecase "View operations and audit logs" as operations
+usecase "Manage accounts and roles" as accounts
+usecase "Provision a customer service" as provision
+usecase "Verify the installation address" as location
+usecase "Select a network node" as node
+usecase "Manage network nodes" as network
+}
+customer -- services
+customer -- report
+customer -- review
+technician -- assignments
+technician -- profile
+technician -- work
+dispatcher -- createIncident
+dispatcher -- assign
+dispatcher -- closeIncident
+dispatcher -- operations
+administrator -- accounts
+administrator -- provision
+administrator -- network
+report ..> eligibleService : <<include>>
+confirm ..> review : <<extend>>\n[repair works]
+stillBroken ..> review : <<extend>>\n[problem remains]
+work ..> assignmentChecks : <<include>>
+email ..> work : <<extend>>\n[resolved; mail on; demo off]
+createIncident ..> linkReports : <<include>>
+assign ..> available : <<include>>
+closeIncident ..> closedReports : <<include>>
+provision ..> location : <<include>>
+provision ..> node : <<include>>
+administrator --|> dispatcher
+@enduml
