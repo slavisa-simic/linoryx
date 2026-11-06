@@ -61,7 +61,7 @@
 
 @keyframes card-float {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-12px); }
 }
 
 @media (min-width: 1600px) { .form-panel { padding: 48px 56px 32px; } }
@@ -93,7 +93,4 @@
   .form-row { flex-direction: column; gap: 24px; }
   .brand-tagline { padding-left: 0; }
   .card-login-email, .card-holder-name { font-size: 16px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .card-float { animation: none; }
 }

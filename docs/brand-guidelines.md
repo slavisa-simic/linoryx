@@ -41,7 +41,7 @@ Paths above are relative to `linoryx-web`. Keep the mark's proportions and clear
 
 The document metadata and central stylesheet both request `only light`. Native inputs, selects and textareas use the same scheme. There is no theme provider, toggle, theme persistence or `prefers-color-scheme` branch. Operating-system preferences do not select another palette. Reduced-motion support is independent of color mode.
 
-The application uses light navigation, white panels and ivory backgrounds. Charcoal is limited to text, icons and small controls. Charts use flat fills. Authentication has a red artwork panel and a warm SVG access card based on the supplied reference, with a gentle float that respects reduced-motion preferences. This decorative panel does not introduce another color scheme.
+The application uses light navigation, white panels and ivory backgrounds. Charcoal is limited to text, icons and small controls. Charts use flat fills. Authentication has a red artwork panel and a warm SVG access card based on the supplied reference, with a continuous, gentle six-second vertical float. This decorative panel does not introduce another color scheme.
 
 ## Compatibility identifiers deliberately retained
 
