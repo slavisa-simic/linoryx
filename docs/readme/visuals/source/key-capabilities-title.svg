@@ -1,0 +1,23 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="1000" height="108" viewBox="0 0 1000 108">
+      <rect width="1000" height="108" rx="12" fill="#D05445"/>
+      <path d="M700 0H1000V108H662Z"
+            fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="38" y="67" font-size="36" fill="#F7F5F2" font-weight="600" >Key capabilities</text>
+      </g>
+      
+    <g transform="translate(728 8) scale(1)"
+       fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 75L65 16L118 69L174 13L225 64" stroke="#F7F5F2"
+            stroke-width="1.5" opacity=".45"/>
+      <path d="M42 91L102 31L154 83L214 23" stroke="#F7F5F2"
+            stroke-width="1.2" opacity=".22"/>
+      <circle cx="65" cy="16" r="3"
+           fill="#F7F5F2" stroke="none" opacity=".65"/><circle cx="118" cy="69" r="3"
+           fill="#F7F5F2" stroke="none" opacity=".65"/><circle cx="174" cy="13" r="3"
+           fill="#F7F5F2" stroke="none" opacity=".65"/><circle cx="214" cy="23" r="3"
+           fill="#F7F5F2" stroke="none" opacity=".65"/>
+    </g>
+    </svg>

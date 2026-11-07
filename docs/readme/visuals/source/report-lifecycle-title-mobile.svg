@@ -1,0 +1,21 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="400" height="88" viewBox="0 0 400 88">
+      <rect width="400" height="88"
+        rx="12" fill="#D05445"/>
+      <path d="M220 0H400V88H182Z"
+        fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="19" y="52" font-size="21" fill="#F7F5F2" font-weight="600" >Report lifecycle</text>
+      </g>
+      <g transform="translate(248 17) scale(0.55)">
+        <path d="M20 74L66 50L110 62L159 25L216 41" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="74" r="4"
+      fill="#F7F5F2" opacity=".7"/><circle cx="66" cy="50" r="4"
+      fill="#F7F5F2" opacity=".7"/><circle cx="110" cy="62" r="4"
+      fill="#F7F5F2" opacity=".7"/><circle cx="159" cy="25" r="4"
+      fill="#F7F5F2" opacity=".7"/><circle cx="216" cy="41" r="4"
+      fill="#F7F5F2" opacity=".7"/>
+      </g>
+    </svg>

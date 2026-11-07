@@ -53,3 +53,9 @@ logs/
 *.swo
 .DS_Store
 Thumbs.db
+
+# Node.js dependencies
+node_modules/
+
+# npm debug logs
+npm-debug.log*

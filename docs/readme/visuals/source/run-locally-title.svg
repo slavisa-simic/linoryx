@@ -1,1 +1,29 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="132" viewBox="0 0 1200 132" role="img" aria-label="Run locally"><rect width="1200" height="132" rx="14" fill="#F7F5F2"/><g font-family="Inter, Arial, sans-serif"><text x="40" y="81" font-size="52" fill="#1A1A1A" font-weight="600" >Run locally</text><rect x="925" y="26" width="188" height="81" rx="10" fill="#FFFFFF" stroke="#D6D2CC"/><text x="945" y="77" font-size="30" fill="#D05445" font-weight="500" >&gt; _</text><path d="M41 105L281.24 105" stroke="#D05445" stroke-width="3" fill="none" /></g></svg>
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="1000" height="108" viewBox="0 0 1000 108">
+      <rect width="1000" height="108"
+        rx="12" fill="#D05445"/>
+      <path d="M700 0H1000V108H662Z"
+        fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="38" y="67" font-size="36" fill="#F7F5F2" font-weight="600" >Run locally</text>
+      </g>
+      <g transform="translate(728 8) scale(1)">
+        
+          <rect x="23" y="15" width="168" height="72"
+            rx="9" fill="#F7F5F2" fill-opacity=".06"
+            stroke="#F7F5F2" stroke-opacity=".6"/>
+          <path d="M23 33H191" stroke="#F7F5F2" opacity=".4"/>
+          <circle cx="36" cy="24" r="2"
+      fill="#F7F5F2" opacity=".7"/><circle cx="47" cy="24" r="2"
+      fill="#F7F5F2" opacity=".7"/><circle cx="58" cy="24" r="2"
+      fill="#F7F5F2" opacity=".7"/>
+          <path d="M39 47L50 55L39 63" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M59 63H88" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/>
+        
+      </g>
+    </svg>

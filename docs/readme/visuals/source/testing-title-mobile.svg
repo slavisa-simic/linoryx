@@ -1,0 +1,34 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="400" height="88" viewBox="0 0 400 88">
+      <rect width="400" height="88"
+        rx="12" fill="#D05445"/>
+      <path d="M220 0H400V88H182Z"
+        fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="19" y="52" font-size="21" fill="#F7F5F2" font-weight="600" >Testing</text>
+      </g>
+      <g transform="translate(248 17) scale(0.55)">
+        
+          <circle cx="130" cy="50" r="39"
+            fill="none" stroke="#F7F5F2" stroke-opacity=".38"
+            stroke-width="1.5"/>
+          <circle cx="152" cy="50" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="156.49281827163543" cy="61.7953626491982" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="154.0887018289189" cy="76.75321371718618" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="136.79837387624883" cy="70.92324335849338" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="126.96867456523805" cy="78.84113496567993" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="112" cy="81.17691453623979" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="112.20162612375115" cy="62.931275550434414" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="101.63371957871964" cy="56.02943903371502" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="94.786686373583" cy="42.515179130560675" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="112.20162612375115" cy="37.06872444956559" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="115.49999999999999" cy="24.885263290251284" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="126.23697532236444" cy="14.197211766742164" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="136.79837387624883" cy="29.07675664150662" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="149.4047875844069" cy="28.448800061155573" r="1.5"
+      fill="#F7F5F2" opacity=".7"/><circle cx="162.88763647513363" cy="35.3574808492712" r="1.5"
+      fill="#F7F5F2" opacity=".7"/>
+        
+      </g>
+    </svg>

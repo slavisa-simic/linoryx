@@ -1,0 +1,29 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="400" height="88" viewBox="0 0 400 88">
+      <rect width="400" height="88"
+        rx="12" fill="#D05445"/>
+      <path d="M220 0H400V88H182Z"
+        fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="19" y="52" font-size="21" fill="#F7F5F2" font-weight="600" >Run locally</text>
+      </g>
+      <g transform="translate(248 17) scale(0.55)">
+        
+          <rect x="23" y="15" width="168" height="72"
+            rx="9" fill="#F7F5F2" fill-opacity=".06"
+            stroke="#F7F5F2" stroke-opacity=".6"/>
+          <path d="M23 33H191" stroke="#F7F5F2" opacity=".4"/>
+          <circle cx="36" cy="24" r="2"
+      fill="#F7F5F2" opacity=".7"/><circle cx="47" cy="24" r="2"
+      fill="#F7F5F2" opacity=".7"/><circle cx="58" cy="24" r="2"
+      fill="#F7F5F2" opacity=".7"/>
+          <path d="M39 47L50 55L39 63" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M59 63H88" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/>
+        
+      </g>
+    </svg>

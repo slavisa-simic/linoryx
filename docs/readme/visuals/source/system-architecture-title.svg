@@ -1,0 +1,26 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="1000" height="108" viewBox="0 0 1000 108">
+      <rect width="1000" height="108"
+        rx="12" fill="#D05445"/>
+      <path d="M700 0H1000V108H662Z"
+        fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="38" y="67" font-size="36" fill="#F7F5F2" font-weight="600" >System architecture</text>
+      </g>
+      <g transform="translate(728 8) scale(1)">
+        <path d="M10 18H78L105 45H230" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/><path d="M10 50H92L118 76H230" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/><path d="M10 82H66L115 33H230" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/><circle cx="78" cy="18" r="3"
+      fill="#F7F5F2" opacity=".7"/><circle cx="105" cy="45" r="3"
+      fill="#F7F5F2" opacity=".7"/><circle cx="92" cy="50" r="3"
+      fill="#F7F5F2" opacity=".7"/><circle cx="118" cy="76" r="3"
+      fill="#F7F5F2" opacity=".7"/><circle cx="66" cy="82" r="3"
+      fill="#F7F5F2" opacity=".7"/><circle cx="115" cy="33" r="3"
+      fill="#F7F5F2" opacity=".7"/>
+      </g>
+    </svg>

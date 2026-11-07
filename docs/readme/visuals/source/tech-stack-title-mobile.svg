@@ -1,0 +1,29 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="400" height="88" viewBox="0 0 400 88">
+      <rect width="400" height="88"
+        rx="12" fill="#D05445"/>
+      <path d="M220 0H400V88H182Z"
+        fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="19" y="52" font-size="21" fill="#F7F5F2" font-weight="600" >Tech stack</text>
+      </g>
+      <g transform="translate(248 17) scale(0.55)">
+        
+          <path d="M46 16H157L190 33H79Z"
+            fill="#F7F5F2" fill-opacity=".07"
+            stroke="#F7F5F2" stroke-opacity=".55"
+            stroke-width="1.5" stroke-linejoin="round"/>
+        
+          <path d="M46 41H157L190 58H79Z"
+            fill="#F7F5F2" fill-opacity=".07"
+            stroke="#F7F5F2" stroke-opacity=".55"
+            stroke-width="1.5" stroke-linejoin="round"/>
+        
+          <path d="M46 66H157L190 83H79Z"
+            fill="#F7F5F2" fill-opacity=".07"
+            stroke="#F7F5F2" stroke-opacity=".55"
+            stroke-width="1.5" stroke-linejoin="round"/>
+        
+      </g>
+    </svg>

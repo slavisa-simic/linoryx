@@ -1,0 +1,166 @@
+{
+  "reference": "https://github.com/slavisa-simic/slavisa-simic/blob/main/scripts/build_profile_assets.py",
+  "durationMs": 6000,
+  "titles": [
+    {
+      "name": "key-capabilities",
+      "title": "Key capabilities",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "key-capabilities",
+      "title": "Key capabilities",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "system-architecture",
+      "title": "System architecture",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "system-architecture",
+      "title": "System architecture",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "database-schema",
+      "title": "Database schema",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "database-schema",
+      "title": "Database schema",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "report-lifecycle",
+      "title": "Report lifecycle",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "report-lifecycle",
+      "title": "Report lifecycle",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "testing",
+      "title": "Testing",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "testing",
+      "title": "Testing",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "ci-cd-azure",
+      "title": "Planned CI/CD & Azure",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "ci-cd-azure",
+      "title": "Planned CI/CD & Azure",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "tech-stack",
+      "title": "Tech stack",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "tech-stack",
+      "title": "Tech stack",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "run-locally",
+      "title": "Run locally",
+      "mobile": false,
+      "width": 1000,
+      "height": 108,
+      "fontSize": 36,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    },
+    {
+      "name": "run-locally",
+      "title": "Run locally",
+      "mobile": true,
+      "width": 400,
+      "height": 88,
+      "fontSize": 21,
+      "dividerStart": 0,
+      "dividerEnd": 0
+    }
+  ]
+}

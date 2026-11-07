@@ -1,0 +1,39 @@
+
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="400" height="88" viewBox="0 0 400 88">
+      <rect width="400" height="88"
+        rx="12" fill="#D05445"/>
+      <path d="M220 0H400V88H182Z"
+        fill="#A83E32" opacity=".36"/>
+      <g font-family="Inter, Arial, sans-serif">
+        <text x="19" y="39" font-size="21" fill="#F7F5F2" font-weight="600" >Planned CI/CD</text><text x="19" y="64" font-size="21" fill="#F7F5F2" font-weight="600" >&amp; Azure</text>
+      </g>
+      <g transform="translate(248 17) scale(0.55)">
+        
+          <path d="M53 68L66 55" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/><path d="M109 55L122 42" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/><path d="M165 42L178 29" fill="none" stroke="#F7F5F2"
+      stroke-width="1.7" stroke-opacity=".48"
+      stroke-linecap="round" stroke-linejoin="round"/>
+          
+            <rect x="10" y="55" width="43" height="26"
+              rx="5" fill="#F7F5F2" fill-opacity=".06"
+              stroke="#F7F5F2" stroke-opacity=".6"/>
+          
+            <rect x="66" y="42" width="43" height="26"
+              rx="5" fill="#F7F5F2" fill-opacity=".06"
+              stroke="#F7F5F2" stroke-opacity=".6"/>
+          
+            <rect x="122" y="29" width="43" height="26"
+              rx="5" fill="#F7F5F2" fill-opacity=".06"
+              stroke="#F7F5F2" stroke-opacity=".6"/>
+          
+            <rect x="178" y="16" width="43" height="26"
+              rx="5" fill="#F7F5F2" fill-opacity=".06"
+              stroke="#F7F5F2" stroke-opacity=".6"/>
+          
+        
+      </g>
+    </svg>
