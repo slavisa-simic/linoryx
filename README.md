@@ -7,8 +7,6 @@
   </picture>
 </p>
 
-A full-stack telecom operations platform for managing customer services, incidents, technician assignments and repair workflows.
-
 <a id="key-capabilities"></a>
 
 <p>
@@ -60,11 +58,9 @@ React communicates with a Spring Boot REST API through Nginx. PostgreSQL stores 
   </picture>
 </p>
 
-[![Linoryx relational database schema](docs/readme/visuals/database-schema.png)](docs/readme/visuals/database-schema.svg)
+[![Linoryx database schema](docs/readme/visuals/database-schema.png)](docs/readme/visuals/database-schema.svg)
 
 11 tables · 16 foreign-key relationships
-
-[Full schema](docs/readme/visuals/database-schema.svg) · [Graphviz source](docs/readme/visuals/source/database-schema.dot)
 
 <a id="report-lifecycle"></a>
 

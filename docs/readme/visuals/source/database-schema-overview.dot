@@ -1,7 +1,20 @@
 digraph schema {
-graph [rankdir=LR, bgcolor="#F7F5F2", pad=.45, nodesep=.5, ranksep=1.3, splines=polyline, outputorder=edgesfirst, fontname="Inter", label="Database schema · 11 tables / 16 foreign keys\nPK = primary key   FK = foreign key   UK = unique key   ? = nullable\nUK1 marks the two columns of one composite unique key\nRelationship labels read parent : child cardinality", labelloc=t, fontsize=19, fontcolor="#1A1A1A"];
+graph [
+  rankdir=LR,
+  bgcolor="#F7F5F2",
+  pad=0.5,
+  nodesep=0.85,
+  ranksep=1.8,
+  splines=ortho,
+  outputorder=edgesfirst,
+  fontname="Inter",
+  label="DATABASE SCHEMA",
+  labelloc=t,
+  fontsize=18,
+  fontcolor="#1A1A1A"
+];
 node [shape=plain, fontname="Inter", fontsize=15];
-edge [color="#80766E", penwidth=1.3, fontname="Inter", fontsize=11, fontcolor="#5D554F", labeldistance=2.2];
+edge [color="#A98A83", penwidth=1.5, minlen=2];
 audit_logs [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#D6D2CC" BGCOLOR="#FFFFFF"><TR><TD COLSPAN="2" BGCOLOR="#F1E5E0" ALIGN="LEFT"><B>audit_logs</B></TD></TR><TR><TD PORT="id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">PK</FONT></TD><TD WIDTH="173" ALIGN="LEFT">id</TD></TR><TR><TD PORT="action" WIDTH="67" ALIGN="LEFT" BGCOLOR="#FFFFFF"><FONT COLOR="#B74335"> </FONT></TD><TD WIDTH="173" ALIGN="LEFT">action</TD></TR><TR><TD PORT="actor_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="173" ALIGN="LEFT">actor_id ?</TD></TR><TR><TD PORT="incident_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="173" ALIGN="LEFT">incident_id ?</TD></TR><TR><TD PORT="target_user_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="173" ALIGN="LEFT">target_user_id ?</TD></TR><TR><TD PORT="report_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="173" ALIGN="LEFT">report_id ?</TD></TR></TABLE>>];
 comments [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#D6D2CC" BGCOLOR="#FFFFFF"><TR><TD COLSPAN="2" BGCOLOR="#F1E5E0" ALIGN="LEFT"><B>comments</B></TD></TR><TR><TD PORT="id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">PK</FONT></TD><TD WIDTH="147" ALIGN="LEFT">id</TD></TR><TR><TD PORT="content" WIDTH="67" ALIGN="LEFT" BGCOLOR="#FFFFFF"><FONT COLOR="#B74335"> </FONT></TD><TD WIDTH="147" ALIGN="LEFT">content</TD></TR><TR><TD PORT="user_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="147" ALIGN="LEFT">user_id</TD></TR><TR><TD PORT="incident_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="147" ALIGN="LEFT">incident_id</TD></TR></TABLE>>];
 customer_reports [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#D6D2CC" BGCOLOR="#FFFFFF"><TR><TD COLSPAN="2" BGCOLOR="#F1E5E0" ALIGN="LEFT"><B>customer_reports</B></TD></TR><TR><TD PORT="id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">PK</FONT></TD><TD WIDTH="244" ALIGN="LEFT">id</TD></TR><TR><TD PORT="status" WIDTH="67" ALIGN="LEFT" BGCOLOR="#FFFFFF"><FONT COLOR="#B74335"> </FONT></TD><TD WIDTH="244" ALIGN="LEFT">status</TD></TR><TR><TD PORT="assigned_technician_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="244" ALIGN="LEFT">assigned_technician_id ?</TD></TR><TR><TD PORT="customer_service_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="244" ALIGN="LEFT">customer_service_id</TD></TR><TR><TD PORT="incident_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK</FONT></TD><TD WIDTH="244" ALIGN="LEFT">incident_id ?</TD></TR></TABLE>>];
@@ -13,20 +26,20 @@ service_locations [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLP
 technician_profiles [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#D6D2CC" BGCOLOR="#FFFFFF"><TR><TD COLSPAN="2" BGCOLOR="#F1E5E0" ALIGN="LEFT"><B>technician_profiles</B></TD></TR><TR><TD PORT="id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">PK</FONT></TD><TD WIDTH="156" ALIGN="LEFT">id</TD></TR><TR><TD PORT="availability" WIDTH="67" ALIGN="LEFT" BGCOLOR="#FFFFFF"><FONT COLOR="#B74335"> </FONT></TD><TD WIDTH="156" ALIGN="LEFT">availability ?</TD></TR><TR><TD PORT="user_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK UK</FONT></TD><TD WIDTH="156" ALIGN="LEFT">user_id</TD></TR></TABLE>>];
 technician_specializations [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#D6D2CC" BGCOLOR="#FFFFFF"><TR><TD COLSPAN="2" BGCOLOR="#F1E5E0" ALIGN="LEFT"><B>technician_specializations</B></TD></TR><TR><TD PORT="profile_id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">FK UK1</FONT></TD><TD WIDTH="173" ALIGN="LEFT">profile_id</TD></TR><TR><TD PORT="specialization" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">UK1</FONT></TD><TD WIDTH="173" ALIGN="LEFT">specialization</TD></TR></TABLE>>];
 users [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" CELLPADDING="7" COLOR="#D6D2CC" BGCOLOR="#FFFFFF"><TR><TD COLSPAN="2" BGCOLOR="#F1E5E0" ALIGN="LEFT"><B>users</B></TD></TR><TR><TD PORT="id" WIDTH="67" ALIGN="LEFT" BGCOLOR="#F1E5E0"><FONT COLOR="#B74335">PK</FONT></TD><TD WIDTH="145" ALIGN="LEFT">id</TD></TR><TR><TD PORT="role" WIDTH="67" ALIGN="LEFT" BGCOLOR="#FFFFFF"><FONT COLOR="#B74335"> </FONT></TD><TD WIDTH="145" ALIGN="LEFT">role</TD></TR></TABLE>>];
-users:id:e -> audit_logs:actor_id:w [dir=none, label="0..1 : 0..*"];
-incidents:id:e -> audit_logs:incident_id:w [dir=none, label="0..1 : 0..*"];
-customer_reports:id:e -> audit_logs:report_id:w [dir=none, label="0..1 : 0..*"];
-users:id:e -> audit_logs:target_user_id:w [dir=none, label="0..1 : 0..*"];
-incidents:id:e -> comments:incident_id:w [dir=none, label="1 : 0..*"];
-users:id:e -> comments:user_id:w [dir=none, label="1 : 0..*"];
-users:id:e -> customer_reports:assigned_technician_id:w [dir=none, label="0..1 : 0..*"];
-customer_services:id:e -> customer_reports:customer_service_id:w [dir=none, label="1 : 0..*"];
-incidents:id:e -> customer_reports:incident_id:w [dir=none, label="0..1 : 0..*"];
-users:id:e -> customer_services:customer_id:w [dir=none, label="1 : 0..*"];
-network_nodes:id:e -> customer_services:network_node_id:w [dir=none, label="1 : 0..*"];
-service_locations:id:e -> customer_services:service_location_id:w [dir=none, label="1 : 0..*"];
-users:id:e -> incidents:assigned_to_id:w [dir=none, label="0..1 : 0..*"];
-users:id:e -> incidents:created_by_id:w [dir=none, label="1 : 0..*"];
-users:id:e -> technician_profiles:user_id:w [dir=none, label="1 : 0..1"];
-technician_profiles:id:e -> technician_specializations:profile_id:w [dir=none, label="1 : 0..*"];
+users -> audit_logs [dir=none, tooltip="users.id -> audit_logs.actor_id (0..1 : 0..*)"];
+incidents -> audit_logs [dir=none, tooltip="incidents.id -> audit_logs.incident_id (0..1 : 0..*)"];
+customer_reports -> audit_logs [dir=none, tooltip="customer_reports.id -> audit_logs.report_id (0..1 : 0..*)"];
+users -> audit_logs [dir=none, tooltip="users.id -> audit_logs.target_user_id (0..1 : 0..*)"];
+incidents -> comments [dir=none, tooltip="incidents.id -> comments.incident_id (1 : 0..*)"];
+users -> comments [dir=none, tooltip="users.id -> comments.user_id (1 : 0..*)"];
+users -> customer_reports [dir=none, tooltip="users.id -> customer_reports.assigned_technician_id (0..1 : 0..*)"];
+customer_services -> customer_reports [dir=none, tooltip="customer_services.id -> customer_reports.customer_service_id (1 : 0..*)"];
+incidents -> customer_reports [dir=none, tooltip="incidents.id -> customer_reports.incident_id (0..1 : 0..*)"];
+users -> customer_services [dir=none, tooltip="users.id -> customer_services.customer_id (1 : 0..*)"];
+network_nodes -> customer_services [dir=none, tooltip="network_nodes.id -> customer_services.network_node_id (1 : 0..*)"];
+service_locations -> customer_services [dir=none, tooltip="service_locations.id -> customer_services.service_location_id (1 : 0..*)"];
+users -> incidents [dir=none, tooltip="users.id -> incidents.assigned_to_id (0..1 : 0..*)"];
+users -> incidents [dir=none, tooltip="users.id -> incidents.created_by_id (1 : 0..*)"];
+users -> technician_profiles [dir=none, tooltip="users.id -> technician_profiles.user_id (1 : 0..1)"];
+technician_profiles -> technician_specializations [dir=none, tooltip="technician_profiles.id -> technician_specializations.profile_id (1 : 0..*)"];
 }

@@ -115,37 +115,178 @@ const roles = frame(
     .join(""),
 );
 
-function workflow(active = -1) {
-  return frame(
-    "From report to repair.",
-    "Report. Assign. Resolve. Confirm.",
-    [
-      ["OPEN", "Customer reports"],
-      ["IN_PROGRESS", "Technician works"],
-      ["RESOLVED", "Customer confirms"],
-      ["CLOSED", "Operator closes"],
-    ]
-      .map(([name, detail], index) => {
-        const x = 48 + index * 283;
-        const selected = active === index;
-        return (
-          rect(
-            x,
-            174,
-            235,
-            112,
-            selected ? color.pale : color.white,
-            14,
-            selected ? color.accent : color.border,
-          ) +
-          circle(x + 25, 199, 5, selected ? color.accent : color.border) +
-          text(x + 18, 229, name, 23, color.ink, 600) +
-          text(x + 18, 262, detail, 18, color.muted) +
-          (index < 3 ? arrow(x + 244, 232) : "")
-        );
-      })
-      .join(""),
-  );
+function workflow(active = -1, phase = 1) {
+  const W = 1200;
+  const H = 220;
+
+  const states = [
+    {
+      label: "OPEN",
+      color: "#4175A8",
+      tint: "#EEF4FA",
+      icon: `<path d="M14 39V9M14 11H36L31 20L36 29H14"/>`,
+    },
+    {
+      label: "IN PROGRESS",
+      color: "#B67B32",
+      tint: "#FFF4E6",
+      icon: `
+        <circle cx="24" cy="24" r="17"/>
+        <path d="M24 13V25L32 30"/>
+      `,
+    },
+    {
+      label: "RESOLVED",
+      color: "#298B75",
+      tint: "#EAF7F1",
+      icon: `
+        <circle cx="24" cy="24" r="17"/>
+        <path d="M15 24L21 30L34 17"/>
+      `,
+    },
+    {
+      label: "CLOSED",
+      color: "#785DA4",
+      tint: "#F2EDFA",
+      icon: `
+        <rect x="12" y="22" width="24" height="19" rx="4"/>
+        <path d="M17 22V16A7 7 0 0 1 31 16V22"/>
+      `,
+    },
+  ];
+
+  const cardW = 258;
+  const cardH = 170;
+  const gap = 38;
+  const startX = 27;
+  const cardY = 24;
+
+  const connectors = states
+    .slice(0, -1)
+    .map((_, i) => {
+      const x = startX + i * (cardW + gap) + cardW + 8;
+      const isPassed = active > i;
+
+      return `
+      <path
+        d="M${x} 109H${x + 20}
+           M${x + 14} 103L${x + 20} 109L${x + 14} 115"
+        fill="none"
+        stroke="${isPassed ? states[i].color : "#BFB8B2"}"
+        stroke-width="2.3"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+    `;
+    })
+    .join("");
+
+  const cards = states
+    .map((state, i) => {
+      const x = startX + i * (cardW + gap);
+      const selected = active === i;
+
+      const borderColor = state.color;
+      const borderWidth = selected ? 3.2 : 1.8;
+
+      const barWidth = cardW - 48;
+
+      const progress = selected
+        ? Math.max(0.08, Math.min(1, phase))
+        : active > i
+          ? 1
+          : 0;
+
+      const progressBar =
+        progress > 0
+          ? `
+        <rect
+          x="${x + 24}"
+          y="${cardY + 151}"
+          width="${barWidth * progress}"
+          height="5"
+          rx="2.5"
+          fill="${state.color}"/>
+      `
+          : "";
+
+      return `
+      <g>
+        ${
+          selected
+            ? `
+          <rect
+            x="${x - 3}"
+            y="${cardY - 3}"
+            width="${cardW + 6}"
+            height="${cardH + 6}"
+            rx="19"
+            fill="${state.color}"
+            opacity=".10"/>
+        `
+            : ""
+        }
+
+        <rect
+          x="${x}"
+          y="${cardY}"
+          width="${cardW}"
+          height="${cardH}"
+          rx="16"
+          fill="${state.tint}"
+          stroke="${borderColor}"
+          stroke-opacity="${selected ? 1 : 0.5}"
+          stroke-width="${borderWidth}"/>
+
+        <g transform="translate(${x + 26} ${cardY + 25}) scale(1.15)"
+          fill="none"
+          stroke="${state.color}"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round">
+          ${state.icon}
+        </g>
+
+        <text
+          x="${x + 24}"
+          y="${cardY + 129}"
+          font-size="23"
+          font-weight="700"
+          letter-spacing=".3"
+          fill="${state.color}">
+          ${state.label}
+        </text>
+
+        <rect
+          x="${x + 24}"
+          y="${cardY + 151}"
+          width="${barWidth}"
+          height="5"
+          rx="2.5"
+          fill="${state.color}"
+          opacity=".13"/>
+
+        ${progressBar}
+      </g>
+    `;
+    })
+    .join("");
+
+  return `
+    <svg xmlns="http://www.w3.org/2000/svg"
+      width="${W}" height="${H}"
+      viewBox="0 0 ${W} ${H}"
+      role="img"
+      aria-label="Open, In Progress, Resolved, Closed">
+
+      <rect width="${W}" height="${H}"
+        rx="14" fill="#F7F5F2"/>
+
+      <g font-family="Inter, Arial, sans-serif">
+        ${connectors}
+        ${cards}
+      </g>
+    </svg>
+  `;
 }
 
 const architecture = frame(
@@ -301,22 +442,37 @@ for (const [name, svg] of Object.entries(diagrams)) {
   await writeFile(join(output, name + ".png"), render(svg));
 }
 
-// Four state highlights show the real report sequence without browser scripts.
 const flowGif = GIFEncoder();
+
+const FLOW_WIDTH = 1200;
+const FLOW_HEIGHT = 220;
+
 for (let state = 0; state < 4; state++) {
-  const pixels = await sharp(render(workflow(state)))
-    .flatten({ background: color.white })
-    .ensureAlpha()
-    .raw()
-    .toBuffer();
-  const palette = quantize(pixels, 128);
-  flowGif.writeFrame(applyPalette(pixels, palette), 1200, 330, {
-    palette,
-    delay: 1800,
-    repeat: 0,
-  });
+  for (let step = 0; step < 4; step++) {
+    const phase = (step + 1) / 4;
+
+    const svg = workflow(state, phase);
+
+    const pixels = await sharp(render(svg))
+      .flatten({ background: "#F7F5F2" })
+      .ensureAlpha()
+      .raw()
+      .toBuffer();
+
+    const palette = quantize(pixels, 128);
+
+    flowGif.writeFrame(applyPalette(pixels, palette), FLOW_WIDTH, FLOW_HEIGHT, {
+      palette,
+      delay: 260,
+      repeat: 0,
+    });
+  }
 }
+
 flowGif.finish();
+
+await writeFile(join(output, "workflow.gif"), flowGif.bytes());
+
 await writeFile(join(output, "workflow.gif"), flowGif.bytes());
 
 // Five-slide carousel: four existing slides + Testing.
