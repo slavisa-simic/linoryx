@@ -3,7 +3,6 @@ import type { SubmitEvent } from 'react'
 import { useUser } from '../../context/UserContext'
 import type { Incident, IncidentAction, IncidentCategory, IncidentComment } from '../../models/incidents'
 import { incidentCategories } from '../../models/incidents'
-import type { Technician } from '../../models/users'
 import type { CustomerReport } from '../../models/reports'
 import { addComment, changeIncidentCategory, getComments, getIncident, progressIncident } from '../../api/incidentsApi'
 import { listReports } from '../../api/reportsApi'
@@ -16,16 +15,15 @@ import { Icon } from '../Icon'
 import '../../Reports.css'
 
 interface Props {
-  incident: Incident
-  technicians: Technician[]
+  incidentId: number
   onUpdate(incident: Incident): void
   onClose(): void
 }
 
-export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
+export function IncidentDetails({ incidentId, onUpdate, onClose }: Props) {
   const { session, onSessionExpired } = useUser()
-  const [item, setItem] = useState(incident)
-  const [category, setCategory] = useState(incident.category)
+  const [incident, setItem] = useState<Incident | null>(null)
+  const [category, setCategory] = useState<IncidentCategory>('UNDETERMINED')
   const [reports, setReports] = useState<CustomerReport[]>([])
   const [comments, setComments] = useState<IncidentComment[]>([])
   const [comment, setComment] = useState('')
@@ -42,12 +40,13 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
       setLoading(true)
       setError('')
       try {
-        const current = await getIncident(session, incident.id)
-        const discussion = await getComments(session, incident.id)
-        const linked = await listReports(session, incident.id)
+        const current = await getIncident(session, incidentId)
+        if (!active) return
+        setItem(current)
+        setCategory(current.category)
+        const discussion = await getComments(session, incidentId)
+        const linked = await listReports(session, incidentId)
         if (active) {
-          setItem(current)
-          setCategory(current.category)
           setComments(discussion)
           setReports(linked)
         }
@@ -57,13 +56,28 @@ export function IncidentDetails({ incident, onUpdate, onClose }: Props) {
         if (active) setLoading(false)
       }
     }
-    load()
-    return () => { active = false }
-  }, [session, incident.id, refresh])
+    // Let StrictMode clean up its first effect before starting the request.
+    const timer = window.setTimeout(load, 0)
+    return () => {
+      active = false
+      window.clearTimeout(timer)
+    }
+  }, [session, incidentId, refresh])
 
   useEffect(() => {
     if (error === 'SESSION_EXPIRED') onSessionExpired()
   }, [error, onSessionExpired])
+
+  if (!incident) {
+    return <FormDialog wide id="incident-details" reference={'INC-' + incidentId} title="Incident details" busy={false} onClose={onClose}>
+      {loading ? <p role="status">Loading incident details.</p> : <>
+        <FormMessage message={error} />
+        <RefreshButton label="Try again" onClick={() => setRefresh(refresh + 1)} />
+      </>}
+    </FormDialog>
+  }
+
+  const item = incident
 
   async function progress(action: IncidentAction) {
     if (saving) return

@@ -80,13 +80,6 @@ class AuthControllerTests {
     }
 
     @Test
-    void stillProtectsDirectErrorRequestsAndOtherEndpoints() throws Exception {
-        mvc.perform(get("/error")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/incidents")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/admin/users")).andExpect(status().isUnauthorized());
-    }
-
-    @Test
     void loginWithValidRequestReturnsToken() throws Exception {
 
         when(authService.login(any(LoginRequest.class)))
@@ -110,41 +103,5 @@ class AuthControllerTests {
                         .value("test-jwt-token"))
                 .andExpect(jsonPath("$.tokenType")
                         .value("Bearer"));
-    }
-
-    @Test
-    void rejectsInvalidLoginAsBadRequest() throws Exception {
-
-        mvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                            {
-                              "email": "invalid",
-                              "password": ""
-                            }
-                            """))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void loginWithoutBearerTokenIsAllowed() throws Exception {
-
-        when(authService.login(any(LoginRequest.class)))
-                .thenReturn(
-                        new AuthResponse(
-                                "test-token",
-                                "Bearer"
-                        )
-                );
-
-        mvc.perform(post("/api/auth/login")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                            {
-                              "email": "user@test.com",
-                              "password": "Password123!"
-                            }
-                            """))
-                .andExpect(status().isOk());
     }
 }

@@ -4,6 +4,7 @@ spring:
     port: 587
     username: ${MAIL_USERNAME:}
     password: ${MAIL_APP_PASSWORD:}
+    test-connection: ${MAIL_TEST_CONNECTION:false}
 
     properties:
       mail:
@@ -35,7 +36,7 @@ spring:
 
   datasource:
     url: ${DB_URL}
-    username: vigil_api_user
+    username: ${DB_USERNAME:linoryx_api_user}
     password: ${DB_PASSWORD}
 
   jpa:
@@ -55,6 +56,7 @@ notification:
 
 security:
   jwt:
+    issuer: linoryx-api
     secret: ${JWT_SECRET}
     expiration-minutes: 60
 

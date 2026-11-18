@@ -13,14 +13,17 @@ import java.time.temporal.ChronoUnit;
 public class JwtService {
 
     private final JwtEncoder jwtEncoder;
+    private final String issuer;
     private final long expirationMinutes;
 
     public JwtService(
             JwtEncoder jwtEncoder,
+            @Value("${security.jwt.issuer}") String issuer,
             @Value("${security.jwt.expiration-minutes}")
             long expirationMinutes
     ) {
         this.jwtEncoder = jwtEncoder;
+        this.issuer = issuer;
         this.expirationMinutes = expirationMinutes;
     }
 
@@ -29,7 +32,7 @@ public class JwtService {
         Instant now = Instant.now();
 
         JwtClaimsSet claims = JwtClaimsSet.builder()
-                .issuer("vigil-api")
+                .issuer(issuer)
                 .issuedAt(now)
                 .expiresAt(now.plus(
                         expirationMinutes,

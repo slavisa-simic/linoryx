@@ -2,9 +2,7 @@ import type { WorkspacePage } from '../models/navigation'
 import { useUser } from '../context/UserContext'
 import { useEffect, useState } from 'react'
 import type { Incident, IncidentStatus } from '../models/incidents'
-import type { Technician } from '../models/users'
-import { getIncident, listIncidents } from '../api/incidentsApi'
-import { getTechnicians } from '../api/techniciansApi'
+import { listIncidents } from '../api/incidentsApi'
 import { WorkspaceNavbar } from '../components/workspace/WorkspaceNavbar'
 import { RefreshButton } from '../components/workspace/RefreshButton'
 import { MetricCard } from '../components/workspace/MetricCard'
@@ -26,12 +24,14 @@ export function IncidentsPage({
 }: IncidentsPageProps) {
   const { session, onSessionExpired } = useUser()
   const [incidents, setIncidents] = useState<Incident[]>([])
-  const [technicians, setTechnicians] = useState<Technician[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [refresh, setRefresh] = useState(0)
   const [status, setStatus] = useState<IncidentStatus | 'ALL'>('ALL')
-  const [selected, setSelected] = useState<Incident | null>(null)
+  const [selectedId, setSelectedId] = useState(() => {
+    const id = Number(new URLSearchParams(window.location.search).get('incident'))
+    return Number.isSafeInteger(id) && id > 0 ? id : null
+  })
 
   useEffect(() => {
     let active = true
@@ -41,24 +41,10 @@ export function IncidentsPage({
       setError('')
       try {
         const items = await listIncidents(session)
-        let team: Technician[] = []
-        if (session.role === 'ADMIN' || session.role === 'DISPATCHER') {
-          team = await getTechnicians(session)
-        }
         if (!active) {
           return
         }
         setIncidents(items)
-        setTechnicians(team)
-        const incidentId = Number(
-          new URLSearchParams(window.location.search).get('incident')
-        )
-        if (incidentId > 0) {
-          const incident = await getIncident(session, incidentId)
-          if (active) {
-            setSelected(incident)
-          }
-        }
       } catch (error) {
         if (active) {
           if (error instanceof Error) {
@@ -96,7 +82,7 @@ export function IncidentsPage({
 
   function updateIncident(updated: Incident) {
     setIncidents(
-      incidents.map(function (incident) {
+      current => current.map(function (incident) {
         if (incident.id === updated.id) {
           return updated
         }
@@ -106,7 +92,7 @@ export function IncidentsPage({
   }
 
   function closeDetails() {
-    setSelected(null)
+    setSelectedId(null)
     window.history.replaceState(null, '', '/incidents')
   }
 
@@ -158,7 +144,7 @@ export function IncidentsPage({
               incidents={incidents}
               status={status}
               onStatusChange={setStatus}
-              onOpen={setSelected}
+              onOpen={incident => setSelectedId(incident.id)}
             />
             <div className="incidents-export">
               <ExportIncidentsButton
@@ -169,11 +155,10 @@ export function IncidentsPage({
           </>
         )}
       </main>
-      {selected && (
+      {!loading && selectedId !== null && (
         <IncidentDetails
-          key={selected.id}
-          incident={selected}
-          technicians={technicians}
+          key={selectedId}
+          incidentId={selectedId}
           onUpdate={updateIncident}
           onClose={closeDetails}
         />

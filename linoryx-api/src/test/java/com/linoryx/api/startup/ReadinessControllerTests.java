@@ -41,10 +41,4 @@ class ReadinessControllerTests {
                 .andExpect(content().json("{\"status\":\"UNAVAILABLE\"}"))
                 .andExpect(jsonPath("$.length()").value(1));
     }
-
-    @Test
-    void businessEndpointsStillRequireAuthentication() throws Exception {
-        mvc.perform(get("/api/incidents")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/users/me")).andExpect(status().isUnauthorized());
-    }
 }

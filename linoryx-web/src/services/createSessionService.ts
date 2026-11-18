@@ -2,8 +2,6 @@ import type { AuthResponse, AuthSession } from '../models/auth'
 import type { SessionService } from './SessionService'
 
 const storageKey = 'linoryx.session'
-// Read once to preserve an existing signed-in session during the rebrand.
-const legacyStorageKey = 'vigil.session'
 
 function readSession(response: AuthResponse, email: string): AuthSession | null {
   try {
@@ -58,29 +56,15 @@ function readSession(response: AuthResponse, email: string): AuthSession | null 
 export function createSessionService(storage: Storage): SessionService {
   function getSession(): AuthSession | null {
     try {
-      const current = storage.getItem(storageKey)
-      const saved = current ?? storage.getItem(legacyStorageKey)
+      const saved = storage.getItem(storageKey)
       if (!saved) {
         return null
       }
 
       const savedSession: AuthSession = JSON.parse(saved)
       const session = readSession(savedSession, savedSession.email)
-      if (session) {
-        if (!current) {
-          try {
-            storage.setItem(storageKey, JSON.stringify(session))
-            storage.removeItem(legacyStorageKey)
-          } catch {
-            // Keep the valid legacy session when storage is temporarily read-only.
-          }
-        }
-        return session
-      }
-
-      storage.removeItem(storageKey)
-      storage.removeItem(legacyStorageKey)
-      return null
+      if (!session) storage.removeItem(storageKey)
+      return session
     } catch {
       return null
     }
@@ -94,7 +78,6 @@ export function createSessionService(storage: Storage): SessionService {
 
     try {
       storage.setItem(storageKey, JSON.stringify(session))
-      storage.removeItem(legacyStorageKey)
     } catch {
       throw new Error('Session storage is unavailable. Check your browser settings.')
     }
@@ -104,7 +87,6 @@ export function createSessionService(storage: Storage): SessionService {
 
   function clearSession() {
     storage.removeItem(storageKey)
-    storage.removeItem(legacyStorageKey)
   }
 
   return {

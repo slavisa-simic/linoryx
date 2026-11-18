@@ -1,33 +1,16 @@
 .startup-screen {
-  position: fixed;
-  z-index: 1000;
-  inset: 0;
   display: grid;
   place-items: center;
   min-height: 100svh;
   overflow: auto;
-  isolation: isolate;
   color: var(--color-text);
   background: var(--brand-ivory);
-  transition: opacity 220ms ease-out;
-}
-
-.startup-screen__artwork {
-  position: absolute;
-  z-index: -1;
-  inset: 46% 0 0;
-  overflow: hidden;
-  pointer-events: none;
-  mask-image: linear-gradient(transparent, black 20%, black 85%, transparent);
-  transition: opacity 160ms ease-out;
 }
 
 .startup-screen__content {
   width: min(100%, 560px);
-  margin-block: 32px clamp(180px, 30vh, 320px);
   padding: 32px max(24px, env(safe-area-inset-right)) 32px max(24px, env(safe-area-inset-left));
   text-align: center;
-  transition: opacity 180ms ease-out, transform 220ms ease-out;
 }
 
 .startup-screen__logo {
@@ -43,28 +26,28 @@
   font-size: clamp(18px, 1.6vw, 21px);
   font-weight: 500;
   line-height: 1.5;
-  letter-spacing: -0.5px;
 }
 
-.startup-screen__status p {
-  margin: 8px 0 0;
-  color: var(--color-text-muted);
-  font-size: 14px;
-  line-height: 1.6;
-  text-wrap: balance;
+.startup-spinner {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  margin-top: 24px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--brand-terracotta);
+  border-radius: 50%;
+  animation: startup-spin 0.8s linear infinite;
 }
 
-.startup-screen--leaving { opacity: 0; pointer-events: none; }
-.startup-screen--leaving .startup-screen__artwork { opacity: 0; }
-.startup-screen--leaving .startup-screen__content { opacity: 0; transform: translateY(-4px); }
-.startup-screen--static .startup-screen__content { margin-block: 32px; }
-
-@media (max-width: 767px) {
-  .startup-screen__content { margin-bottom: 22svh; }
-  .startup-screen__artwork { inset-block-start: 50%; }
+@keyframes startup-spin {
+  to { transform: rotate(360deg); }
 }
+
 @media (max-height: 500px) and (orientation: landscape) {
-  .startup-screen__content { margin-block: 16px; padding-block: 16px; }
+  .startup-screen__content { padding-block: 16px; }
   .startup-screen__logo { width: 200px; margin-bottom: 20px; }
-  .startup-screen__artwork { opacity: 0.25; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .startup-spinner { animation: none; }
 }

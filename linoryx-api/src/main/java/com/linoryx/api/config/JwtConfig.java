@@ -46,7 +46,8 @@ public class JwtConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(SecretKey secretKey, @Lazy UserService userService) {
+    public JwtDecoder jwtDecoder(SecretKey secretKey, @Lazy UserService userService,
+                                 @Value("${security.jwt.issuer}") String issuer) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder
                 .withSecretKey(secretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
@@ -87,7 +88,7 @@ public class JwtConfig {
         };
 
         decoder.setJwtValidator(new DelegatingOAuth2TokenValidator<>(
-                JwtValidators.createDefaultWithIssuer("vigil-api"),
+                JwtValidators.createDefaultWithIssuer(issuer),
                 activeUserValidator
         ));
         return decoder;
